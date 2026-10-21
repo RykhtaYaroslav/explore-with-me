@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   stats-db:
     image: postgres:16.1
@@ -19,12 +17,14 @@ services:
   config-server:
     build: ./infra/config-server
     container_name: ewm-config-server
-    ports:
-      - "8888:8888"
     volumes:
       - ./infra/config-repo:/config-repo:ro
     environment:
-      SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH_LOCATIONS: "file:/config-repo,file:/config-repo/infra,file:/config-repo/stats-service,file:/config-repo/main-service"
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-server:8761/eureka/
+      SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH_LOCATIONS: "file:/config-repo,file:/config-repo/stats-service,file:/config-repo/main-service"
+    depends_on:
+      discovery-server:
+        condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:8888/actuator/health > /dev/null || exit 1"]
       interval: 5s
@@ -37,11 +37,12 @@ services:
     container_name: ewm-discovery-server
     ports:
       - "8761:8761"
-    depends_on:
-      config-server:
-        condition: service_healthy
-    environment:
-      SPRING_CONFIG_IMPORT: configserver:http://config-server:8888
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8761/actuator/health > /dev/null || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
 
   stats-server:
     build: ./stats/stats-server
@@ -54,16 +55,14 @@ services:
       config-server:
         condition: service_healthy
       discovery-server:
-        condition: service_started
+        condition: service_healthy
     environment:
-      SPRING_CONFIG_IMPORT: configserver:http://config-server:8888
-      SERVER_PORT: 9090
       SPRING_DATASOURCE_URL: jdbc:postgresql://stats-db:5432/stats
       SPRING_DATASOURCE_USERNAME: stats
       SPRING_DATASOURCE_PASSWORD: stats
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
-    command:
-      - --eureka.client.serviceUrl.defaultZone=http://discovery-server:8761/eureka/
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-server:8761/eureka/
+      SERVER_PORT: 9090
 
   ewm-db:
     image: postgres:16.1
@@ -91,16 +90,13 @@ services:
       stats-server:
         condition: service_started
       discovery-server:
-        condition: service_started
+        condition: service_healthy
       config-server:
         condition: service_healthy
     environment:
-      SPRING_CONFIG_IMPORT: configserver:http://config-server:8888
-      SERVER_PORT: 8080
       SPRING_DATASOURCE_URL: jdbc:postgresql://ewm-db:5432/ewm
       SPRING_DATASOURCE_USERNAME: main
       SPRING_DATASOURCE_PASSWORD: main
-      STATS_SERVER_URL: http://stats-server:9090
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
-    command:
-      - --eureka.client.serviceUrl.defaultZone=http://discovery-server:8761/eureka/
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-server:8761/eureka/
+      SERVER_PORT: 8080
