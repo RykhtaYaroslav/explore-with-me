@@ -22,6 +22,10 @@ server:
 stats-server:
   url: http://stats-server:9090
 
+stats:
+  client:
+    type: feign
+
 management:
   endpoints:
     web:

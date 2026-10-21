@@ -2,6 +2,7 @@ package ru.practicum.stats.client;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
@@ -16,7 +17,14 @@ import java.util.List;
 
 @Slf4j
 @Component
-public class StatsClientImpl implements StatsClient {
+@ConditionalOnProperty(
+        prefix = "stats.client",
+        name = "type",
+        havingValue = "rest"
+)
+public class StatsClientImplForRest implements StatsClient {
+    // Реализацию оставил не потому, что забыл удалить, а потому что так захотел.
+    // Как раз узнал как через applications.yaml выключить какую-то конкретную реализацию
     private final RestClient restClient;
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -24,7 +32,7 @@ public class StatsClientImpl implements StatsClient {
     private static final String HIT = "/hit";
     private static final String STATS = "/stats";
 
-    public StatsClientImpl(@Value("${stats-server.url:http://localhost:9090}") String baseUrl) {
+    public StatsClientImplForRest(@Value("${stats-server.url:http://localhost:9090}") String baseUrl) {
         this.restClient = RestClient.builder()
                 .requestFactory(new HttpComponentsClientHttpRequestFactory())
                 .baseUrl(baseUrl)
