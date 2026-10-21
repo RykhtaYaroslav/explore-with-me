@@ -1,0 +1,38 @@
+spring:
+  sql:
+    init:
+      mode: always
+  datasource:
+    url: jdbc:postgresql://localhost:5432/ewm
+    username: main
+    password: main
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create
+    show-sql: false
+    properties:
+      hibernate:
+        show_sql: false
+        format_sql: false
+
+server:
+  port: 0
+
+stats-server:
+  url: http://stats-server:9090
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+
+logging:
+  level:
+    org.hibernate: WARN
+    org.hibernate.SQL: WARN
+    org.hibernate.type.descriptor.sql: WARN
+    org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG
+    root: INFO
+    ru.practicum.main: DEBUG
