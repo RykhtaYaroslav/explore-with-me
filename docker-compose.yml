@@ -21,7 +21,7 @@ services:
       - ./infra/config-repo:/config-repo:ro
     environment:
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-server:8761/eureka/
-      SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH_LOCATIONS: "file:/config-repo,file:/config-repo/stats-service,file:/config-repo/main-service"
+      SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH_LOCATIONS: "file:/config-repo,file:/config-repo/stats-service,file:/config-repo/main-service,file:/config-repo/gateway-server"
     depends_on:
       discovery-server:
         condition: service_healthy
@@ -47,8 +47,6 @@ services:
   stats-server:
     build: ./stats/stats-server
     container_name: ewm-stats-server
-    ports:
-      - "9090:9090"
     depends_on:
       stats-db:
         condition: service_healthy
@@ -62,7 +60,6 @@ services:
       SPRING_DATASOURCE_PASSWORD: stats
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-server:8761/eureka/
-      SERVER_PORT: 9090
 
   ewm-db:
     image: postgres:16.1
@@ -82,8 +79,6 @@ services:
   ewm-service:
     build: ./core/main-service
     container_name: ewm-main-service
-    ports:
-      - "8080:8080"
     depends_on:
       ewm-db:
         condition: service_healthy
@@ -99,4 +94,20 @@ services:
       SPRING_DATASOURCE_PASSWORD: main
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-server:8761/eureka/
-      SERVER_PORT: 8080
+
+  gateway-server:
+    build: ./infra/gateway-server
+    container_name: ewm-gateway-server
+    ports:
+      - "8080:8080"
+    depends_on:
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      stats-server:
+        condition: service_started
+      ewm-service:
+        condition: service_started
+    environment:
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-server:8761/eureka/
