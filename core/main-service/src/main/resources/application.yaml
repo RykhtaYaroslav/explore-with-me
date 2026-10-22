@@ -2,15 +2,12 @@ spring:
   application:
     name: main-service
   config:
-    import: "configserver:"
+    import: "optional:configserver:"
   cloud:
     config:
       discovery:
         enabled: true
         service-id: config-server
-  profiles:
-    active: test
-
 eureka:
   client:
     service-url:

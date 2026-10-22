@@ -10,6 +10,6 @@ spring:
         - id: main
           uri: lb://main-service
           predicates:
-            - Path=/compilations,/compilations/**,/admin/compilations,/admin/compilations/**,/events,/events/**,/admin/events,/admin/events/**,/users/**,/categories,/categories/**,/admin/categories,/admin/categories/**,/admin/users,/admin/users/**,/rating/**
+            - Path=/compilations,/compilations/**,/admin/compilations,/admin/compilations/**,/events,/events/**,/admin/events,/admin/events/**,/users/**,/categories,/categories/**,/admin/categories,/admin/categories/**,/admin/users,/admin/users/**,/rating/**,/test/time,/test/time/**
 server:
   port: 8080
