@@ -1,0 +1,10 @@
+spring:
+  main:
+    banner-mode: off
+    log-startup-info: true
+
+logging:
+  level:
+    ru.yandex.practicum: WARN
+    org:
+      springframework: INFO

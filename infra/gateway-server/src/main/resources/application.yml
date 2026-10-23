@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: gateway-server
+  config:
+    import: "optional:configserver:"
+  cloud:
+    config:
+      discovery:
+        enabled: true
+        service-id: config-server
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE:http://localhost:8761/eureka/}
+  instance:
+    prefer-ip-address: true
