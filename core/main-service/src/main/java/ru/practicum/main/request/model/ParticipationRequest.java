@@ -18,6 +18,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.proxy.HibernateProxy;
+import ru.practicum.core.common.enums.RequestStatus;
 import ru.practicum.main.event.model.Event;
 import ru.practicum.main.user.model.User;
 

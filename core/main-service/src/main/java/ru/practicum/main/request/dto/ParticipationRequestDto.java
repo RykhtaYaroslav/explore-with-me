@@ -6,7 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.practicum.main.request.model.RequestStatus;
+import ru.practicum.core.common.enums.RequestStatus;
 
 import java.time.LocalDateTime;
 

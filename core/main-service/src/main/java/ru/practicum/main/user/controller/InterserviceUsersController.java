@@ -1,0 +1,23 @@
+package ru.practicum.main.user.controller;
+
+import jakarta.validation.constraints.Positive;
+import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import ru.practicum.main.user.service.UserInternalService;
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/interservice/users")
+@Validated
+public class InterserviceUsersController {
+    private final UserInternalService userInternalService;
+
+    @GetMapping("/exist/{id}")
+    public boolean existsById(@PathVariable @Positive Long id) {
+        return userInternalService.existsById(id);
+    }
+}
