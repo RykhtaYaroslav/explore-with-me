@@ -1,4 +1,4 @@
-package ru.practicum.core.exception;
+package ru.practicum.core.common.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
