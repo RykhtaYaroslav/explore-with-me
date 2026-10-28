@@ -12,4 +12,6 @@ public interface RequestService {
 
     ParticipationRequestDto cancelRequest(Long userId, Long requestId);
 
+    boolean isConfirmedParticipant(Long userId, Long eventId);
+
 }

@@ -3,6 +3,7 @@ package ru.practicum.core.event.service.interservice;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.practicum.core.common.exception.NotFoundException;
+import ru.practicum.core.common.dto.user.UserShortDto;
 import ru.practicum.core.event.service.interservice.feign.UserFeignClient;
 
 @RequiredArgsConstructor
@@ -15,5 +16,11 @@ public class UserInterserviceFeign implements UserInterservice {
         if (!userFeignClient.existsById(userId)) {
             throw new NotFoundException(String.format("User with id = %d was not found", userId));
         }
+    }
+
+    @Override
+    public UserShortDto getShortById(Long userId) {
+        existsById(userId);
+        return userFeignClient.getShortById(userId);
     }
 }

@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import ru.practicum.core.common.dto.user.UserShortDto;
 import ru.practicum.main.user.service.UserInternalService;
 
 @RestController
@@ -19,5 +20,10 @@ public class InterserviceUsersController {
     @GetMapping("/exist/{id}")
     public boolean existsById(@PathVariable @Positive Long id) {
         return userInternalService.existsById(id);
+    }
+
+    @GetMapping("/short/{id}")
+    public UserShortDto getShortById(@PathVariable @Positive Long id) {
+        return userInternalService.getShortById(id);
     }
 }

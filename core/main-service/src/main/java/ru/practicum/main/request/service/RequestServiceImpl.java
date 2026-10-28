@@ -121,4 +121,12 @@ public class RequestServiceImpl implements RequestService {
         return requestMapper.toDtoOut(request);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public boolean isConfirmedParticipant(Long userId, Long eventId) {
+        return requestRepository.existsByRequesterIdAndEventIdAndStatus(
+                userId, eventId, RequestStatus.CONFIRMED
+        );
+    }
+
 }

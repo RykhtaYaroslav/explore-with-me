@@ -3,9 +3,8 @@ package ru.practicum.core.review.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.core.common.enums.RequestStatus;
-import ru.practicum.core.common.exception.ConflictException;
-import ru.practicum.core.common.exception.NotFoundException;
+import ru.practicum.core.common.dto.user.UserShortDto;
+import ru.practicum.core.event.dto.response.EventShortDto;
 import ru.practicum.core.review.dto.NewEventReviewDto;
 import ru.practicum.core.review.dto.NewUserReviewDto;
 import ru.practicum.core.review.dto.OutputEventReviewDto;
@@ -15,143 +14,43 @@ import ru.practicum.core.review.model.EventReview;
 import ru.practicum.core.review.model.UserReview;
 import ru.practicum.core.review.repository.EventReviewRepository;
 import ru.practicum.core.review.repository.UserReviewRepository;
-import ru.practicum.main.event.model.Event;
-import ru.practicum.main.event.repository.EventRepository;
-import ru.practicum.main.event.service.EventStatsCollector;
-import ru.practicum.main.request.repository.RequestRepository;
-import ru.practicum.main.time.TimeProvider;
-import ru.practicum.main.user.dto.UserMapper;
-import ru.practicum.main.user.model.User;
-import ru.practicum.main.user.repository.UserRepository;
-
-import java.time.LocalDateTime;
-import java.util.List;
-
-import static ru.practicum.core.common.util.EwmConstants.HOURS_OFFSET_FOR_REVIEWS_CREATING;
+import ru.practicum.core.review.validation.ReviewValidator;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class ReviewServiceImpl implements ReviewService {
-    private final UserRepository userRepository;
-    private final EventRepository eventRepository;
-    private final RequestRepository requestRepository;
-    private final EventStatsCollector eventStatsCollector;
+    private final ReviewValidator reviewValidator;
 
     private final UserReviewRepository userReviewRepository;
     private final EventReviewRepository eventReviewRepository;
 
     private final ReviewMapper reviewMapper;
-    private final UserMapper userMapper;
-
-    private final TimeProvider timeProvider;
 
     @Override
-    public OutputUserReviewDto createAuthorReview(Long raterId, Long eventId, Long authorId, NewUserReviewDto request) {
-        User rater = findUserOrThrow(raterId);
-        User target = findUserOrThrow(authorId);
-        Event event = findEventOrThrow(eventId);
-
-        validateAuthorReviewRules(event, rater, target);
+    public OutputUserReviewDto createAuthorReview(Long raterId, Long eventId, Long authorId,
+                                                  NewUserReviewDto request) {
+        UserShortDto rater = reviewValidator.findUserOrThrow(raterId);
+        UserShortDto author = reviewValidator.findUserOrThrow(authorId);
+        EventShortDto event = reviewValidator.findEventOrThrow(eventId);
+        reviewValidator.validateAuthorReview(raterId, authorId, event);
 
         UserReview review = reviewMapper.toUserReview(request, raterId, authorId, eventId);
-
         review = userReviewRepository.save(review);
 
-        return reviewMapper.toUserReviewOutDto(
-                review,
-                userMapper.toUserShortDto(rater),
-                userMapper.toUserShortDto(target),
-                eventStatsCollector.getShortDtoListWithStats(List.of(event)).getFirst()
-        );
+        return reviewMapper.toUserReviewOutDto(review, rater, author, event);
     }
 
     @Override
     public OutputEventReviewDto createEventReview(Long raterId, Long eventId, NewEventReviewDto request) {
-        User rater = findUserOrThrow(raterId);
-        Event event = findEventOrThrow(eventId);
-
-        validateEventReviewRules(event, rater);
+        UserShortDto rater = reviewValidator.findUserOrThrow(raterId);
+        EventShortDto event = reviewValidator.findEventOrThrow(eventId);
+        reviewValidator.validateEventReview(raterId, event);
 
         EventReview review = reviewMapper.toEventReview(request, raterId, eventId);
-
         review = eventReviewRepository.save(review);
 
-        return reviewMapper.toEventReviewOutDto(
-                review,
-                userMapper.toUserShortDto(rater),
-                eventStatsCollector.getShortDtoListWithStats(List.of(event)).getFirst()
-        );
+        return reviewMapper.toEventReviewOutDto(review, rater, event);
     }
 
-    private User findUserOrThrow(Long userId) {
-        return userRepository.findById(userId).orElseThrow(()
-                -> new NotFoundException(String.format("User with id = %d not found", userId)));
-    }
-
-    private Event findEventOrThrow(Long eventId) {
-        return eventRepository.findById(eventId)
-                .orElseThrow(() -> new NotFoundException(String.format("Event with id=%d not found", eventId)));
-    }
-
-    private void validateEventReviewRules(Event event, User rater) {
-        Long eventId = event.getId();
-        Long raterId = rater.getId();
-
-        validateDateTime(event.getEventDate());
-
-        validateParticipation(eventId, raterId);
-
-        if (isReviewExist(eventId, raterId)) {
-            String m = String.format("Пользователь с id = %d уже оставил оценку событию с id = %d", raterId, eventId);
-            throw new ConflictException(m);
-        }
-    }
-
-    private void validateAuthorReviewRules(Event event, User rater, User author) {
-        Long eventId = event.getId();
-        Long raterId = rater.getId();
-        Long authorId = author.getId();
-
-        validateDateTime(event.getEventDate());
-
-        if (!event.getInitiator().getId().equals(authorId)) {
-            throw new ConflictException("Юзер с id = " + authorId + " не является создателем данного события");
-        }
-
-        validateParticipation(eventId, raterId);
-
-        if (isReviewExist(eventId, raterId, authorId)) {
-            String m = String.format("Пользователь с id = %d уже ставил оценку автору с id = %d на мероприятии с id = %d", raterId, authorId, eventId);
-            throw new ConflictException(m);
-        }
-    }
-
-    private void validateDateTime(LocalDateTime eventDate) {
-        LocalDateTime allowedTime = eventDate.plusHours(HOURS_OFFSET_FOR_REVIEWS_CREATING);
-
-        if (timeProvider.now().isBefore(allowedTime)) {
-            String m = String.format("Оставить оценку событию можно только спустя %d часов после начала", HOURS_OFFSET_FOR_REVIEWS_CREATING);
-            throw new ConflictException(m);
-        }
-    }
-
-    private void validateParticipation(Long eventId, Long userId) {
-        boolean isParticipant = requestRepository.existsByRequesterIdAndEventIdAndStatus(
-                userId, eventId, RequestStatus.CONFIRMED
-        );
-
-        if (!isParticipant) {
-            String m = String.format("Пользователь с id = %d не является участником события с id = %d", userId, eventId);
-            throw new ConflictException(m);
-        }
-    }
-
-    private boolean isReviewExist(Long eventId, Long raterId, Long authorId) {
-        return userReviewRepository.existsByParams(raterId, eventId, authorId);
-    }
-
-    private boolean isReviewExist(Long eventId, Long raterId) {
-        return eventReviewRepository.existsByParams(raterId, eventId);
-    }
 }
