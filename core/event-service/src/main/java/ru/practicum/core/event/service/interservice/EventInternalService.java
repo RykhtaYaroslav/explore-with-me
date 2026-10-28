@@ -8,4 +8,6 @@ public interface EventInternalService {
     boolean isOrganizer(Long eventId, Long userId);
 
     EventShortDto getReviewInfo(Long eventId);
+
+    void adjustCount(Long eventId, long delta);
 }

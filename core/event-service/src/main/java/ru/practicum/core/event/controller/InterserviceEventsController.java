@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.core.event.dto.response.EventShortDto;
-import ru.practicum.core.event.service.EventConfirmedRequestsService;
 import ru.practicum.core.event.service.interservice.EventInternalService;
 
 @Validated
@@ -18,7 +17,6 @@ import ru.practicum.core.event.service.interservice.EventInternalService;
 @RequestMapping("/interservice/events")
 @RequiredArgsConstructor
 public class InterserviceEventsController {
-    private final EventConfirmedRequestsService eventConfirmedRequestsService;
     private final EventInternalService eventInternalService;
 
     @GetMapping("/exist/{eventId}")
@@ -40,6 +38,6 @@ public class InterserviceEventsController {
     @PatchMapping("/{eventId}/confirmed-requests")
     public void adjustConfirmedRequests(@PathVariable @Positive Long eventId,
                                         @RequestParam long delta) {
-        eventConfirmedRequestsService.adjustCount(eventId, delta);
+        eventInternalService.adjustCount(eventId, delta);
     }
 }
