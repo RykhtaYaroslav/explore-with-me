@@ -18,6 +18,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.hibernate.annotations.Check;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.proxy.HibernateProxy;
 import ru.practicum.core.category.model.Category;
@@ -33,6 +34,7 @@ import java.util.Objects;
 @AllArgsConstructor
 @Entity
 @Table(name = "events")
+@Check(constraints = "confirmed_requests >= 0 AND (participant_limit = 0 OR confirmed_requests <= participant_limit)")
 public class Event {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -71,6 +73,10 @@ public class Event {
     @Builder.Default
     @Column(name = "participant_limit", nullable = false)
     private Integer participantLimit = 0;
+
+    @Builder.Default
+    @Column(name = "confirmed_requests", nullable = false)
+    private Long confirmedRequests = 0L;
 
     @Column(name = "published_on")
     private LocalDateTime publishedOn;

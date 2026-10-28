@@ -11,4 +11,5 @@ public interface RequestService {
     ParticipationRequestDto createRequest(Long userId, Long eventId);
 
     ParticipationRequestDto cancelRequest(Long userId, Long requestId);
+
 }

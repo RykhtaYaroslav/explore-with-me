@@ -2,7 +2,6 @@ package ru.practicum.core.common.util.validation;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
-import ru.practicum.main.util.validation.FutureAfterHoursValidator;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;

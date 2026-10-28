@@ -22,6 +22,12 @@
 
     <dependencies>
         <dependency>
+            <groupId>ru.practicum</groupId>
+            <artifactId>common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>stats-client</artifactId>
             <version>${project.version}</version>

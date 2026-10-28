@@ -16,10 +16,13 @@ CREATE TABLE IF NOT EXISTS events (
     lon FLOAT NOT NULL,
     paid BOOLEAN NOT NULL DEFAULT FALSE,
     participant_limit INT NOT NULL DEFAULT 0,
+    confirmed_requests BIGINT NOT NULL DEFAULT 0,
     published_on TIMESTAMP WITHOUT TIME ZONE,
     request_moderation BOOLEAN NOT NULL DEFAULT TRUE,
     state VARCHAR(20) NOT NULL,
-    CONSTRAINT fk_events_categories FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE CASCADE
+    CONSTRAINT fk_events_categories FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE CASCADE,
+    CONSTRAINT chk_events_confirmed_requests
+        CHECK (confirmed_requests >= 0 AND (participant_limit = 0 OR confirmed_requests <= participant_limit))
 );
 
 CREATE TABLE IF NOT EXISTS compilations (

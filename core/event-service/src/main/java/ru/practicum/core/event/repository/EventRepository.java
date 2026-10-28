@@ -1,9 +1,11 @@
 package ru.practicum.core.event.repository;
 
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.core.event.model.Event;
 import ru.practicum.core.event.model.EventState;
 
@@ -16,7 +18,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     @Query("""
             SELECT e
             FROM Event e
-            WHERE e.initiator.id = :userId
+            WHERE e.initiatorId = :userId
             ORDER BY e.id ASC
             """)
     List<Event> findByInitiatorId(@Param("userId") Long userId,
@@ -29,21 +31,28 @@ public interface EventRepository extends JpaRepository<Event, Long> {
 
     boolean existsByCategoryId(Long categoryId);
 
+    @Modifying
+    @Transactional
+    @Query("""
+            UPDATE Event e
+            SET e.confirmedRequests = e.confirmedRequests + :delta
+            WHERE e.id = :eventId
+              AND e.confirmedRequests + :delta >= 0
+              AND (:delta <= 0 OR e.participantLimit = 0 OR e.confirmedRequests + :delta <= e.participantLimit)
+            """)
+    int adjustConfirmedRequests(@Param("eventId") Long eventId, @Param("delta") long delta);
+
     @SuppressWarnings("all")
     @Query("""
             SELECT e
             FROM Event e
-            WHERE (:users IS NULL OR e.initiator.id IN :users)
+            WHERE (:users IS NULL OR e.initiatorId IN :users)
               AND (:states IS NULL OR e.state IN :states)
               AND (CAST(:text AS string) IS NULL OR (LOWER(e.annotation) LIKE CAST(:text AS string) OR LOWER(e.description) LIKE CAST(:text AS string)))
               AND (:paid IS NULL OR e.paid = :paid)
               AND (CAST(:rangeStart AS timestamp) IS NULL OR e.eventDate >= :rangeStart)
               AND (CAST(:rangeEnd AS timestamp) IS NULL OR e.eventDate <= :rangeEnd)
-              AND (:onlyAvailable = FALSE OR e.participantLimit = 0 OR e.participantLimit > (
-                  SELECT COUNT(r.id)
-                  FROM ParticipationRequest r
-                  WHERE r.event.id = e.id AND r.status = ru.practicum.core.common.RequestStatus.CONFIRMED
-              ))
+              AND (:onlyAvailable = FALSE OR e.participantLimit = 0 OR e.participantLimit > e.confirmedRequests)
               AND (:categories IS NULL OR e.category.id IN :categories)
             ORDER BY
                 CASE WHEN :sort = 'EVENT_DATE' THEN e.eventDate END ASC,

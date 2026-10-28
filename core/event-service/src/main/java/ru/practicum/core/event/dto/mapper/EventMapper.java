@@ -24,6 +24,7 @@ public interface EventMapper {
     @Mapping(target = "createdOn", expression = "java(LocalDateTime.now())")
     @Mapping(target = "state", constant = "PENDING")
     @Mapping(target = "location", source = "newEventDto.location")
+    @Mapping(target = "confirmedRequests", ignore = true)
     Event toEntity(NewEventDto newEventDto, Long initiatorId, Category category);
 
     Location toLocation(LocationDto locationDto);
@@ -39,6 +40,7 @@ public interface EventMapper {
     @Mapping(target = "initiatorId", ignore = true)
     @Mapping(target = "publishedOn", ignore = true)
     @Mapping(target = "state", ignore = true)
+    @Mapping(target = "confirmedRequests", ignore = true)
     void updateEventFromUserDto(UpdateEventUserRequest request, @MappingTarget Event event);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
@@ -48,6 +50,7 @@ public interface EventMapper {
     @Mapping(target = "initiatorId", ignore = true)
     @Mapping(target = "publishedOn", ignore = true)
     @Mapping(target = "state", ignore = true)
+    @Mapping(target = "confirmedRequests", ignore = true)
     @Mapping(target = "location", source = "request.location")
     void updateEventFromAdminDto(UpdateEventAdminRequest request, @MappingTarget Event event);
 }

@@ -3,14 +3,11 @@ package ru.practicum.core.event.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.core.common.dto.participation.ConfirmedRequestsCount;
-import ru.practicum.core.common.enums.RequestStatus;
 import ru.practicum.core.event.dto.EventRatingCount;
 import ru.practicum.core.event.dto.mapper.EventMapper;
 import ru.practicum.core.event.dto.response.EventFullDto;
 import ru.practicum.core.event.dto.response.EventShortDto;
 import ru.practicum.core.event.model.Event;
-import ru.practicum.core.event.service.interservice.ParticipationRequestInterservice;
 import ru.practicum.core.event.service.interservice.ReviewInterservice;
 import ru.practicum.stats.client.StatsClient;
 import ru.practicum.stats.dto.ViewStatsDto;
@@ -28,7 +25,6 @@ import static java.time.LocalDateTime.now;
 @Transactional(readOnly = true)
 public class EventStatsCollectorImpl implements EventStatsCollector {
     private final StatsClient statsRepository;
-    private final ParticipationRequestInterservice requestExternalService;
     private final ReviewInterservice reviewInterservice;
 
     private final EventMapper eventMapper;
@@ -131,15 +127,8 @@ public class EventStatsCollectorImpl implements EventStatsCollector {
      */
     @Override
     public Map<Long, Long> getConReqByEventMap(List<Event> events) {
-        List<Long> eventIds = events.stream().map(Event::getId).toList();
-
-        List<ConfirmedRequestsCount> confirmedRequestsCounts = requestExternalService.countRequestsCountByEventIds(eventIds, RequestStatus.CONFIRMED);
-
-        return confirmedRequestsCounts.stream()
-                .collect(Collectors.toMap(
-                        ConfirmedRequestsCount::eventId,
-                        ConfirmedRequestsCount::count
-                ));
+        return events.stream()
+                .collect(Collectors.toMap(Event::getId, Event::getConfirmedRequests));
     }
 
     /**

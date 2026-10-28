@@ -11,6 +11,7 @@ import ru.practicum.main.exception.ConflictException;
 import ru.practicum.main.exception.NotFoundException;
 import ru.practicum.main.request.dto.ParticipationRequestDto;
 import ru.practicum.main.request.dto.mapper.RequestMapper;
+import ru.practicum.main.request.client.EventFeignClient;
 import ru.practicum.main.request.model.ParticipationRequest;
 import ru.practicum.main.request.repository.RequestRepository;
 import ru.practicum.main.user.model.User;
@@ -28,6 +29,7 @@ public class RequestServiceImpl implements RequestService {
     private final UserRepository userRepository;
     private final EventRepository eventRepository;
     private final RequestMapper requestMapper;
+    private final EventFeignClient eventFeignClient;
 
     @Override
     public List<ParticipationRequestDto> getUserRequests(Long userId) {
@@ -91,6 +93,9 @@ public class RequestServiceImpl implements RequestService {
                 .build();
 
         ParticipationRequest savedRequest = requestRepository.save(request);
+        if (startStatus == RequestStatus.CONFIRMED) {
+            eventFeignClient.adjustConfirmedRequestCount(eventId, 1);
+        }
         return requestMapper.toDtoOut(savedRequest);
     }
 
@@ -106,8 +111,12 @@ public class RequestServiceImpl implements RequestService {
             throw new ConflictException("Вы не можете отменить чужую заявку на участие!");
         }
 
+        boolean wasConfirmed = request.getStatus() == RequestStatus.CONFIRMED;
         request.setStatus(RequestStatus.CANCELED);
         requestRepository.save(request);
+        if (wasConfirmed) {
+            eventFeignClient.adjustConfirmedRequestCount(request.getEvent().getId(), -1);
+        }
 
         return requestMapper.toDtoOut(request);
     }
