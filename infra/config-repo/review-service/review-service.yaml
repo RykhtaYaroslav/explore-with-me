@@ -3,25 +3,20 @@ spring:
     init:
       mode: always
   datasource:
-    url: jdbc:postgresql://localhost:5432/eventId
-    username: eventId
-    password: eventId
+    url: ${REVIEW_DB_URL:jdbc:postgresql://localhost:5434/review}
+    username: ${REVIEW_DB_USERNAME:review}
+    password: ${REVIEW_DB_PASSWORD:review}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     show-sql: false
     properties:
       hibernate:
-        show_sql: false
         format_sql: false
 
 server:
   port: 0
-
-stats:
-  client:
-    type: feign
 
 management:
   endpoints:
@@ -33,7 +28,5 @@ logging:
   level:
     org.hibernate: WARN
     org.hibernate.SQL: WARN
-    org.hibernate.type.descriptor.sql: WARN
-    org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG
     root: INFO
-    ru.practicum.main: DEBUG
+    ru.practicum.core.review: DEBUG
