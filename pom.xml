@@ -12,6 +12,7 @@
 
 	<name>Explore With Me</name>
     <modules>
+        <module>api-contracts</module>
         <module>stats</module>
         <module>infra</module>
         <module>core</module>

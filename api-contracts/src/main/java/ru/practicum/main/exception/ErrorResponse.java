@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
-import static ru.practicum.main.util.EwmConstants.DATE_TIME_FORMAT;
+import static ru.practicum.core.common.util.EwmConstants.DATE_TIME_FORMAT;
 
 @Data
 @Builder

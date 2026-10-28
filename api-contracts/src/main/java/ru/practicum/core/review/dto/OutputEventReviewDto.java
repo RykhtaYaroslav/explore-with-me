@@ -4,7 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.practicum.main.user.dto.UserShortDto;
+import ru.practicum.core.event.dto.response.EventShortDto;
+import ru.practicum.core.common.dto.user.UserShortDto;
 
 @Data
 @Builder
@@ -12,7 +13,7 @@ import ru.practicum.main.user.dto.UserShortDto;
 @NoArgsConstructor
 public class OutputEventReviewDto {
     private UserShortDto rater;
-    private UserShortDto event;
+    private EventShortDto event;
     private Integer score;
     private String comment;
 }

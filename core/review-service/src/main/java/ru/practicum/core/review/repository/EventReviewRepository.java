@@ -4,14 +4,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import ru.practicum.core.review.model.EventReview;
-import ru.practicum.main.event.dto.EventRatingCount;
+import ru.practicum.core.event.dto.EventRatingCount;
 
 import java.util.List;
 
 public interface EventReviewRepository extends JpaRepository<EventReview, EventReviewId> {
 
     @Query("""
-            SELECT new ru.practicum.main.event.dto.EventRatingCount(er.event.id, AVG(er.score))
+            SELECT new ru.practicum.core.event.dto.EventRatingCount(er.event.id, AVG(er.score))
             FROM EventReview er
             WHERE er.event.id IN :eventIds
             GROUP BY er.event.id

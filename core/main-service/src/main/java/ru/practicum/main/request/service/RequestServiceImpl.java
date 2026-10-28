@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.core.common.enums.RequestStatus;
 import ru.practicum.main.event.model.Event;
-import ru.practicum.main.event.model.EventState;
+import ru.practicum.core.event.model.EventState;
 import ru.practicum.main.event.repository.EventRepository;
 import ru.practicum.main.exception.ConflictException;
 import ru.practicum.main.exception.NotFoundException;

@@ -4,8 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.practicum.main.event.dto.EventShortDto;
-import ru.practicum.main.user.dto.UserShortDto;
+import ru.practicum.core.event.dto.response.EventShortDto;
+import ru.practicum.core.common.dto.user.UserShortDto;
 
 @Data
 @Builder

@@ -8,9 +8,9 @@ import ru.practicum.core.review.dto.OutputEventReviewDto;
 import ru.practicum.core.review.dto.OutputUserReviewDto;
 import ru.practicum.core.review.model.EventReview;
 import ru.practicum.core.review.model.UserReview;
-import ru.practicum.main.event.dto.EventShortDto;
+import ru.practicum.core.event.dto.response.EventShortDto;
 import ru.practicum.main.event.model.Event;
-import ru.practicum.main.user.dto.UserShortDto;
+import ru.practicum.core.common.dto.user.UserShortDto;
 import ru.practicum.main.user.model.User;
 
 @Mapper(componentModel = "spring")
