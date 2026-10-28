@@ -10,6 +10,8 @@ import java.util.List;
 
 public interface EventReviewRepository extends JpaRepository<EventReview, Long> {
 
+    List<EventReview> findAllByEventIdOrderByIdDesc(Long eventId);
+
     @Query("""
             SELECT new ru.practicum.core.event.dto.EventRatingCount(er.eventId, AVG(er.score))
             FROM EventReview er

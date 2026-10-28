@@ -21,7 +21,7 @@ import ru.practicum.core.review.service.ReviewService;
 @RequestMapping("/rating/{raterId}")
 @RequiredArgsConstructor
 @Validated
-public class ReviewController {
+public class PrivateReviewController {
     private final ReviewService reviewService;
 
     @PostMapping("/author/{eventId}/{authorId}")

@@ -16,6 +16,10 @@ import ru.practicum.core.review.repository.EventReviewRepository;
 import ru.practicum.core.review.repository.UserReviewRepository;
 import ru.practicum.core.review.validation.ReviewValidator;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -51,6 +55,41 @@ public class ReviewServiceImpl implements ReviewService {
         review = eventReviewRepository.save(review);
 
         return reviewMapper.toEventReviewOutDto(review, rater, event);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<OutputEventReviewDto> getEventReviews(Long eventId) {
+        EventShortDto event = reviewValidator.findEventOrThrow(eventId);
+        List<EventReview> reviews = eventReviewRepository.findAllByEventIdOrderByIdDesc(eventId);
+        Map<Long, UserShortDto> usersById = new HashMap<>();
+
+        return reviews.stream()
+                .map(review -> reviewMapper.toEventReviewOutDto(
+                        review,
+                        usersById.computeIfAbsent(review.getRaterId(), reviewValidator::findUserOrThrow),
+                        event
+                ))
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<OutputUserReviewDto> getAuthorReviews(Long authorId) {
+        UserShortDto author = reviewValidator.findUserOrThrow(authorId);
+        List<UserReview> reviews = userReviewRepository.findAllByTargetIdOrderByIdDesc(authorId);
+        Map<Long, UserShortDto> usersById = new HashMap<>();
+        Map<Long, EventShortDto> eventsById = new HashMap<>();
+        usersById.put(authorId, author);
+
+        return reviews.stream()
+                .map(review -> reviewMapper.toUserReviewOutDto(
+                        review,
+                        usersById.computeIfAbsent(review.getRaterId(), reviewValidator::findUserOrThrow),
+                        author,
+                        eventsById.computeIfAbsent(review.getEventId(), reviewValidator::findEventOrThrow)
+                ))
+                .toList();
     }
 
 }
