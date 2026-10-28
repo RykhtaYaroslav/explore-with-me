@@ -10,7 +10,7 @@ import ru.practicum.core.review.dto.NewEventReviewDto;
 import ru.practicum.core.review.dto.NewUserReviewDto;
 import ru.practicum.core.review.dto.OutputEventReviewDto;
 import ru.practicum.core.review.dto.OutputUserReviewDto;
-import ru.practicum.core.review.dto.mapper.ReviewMapper;
+import ru.practicum.core.review.mapper.ReviewMapper;
 import ru.practicum.core.review.model.EventReview;
 import ru.practicum.core.review.model.UserReview;
 import ru.practicum.core.review.repository.EventReviewRepository;
@@ -54,7 +54,7 @@ public class ReviewServiceImpl implements ReviewService {
 
         validateAuthorReviewRules(event, rater, target);
 
-        UserReview review = reviewMapper.toUserReview(request, rater, target, event);
+        UserReview review = reviewMapper.toUserReview(request, raterId, authorId, eventId);
 
         review = userReviewRepository.save(review);
 
@@ -73,7 +73,7 @@ public class ReviewServiceImpl implements ReviewService {
 
         validateEventReviewRules(event, rater);
 
-        EventReview review = reviewMapper.toEventReview(request, rater, event);
+        EventReview review = reviewMapper.toEventReview(request, raterId, eventId);
 
         review = eventReviewRepository.save(review);
 
