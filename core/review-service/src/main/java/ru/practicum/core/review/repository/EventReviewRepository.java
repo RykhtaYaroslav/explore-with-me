@@ -16,7 +16,7 @@ public interface EventReviewRepository extends JpaRepository<EventReview, Long> 
             WHERE er.eventId IN :eventIds
             GROUP BY er.eventId
             """)
-    List<EventRatingCount> countRatingByIds(@Param("eventIds") List<Long> eventIds);
+    List<EventRatingCount> getRatingByIds(@Param("eventIds") List<Long> eventIds);
 
     @Query("""
             SELECT COUNT(er) > 0

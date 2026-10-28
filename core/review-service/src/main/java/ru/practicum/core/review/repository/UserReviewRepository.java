@@ -11,6 +11,7 @@ public interface UserReviewRepository extends JpaRepository<UserReview, Long> {
     @Query("select ur.targetId, AVG(ur.score) from UserReview ur " +
             "where ur.targetId in :targetIds group by ur.targetId")
     List<Object[]> findAverageScoresByTargetIds(@Param("targetIds") List<Long> targetIds);
+    // TODO исправить
 
     @Query("""
             SELECT COUNT(ur) > 0

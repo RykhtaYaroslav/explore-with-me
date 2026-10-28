@@ -140,7 +140,7 @@ public class EventStatsCollectorImpl implements EventStatsCollector {
     private Map<Long, Double> getRatingMap(List<Event> events) {
         List<Long> eventIds = events.stream().map(Event::getId).toList();
 
-        List<EventRatingCount> eventRatingCountList = reviewInterservice.countRatingByIds(eventIds);
+        List<EventRatingCount> eventRatingCountList = reviewInterservice.getRatingByIds(eventIds);
 
         return eventRatingCountList.stream()
                 .collect(Collectors.toMap(

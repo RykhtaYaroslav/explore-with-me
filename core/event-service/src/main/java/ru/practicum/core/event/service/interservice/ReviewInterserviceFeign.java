@@ -1,15 +1,19 @@
 package ru.practicum.core.event.service.interservice;
 
-import ru.practicum.core.event.dto.EventRatingCount;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import ru.practicum.core.event.dto.EventRatingCount;
+import ru.practicum.core.event.service.interservice.feign.ReviewFeignClient;
 
 import java.util.List;
 
 @Component
+@RequiredArgsConstructor
 public class ReviewInterserviceFeign implements ReviewInterservice {
+    private final ReviewFeignClient reviewFeignClient;
+
     @Override
-    public List<EventRatingCount> countRatingByIds(List<Long> ids) {
-        //TODO: implement this
-        return List.of();
+    public List<EventRatingCount> getRatingByIds(List<Long> ids) {
+        return reviewFeignClient.getRatingByIds(ids);
     }
 }
