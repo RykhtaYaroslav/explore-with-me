@@ -9,9 +9,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import static ru.practicum.main.util.EwmConstants.MAX_REVIEW_COMMENT_LENGTH;
-import static ru.practicum.main.util.EwmConstants.MAX_REVIEW_SCORE;
-import static ru.practicum.main.util.EwmConstants.MIN_REVIEW_SCORE;
+import static ru.practicum.core.common.util.EwmConstants.MAX_REVIEW_COMMENT_LENGTH;
+import static ru.practicum.core.common.util.EwmConstants.MAX_REVIEW_SCORE;
+import static ru.practicum.core.common.util.EwmConstants.MIN_REVIEW_SCORE;
 
 @Data
 @Builder

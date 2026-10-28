@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.core.common.enums.RequestStatus;
+import ru.practicum.core.common.exception.ConflictException;
+import ru.practicum.core.common.exception.NotFoundException;
 import ru.practicum.core.review.dto.NewEventReviewDto;
 import ru.practicum.core.review.dto.NewUserReviewDto;
 import ru.practicum.core.review.dto.OutputEventReviewDto;
@@ -16,8 +18,6 @@ import ru.practicum.core.review.repository.UserReviewRepository;
 import ru.practicum.main.event.model.Event;
 import ru.practicum.main.event.repository.EventRepository;
 import ru.practicum.main.event.service.EventStatsCollector;
-import ru.practicum.main.exception.ConflictException;
-import ru.practicum.main.exception.NotFoundException;
 import ru.practicum.main.request.repository.RequestRepository;
 import ru.practicum.main.time.TimeProvider;
 import ru.practicum.main.user.dto.UserMapper;
@@ -27,7 +27,7 @@ import ru.practicum.main.user.repository.UserRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static ru.practicum.main.util.EwmConstants.HOURS_OFFSET_FOR_REVIEWS_CREATING;
+import static ru.practicum.core.common.util.EwmConstants.HOURS_OFFSET_FOR_REVIEWS_CREATING;
 
 @Service
 @RequiredArgsConstructor
