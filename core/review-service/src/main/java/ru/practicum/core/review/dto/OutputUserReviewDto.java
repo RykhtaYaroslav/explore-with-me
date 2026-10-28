@@ -1,4 +1,4 @@
-package ru.practicum.main.review.dto;
+package ru.practicum.core.review.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

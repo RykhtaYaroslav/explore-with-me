@@ -64,10 +64,10 @@ public class EventStatsCollectorImpl implements EventStatsCollector {
     }
 
     /**
-     * Maps each event ID to its total number of views collected from the statistics service.
+     * Maps each eventId ID to its total number of views collected from the statistics service.
      *
      * @param events the list of {@link Event} entities to fetch statistics for
-     * @return a {@link Map} where the key is the event ID and the value is the total view count
+     * @return a {@link Map} where the key is the eventId ID and the value is the total view count
      */
     @Override
     public Map<Long, Long> getViewsByEventMap(List<Event> events) {
@@ -89,7 +89,7 @@ public class EventStatsCollectorImpl implements EventStatsCollector {
      * Requests view statistics from the remote stats service for a collection of events.
      *
      * @param events the list of {@link Event} entities for which to query view statistics
-     * @return a list of {@link ViewStatsDto} containing hit counts for the provided event URIs
+     * @return a list of {@link ViewStatsDto} containing hit counts for the provided eventId URIs
      */
     private List<ViewStatsDto> getViewStatsDtoList(List<Event> events) {
         // This method pulls statistics about events from stat module
@@ -110,20 +110,20 @@ public class EventStatsCollectorImpl implements EventStatsCollector {
     }
 
     /**
-     * Extracts the event entity ID from an endpoint URI string (e.g., "/events/42" -> 42L).
+     * Extracts the eventId entity ID from an endpoint URI string (e.g., "/events/42" -> 42L).
      *
-     * @param uri the URI path containing the event identifier at the end
-     * @return the extracted event ID as a {@link Long}
+     * @param uri the URI path containing the eventId identifier at the end
+     * @return the extracted eventId ID as a {@link Long}
      */
     private Long extractIdFromUri(String uri) {
         return Long.parseLong(uri.substring((uri.lastIndexOf('/') + 1)));
     }
 
     /**
-     * Maps each event ID to the total number of its confirmed participation requests.
+     * Maps each eventId ID to the total number of its confirmed participation requests.
      *
      * @param events the list of {@link Event} entities to aggregate requests for
-     * @return a {@link Map} where the key is the event ID and the value is the confirmed request count
+     * @return a {@link Map} where the key is the eventId ID and the value is the confirmed request count
      */
     @Override
     public Map<Long, Long> getConReqByEventMap(List<Event> events) {
@@ -132,10 +132,10 @@ public class EventStatsCollectorImpl implements EventStatsCollector {
     }
 
     /**
-     * Retrieves a mapping of event IDs to their average ratings for the specified list of events.
+     * Retrieves a mapping of eventId IDs to their average ratings for the specified list of events.
      *
      * @param events the list of events for which to calculate and fetch ratings
-     * @return a map where the key is the event ID and the value is its average rating
+     * @return a map where the key is the eventId ID and the value is its average rating
      */
     private Map<Long, Double> getRatingMap(List<Event> events) {
         List<Long> eventIds = events.stream().map(Event::getId).toList();

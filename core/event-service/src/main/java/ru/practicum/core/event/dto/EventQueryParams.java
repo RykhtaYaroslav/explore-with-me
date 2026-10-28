@@ -11,20 +11,20 @@ import java.util.List;
 /**
  * Holds the filters and pagination settings used to search events.
  * Instances are built from either public or administrator search parameters
- * and passed from the controller to the event service. Empty filter lists are
+ * and passed from the controller to the eventId service. Empty filter lists are
  * normalized to {@code null} so they can be treated as absent filters.
  *
  * @param categories category IDs to include, or {@code null} for all categories
  * @param paid whether to include paid or free events, or {@code null} for either
- * @param rangeStart earliest event date to include, or {@code null} for no lower bound
- * @param rangeEnd latest event date to include, or {@code null} for no upper bound
+ * @param rangeStart earliest eventId date to include, or {@code null} for no lower bound
+ * @param rangeEnd latest eventId date to include, or {@code null} for no upper bound
  * @param from zero-based offset of the first result
  * @param size maximum number of results to return
- * @param text text to match against event titles and annotations, or {@code null} for no text filter
+ * @param text text to match against eventId titles and annotations, or {@code null} for no text filter
  * @param onlyAvailable whether to include only events with available places, or {@code null} when not specified
  * @param sort public search ordering, or {@code null} when sorting is not requested
  * @param users initiator IDs to include in an administrator search, or {@code null} for all initiators
- * @param states event states to include in an administrator search, or {@code null} for all states
+ * @param states eventId states to include in an administrator search, or {@code null} for all states
  */
 @Builder(toBuilder = true)
 public record EventQueryParams(

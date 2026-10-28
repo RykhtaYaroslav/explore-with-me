@@ -1,11 +1,10 @@
-package ru.practicum.main.review.repository;
+package ru.practicum.core.review.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import ru.practicum.core.review.model.EventReview;
 import ru.practicum.main.event.dto.EventRatingCount;
-import ru.practicum.main.review.model.EventReview;
-import ru.practicum.main.review.model.EventReviewId;
 
 import java.util.List;
 

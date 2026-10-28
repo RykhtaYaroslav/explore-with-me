@@ -1,22 +1,22 @@
-package ru.practicum.main.review.dto.mapper;
+package ru.practicum.core.review.dto.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import ru.practicum.core.review.dto.NewEventReviewDto;
+import ru.practicum.core.review.dto.NewUserReviewDto;
+import ru.practicum.core.review.dto.OutputEventReviewDto;
+import ru.practicum.core.review.dto.OutputUserReviewDto;
+import ru.practicum.core.review.model.EventReview;
+import ru.practicum.core.review.model.UserReview;
 import ru.practicum.main.event.dto.EventShortDto;
 import ru.practicum.main.event.model.Event;
-import ru.practicum.main.review.dto.NewEventReviewDto;
-import ru.practicum.main.review.dto.NewUserReviewDto;
-import ru.practicum.main.review.dto.OutputEventReviewDto;
-import ru.practicum.main.review.dto.OutputUserReviewDto;
-import ru.practicum.main.review.model.EventReview;
-import ru.practicum.main.review.model.UserReview;
 import ru.practicum.main.user.dto.UserShortDto;
 import ru.practicum.main.user.model.User;
 
 @Mapper(componentModel = "spring")
 public interface ReviewMapper {
     @Mapping(target = "rater", source = "rater")
-    @Mapping(target = "event", source = "event")
+    @Mapping(target = "eventId", source = "event")
     @Mapping(target = "score", source = "request.score")
     @Mapping(target = "comment", source = "request.comment")
     EventReview toEventReview(NewEventReviewDto request, User rater, Event event);
@@ -28,8 +28,8 @@ public interface ReviewMapper {
     OutputEventReviewDto toEventReviewOutDto(EventReview eventReview, UserShortDto rater, EventShortDto event);
 
     @Mapping(target = "rater", source = "rater")
-    @Mapping(target = "target", source = "target")
-    @Mapping(target = "event", source = "event")
+    @Mapping(target = "targetId", source = "target")
+    @Mapping(target = "eventId", source = "event")
     @Mapping(target = "score", source = "request.score")
     @Mapping(target = "comment", source = "request.comment")
     UserReview toUserReview(NewUserReviewDto request, User rater, User target, Event event);

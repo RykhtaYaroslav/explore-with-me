@@ -16,6 +16,7 @@
         <module>main-service</module>
         <module>event-service</module>
         <module>common</module>
+        <module>review-service</module>
     </modules>
 
     <properties>

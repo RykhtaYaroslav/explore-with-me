@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
-@FeignClient(name = "event-service")
+@FeignClient(name = "eventId-service")
 public interface EventFeignClient {
 
     @PatchMapping("/interservice/events/{eventId}/confirmed-requests")

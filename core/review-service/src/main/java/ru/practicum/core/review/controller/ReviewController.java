@@ -1,4 +1,4 @@
-package ru.practicum.main.review.controller;
+package ru.practicum.core.review.controller;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
@@ -11,11 +11,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import ru.practicum.main.review.dto.NewEventReviewDto;
-import ru.practicum.main.review.dto.NewUserReviewDto;
-import ru.practicum.main.review.dto.OutputEventReviewDto;
-import ru.practicum.main.review.dto.OutputUserReviewDto;
-import ru.practicum.main.review.service.ReviewService;
+import ru.practicum.core.review.dto.NewEventReviewDto;
+import ru.practicum.core.review.dto.NewUserReviewDto;
+import ru.practicum.core.review.dto.OutputEventReviewDto;
+import ru.practicum.core.review.dto.OutputUserReviewDto;
+import ru.practicum.core.review.service.ReviewService;
 
 @RestController
 @RequestMapping("/rating/{raterId}")
@@ -33,7 +33,7 @@ public class ReviewController {
         return reviewService.createAuthorReview(raterId, eventId, authorId, request);
     }
 
-    @PostMapping("/event/{eventId}")
+    @PostMapping("/eventId/{eventId}")
     @ResponseStatus(HttpStatus.CREATED)
     public OutputEventReviewDto createEventReview(@PathVariable @Positive(message = "Rater id must be positive") Long raterId,
                                                   @PathVariable @Positive(message = "Event id must be positive") Long eventId,

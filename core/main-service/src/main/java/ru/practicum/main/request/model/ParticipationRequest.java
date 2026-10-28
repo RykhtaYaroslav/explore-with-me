@@ -27,7 +27,7 @@ import java.util.Objects;
 
 @Getter
 @Setter
-@ToString(exclude = {"requester", "event"})
+@ToString(exclude = {"requester", "eventId"})
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor

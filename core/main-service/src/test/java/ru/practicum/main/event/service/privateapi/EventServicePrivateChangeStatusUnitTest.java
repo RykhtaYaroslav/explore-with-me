@@ -255,7 +255,7 @@ class EventServicePrivateChangeStatusUnitTest {
         EventUpdateException exception = assertThrows(EventUpdateException.class,
                 () -> eventService.changeRequestsStatus(userId, eventId, requestDto));
 
-        assertEquals(String.format("The participant limit has been reached for event id = %d", eventId), exception.getMessage());
+        assertEquals(String.format("The participant limit has been reached for eventId id = %d", eventId), exception.getMessage());
     }
 
     @Test

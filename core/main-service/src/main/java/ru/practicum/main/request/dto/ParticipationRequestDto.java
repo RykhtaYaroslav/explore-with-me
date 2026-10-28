@@ -22,7 +22,7 @@ public class ParticipationRequestDto {
     @JsonFormat(pattern = DATE_TIME_FORMAT)
     private LocalDateTime created;
 
-    @JsonProperty("event")
+    @JsonProperty("eventId")
     private Long eventId;
 
     @JsonProperty("requester")

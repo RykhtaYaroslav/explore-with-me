@@ -1,12 +1,10 @@
-package ru.practicum.main.review.model;
+package ru.practicum.core.review.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.IdClass;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,35 +13,30 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.proxy.HibernateProxy;
-import ru.practicum.main.event.model.Event;
-import ru.practicum.main.user.model.User;
 
 import java.util.Objects;
 
 @Table(name = "users_reviews")
 @Entity
-@IdClass(UserReviewId.class)
 @Getter
 @Setter
-@ToString(exclude = {"rater", "target", "event"})
+@ToString
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserReview {
     @Id
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "rater_id")
-    private User rater;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    @Id
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "target_id")
-    private User target;
+    @Column(name = "rater_id")
+    private Long raterId;
 
-    @Id
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "event_id")
-    private Event event;
+    @Column(name = "target_id")
+    private Long targetId;
+
+    @Column(name = "event_id")
+    private Long eventId;
 
     @Column(name = "score", nullable = false)
     private Integer score;
@@ -65,13 +58,11 @@ public class UserReview {
             return false;
         }
         UserReview that = (UserReview) o;
-        return getRater() != null && Objects.equals(getRater(), that.getRater())
-                && getTarget() != null && Objects.equals(getTarget(), that.getTarget())
-                && getEvent() != null && Objects.equals(getEvent(), that.getEvent());
+        return getId() != null && Objects.equals(getId(), that.getId());
     }
 
     @Override
     public final int hashCode() {
-        return Objects.hash(rater, target, event);
+        return this instanceof HibernateProxy proxy ? proxy.getHibernateLazyInitializer().getPersistentClass().hashCode() : getClass().hashCode();
     }
 }

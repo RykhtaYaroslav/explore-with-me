@@ -1,4 +1,4 @@
-package ru.practicum.main.review.dto;
+package ru.practicum.core.review.dto;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -15,9 +15,9 @@ import static ru.practicum.main.util.EwmConstants.MIN_REVIEW_SCORE;
 
 @Data
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
-public class NewEventReviewDto {
+@AllArgsConstructor
+public class NewUserReviewDto {
 
     @NotNull(message = "Review score can't be empty")
     @Min(value = MIN_REVIEW_SCORE, message = "Score must be from {value} to " + MAX_REVIEW_SCORE)

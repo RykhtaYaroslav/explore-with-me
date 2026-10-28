@@ -27,6 +27,6 @@ public class EventConfirmedRequestsService {
             throw new NotFoundException(String.format("Event with id = %d was not found", eventId));
         }
 
-        throw new ConflictException("Confirmed request count would exceed event capacity or become negative");
+        throw new ConflictException("Confirmed request count would exceed eventId capacity or become negative");
     }
 }

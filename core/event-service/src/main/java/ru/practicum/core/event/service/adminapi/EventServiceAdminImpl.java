@@ -91,7 +91,7 @@ public class EventServiceAdminImpl implements EventServiceAdmin {
         switch (stateActionAdmin) {
             case PUBLISH_EVENT -> {
                 if (event.getState() != EventState.PENDING) {
-                    String m = String.format("Cannot publish the event because it's not in the PENDING state: %s", event.getState());
+                    String m = String.format("Cannot publish the eventId because it's not in the PENDING state: %s", event.getState());
                     throw new EventUpdateException(m);
                 }
                 event.setState(EventState.PUBLISHED);
@@ -99,7 +99,7 @@ public class EventServiceAdminImpl implements EventServiceAdmin {
             }
             case REJECT_EVENT -> {
                 if (event.getState() == EventState.PUBLISHED) {
-                    throw new EventUpdateException("Cannot reject the event because it's already PUBLISHED");
+                    throw new EventUpdateException("Cannot reject the eventId because it's already PUBLISHED");
                 }
                 event.setState(EventState.CANCELED);
             }

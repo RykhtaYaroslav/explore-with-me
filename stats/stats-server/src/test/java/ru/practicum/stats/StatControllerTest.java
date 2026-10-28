@@ -53,7 +53,7 @@ class StatControllerTest {
 
         List<ViewStatsDto> mockData = List.of(
                 new ViewStatsDto("app1", "/users", 2L),
-                new ViewStatsDto("app2", "/event", 1L)
+                new ViewStatsDto("app2", "/eventId", 1L)
         );
 
         when(statService.getStats(start, end, uris, false))

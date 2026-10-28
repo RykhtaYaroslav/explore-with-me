@@ -3,9 +3,9 @@ spring:
     init:
       mode: always
   datasource:
-    url: jdbc:postgresql://localhost:5432/event
-    username: event
-    password: event
+    url: jdbc:postgresql://localhost:5432/eventId
+    username: eventId
+    password: eventId
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
