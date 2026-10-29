@@ -8,14 +8,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.core.participation.service.RequestService;
-import ru.practicum.main.request.dto.EventRequestStatusUpdateRequest;
-import ru.practicum.main.request.dto.EventRequestStatusUpdateResult;
 import ru.practicum.main.request.dto.ParticipationRequestDto;
 
 import java.util.List;
@@ -27,8 +24,6 @@ import java.util.List;
 public class PrivateRequestController {
 
     private final RequestService requestService;
-
-    private final ru.practicum.core.event.service.privateapi.EventServicePrivate eventServicePrivate;
 
     @GetMapping
     public List<ParticipationRequestDto> getUserRequests(@PathVariable @Positive Long userId) {
@@ -48,13 +43,13 @@ public class PrivateRequestController {
         return requestService.cancelRequest(userId, requestId);
     }
 
-    @GetMapping("/{eventId}/requests")
-    public List<ParticipationRequestDto> getEventRequestsByInitiator(@PathVariable @Positive Long userId, @PathVariable @Positive Long eventId) {
-        return eventServicePrivate.getEventRequestsByInitiator(userId, eventId);
-    }
-
-    @PatchMapping("/{eventId}/requests")
-    public EventRequestStatusUpdateResult changeRequestsStatus(@PathVariable @Positive Long userId, @PathVariable @Positive Long eventId, @RequestBody EventRequestStatusUpdateRequest request) {
-        return eventServicePrivate.changeRequestsStatus(userId, eventId, request);
-    }
+//    @GetMapping("/{eventId}/requests")
+//    public List<ParticipationRequestDto> getEventRequestsByInitiator(@PathVariable @Positive Long userId, @PathVariable @Positive Long eventId) {
+//        return requestService.getEventRequestsByInitiator(userId, eventId);
+//    }
+//
+//    @PatchMapping("/{eventId}/requests")
+//    public EventRequestStatusUpdateResult changeRequestsStatus(@PathVariable @Positive Long userId, @PathVariable @Positive Long eventId, @RequestBody EventRequestStatusUpdateRequest request) {
+//        return requestService.changeRequestsStatus(userId, eventId, request);
+//    }
 }

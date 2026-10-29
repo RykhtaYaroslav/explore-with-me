@@ -4,12 +4,9 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,15 +16,13 @@ import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.proxy.HibernateProxy;
 import ru.practicum.core.common.enums.RequestStatus;
-import ru.practicum.core.event.model.Event;
-import ru.practicum.core.user.model.User;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Getter
 @Setter
-@ToString(exclude = {"requester", "eventId"})
+@ToString
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -41,13 +36,11 @@ public class ParticipationRequest {
     @Column(name = "created", nullable = false)
     private LocalDateTime created;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "event_id", nullable = false)
-    private Event event;
+    @Column(name = "event_id", nullable = false)
+    private Long eventId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "requester_id", nullable = false)
-    private User requester;
+    @Column(name = "requester_id", nullable = false)
+    private Long requesterId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)

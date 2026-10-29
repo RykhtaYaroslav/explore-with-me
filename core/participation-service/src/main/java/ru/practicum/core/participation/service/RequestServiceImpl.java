@@ -4,19 +4,15 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.core.common.enums.RequestStatus;
-import ru.practicum.core.common.exception.ConflictException;
 import ru.practicum.core.common.exception.NotFoundException;
-import ru.practicum.core.event.model.Event;
-import ru.practicum.core.event.model.EventState;
-import ru.practicum.core.event.repository.EventRepository;
 import ru.practicum.core.participation.client.EventFeignClient;
 import ru.practicum.core.participation.dto.mapper.RequestMapper;
 import ru.practicum.core.participation.model.ParticipationRequest;
 import ru.practicum.core.participation.repository.RequestRepository;
-import ru.practicum.core.user.model.User;
-import ru.practicum.core.user.repository.UserRepository;
+import ru.practicum.core.participation.validation.RequestValidator;
 import ru.practicum.main.request.dto.ParticipationRequestDto;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,17 +22,13 @@ import java.util.stream.Collectors;
 public class RequestServiceImpl implements RequestService {
 
     private final RequestRepository requestRepository;
-    private final UserRepository userRepository;
-    private final EventRepository eventRepository;
+    private final RequestValidator requestValidator;
     private final RequestMapper requestMapper;
     private final EventFeignClient eventFeignClient;
 
     @Override
     public List<ParticipationRequestDto> getUserRequests(Long userId) {
-
-        if (!userRepository.existsById(userId)) {
-            throw new NotFoundException("Пользователь с id = " + userId + " не найден!");
-        }
+        requestValidator.validateUserExists(userId);
 
         return requestRepository.findAllByRequesterId(userId).stream()
                 .map(requestMapper::toDtoOut)
@@ -46,49 +38,12 @@ public class RequestServiceImpl implements RequestService {
     @Override
     @Transactional
     public ParticipationRequestDto createRequest(Long userId, Long eventId) {
-
-        User requester = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id = " + userId + " не найден!"));
-
-        Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new NotFoundException("Событие с id = " + eventId + " не найдено!"));
-
-        if (requestRepository.existsByEventIdAndRequesterId(eventId, userId)) {
-            throw new ConflictException("Вы уже подали заявку на участие в этом событии!");
-        }
-
-        if (event.getInitiator().getId().equals(userId)) {
-            throw new ConflictException("Организатор события не может подать заявку на участие в нём!");
-        }
-
-        if (event.getState() != EventState.PUBLISHED) {
-            throw new ConflictException("Нельзя подать заявку на неопубликованное событие!");
-        }
-
-        RequestStatus startStatus = RequestStatus.PENDING;
-
-        Integer limit = event.getParticipantLimit();
-        if (limit > 0) {
-            long confirmedCount = requestRepository.countByEventIdAndStatus(eventId, RequestStatus.CONFIRMED);
-            if (confirmedCount >= limit) {
-                throw new ConflictException("На это событие больше нет свободных мест!");
-            }
-        }
-        if (limit == 0 || !event.getRequestModeration()) {
-            startStatus = RequestStatus.CONFIRMED;
-        } else {
-
-            long confirmedCount = requestRepository.countByEventIdAndStatus(eventId, RequestStatus.CONFIRMED);
-
-            if (confirmedCount >= limit) {
-                throw new ConflictException("На это событие больше нет свободных мест!");
-            }
-        }
+        RequestStatus startStatus = requestValidator.validateCreateRequestAndGetStatus(userId, eventId);
 
         ParticipationRequest request = ParticipationRequest.builder()
-                .created(java.time.LocalDateTime.now())
-                .event(event)
-                .requester(requester)
+                .created(LocalDateTime.now())
+                .eventId(eventId)
+                .requesterId(userId)
                 .status(startStatus)
                 .build();
 
@@ -107,15 +62,13 @@ public class RequestServiceImpl implements RequestService {
         ParticipationRequest request = requestRepository.findById(requestId)
                 .orElseThrow(() -> new NotFoundException("Заявка с id = " + requestId + " не найдена!"));
 
-        if (!request.getRequester().getId().equals(userId)) {
-            throw new ConflictException("Вы не можете отменить чужую заявку на участие!");
-        }
+        requestValidator.validateCancelRequest(userId, request);
 
         boolean wasConfirmed = request.getStatus() == RequestStatus.CONFIRMED;
         request.setStatus(RequestStatus.CANCELED);
         requestRepository.save(request);
         if (wasConfirmed) {
-            eventFeignClient.adjustConfirmedRequestCount(request.getEvent().getId(), -1);
+            eventFeignClient.adjustConfirmedRequestCount(request.getEventId(), -1);
         }
 
         return requestMapper.toDtoOut(request);

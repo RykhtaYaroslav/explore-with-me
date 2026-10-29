@@ -1,0 +1,19 @@
+package ru.practicum.core.participation.interservice;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import ru.practicum.core.common.exception.NotFoundException;
+import ru.practicum.core.participation.interservice.feign.UserFeignClient;
+
+@RequiredArgsConstructor
+@Service
+public class UserInterserviceFeign implements UserInterservice {
+    private final UserFeignClient userFeignClient;
+
+    @Override
+    public void existsByIdOrThrow(Long userId) {
+        if (!userFeignClient.existsById(userId)) {
+            throw new NotFoundException(String.format("User with id = %d was not found", userId));
+        }
+    }
+}

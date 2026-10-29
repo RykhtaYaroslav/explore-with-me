@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import ru.practicum.core.event.dto.response.EventShortDto;
 
-@FeignClient(name = "event-service")
+@FeignClient(name = "event-service", contextId = "reviewEventClient")
 public interface EventFeignClient {
     @GetMapping("/interservice/events/exist/{eventId}")
     boolean existsById(@PathVariable("eventId") Long eventId);
