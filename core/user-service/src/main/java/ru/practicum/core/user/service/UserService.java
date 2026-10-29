@@ -1,7 +1,7 @@
-package ru.practicum.main.user.service;
+package ru.practicum.core.user.service;
 
-import ru.practicum.main.user.dto.NewUserRequest;
-import ru.practicum.main.user.dto.UserDto;
+import ru.practicum.user.dto.NewUserRequest;
+import ru.practicum.user.dto.UserDto;
 
 import java.util.List;
 

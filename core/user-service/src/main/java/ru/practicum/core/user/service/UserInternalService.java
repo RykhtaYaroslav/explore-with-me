@@ -1,4 +1,4 @@
-package ru.practicum.main.user.service;
+package ru.practicum.core.user.service;
 
 import ru.practicum.core.common.dto.user.UserShortDto;
 

@@ -1,16 +1,16 @@
-package ru.practicum.main.user.service;
+package ru.practicum.core.user.service;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.main.exception.ConflictException;
-import ru.practicum.main.exception.NotFoundException;
+import ru.practicum.core.common.exception.ConflictException;
+import ru.practicum.core.common.exception.NotFoundException;
+import ru.practicum.core.user.dto.UserMapper;
+import ru.practicum.core.user.model.User;
+import ru.practicum.core.user.repository.UserRepository;
 import ru.practicum.main.review.repository.UserReviewRepository;
-import ru.practicum.main.user.dto.NewUserRequest;
-import ru.practicum.main.user.dto.UserDto;
-import ru.practicum.main.user.dto.UserMapper;
-import ru.practicum.main.user.model.User;
-import ru.practicum.main.user.repository.UserRepository;
+import ru.practicum.user.dto.NewUserRequest;
+import ru.practicum.user.dto.UserDto;
 
 import java.util.List;
 import java.util.Map;

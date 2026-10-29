@@ -7,6 +7,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.practicum.core.common.enums.RequestStatus;
+import ru.practicum.core.user.model.User;
+import ru.practicum.core.user.repository.UserRepository;
 import ru.practicum.main.event.model.Event;
 import ru.practicum.main.event.repository.EventRepository;
 import ru.practicum.main.exception.NotFoundException;
@@ -14,8 +16,6 @@ import ru.practicum.main.request.dto.ParticipationRequestDto;
 import ru.practicum.main.request.dto.mapper.RequestMapper;
 import ru.practicum.main.request.model.ParticipationRequest;
 import ru.practicum.main.request.repository.RequestRepository;
-import ru.practicum.main.user.model.User;
-import ru.practicum.main.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.Collections;

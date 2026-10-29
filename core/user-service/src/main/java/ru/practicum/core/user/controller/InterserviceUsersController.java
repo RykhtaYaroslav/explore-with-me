@@ -1,4 +1,4 @@
-package ru.practicum.main.user.controller;
+package ru.practicum.core.user.controller;
 
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.core.common.dto.user.UserShortDto;
-import ru.practicum.main.user.service.UserInternalService;
+import ru.practicum.core.user.service.UserInternalService;
 
 @RestController
 @RequiredArgsConstructor
