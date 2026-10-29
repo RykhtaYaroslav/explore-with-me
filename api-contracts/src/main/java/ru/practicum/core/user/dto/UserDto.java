@@ -1,16 +1,17 @@
-package ru.practicum.core.common.dto.user;
+package ru.practicum.core.user.dto;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Data
-@Builder
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserShortDto {
+public class UserDto {
     private Long id;
     private String name;
+    private String email;
     private Double rating;
 }

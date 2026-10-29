@@ -1,6 +1,6 @@
 package ru.practicum.core.review.interservice;
 
-import ru.practicum.core.common.dto.user.UserShortDto;
+import ru.practicum.core.user.dto.UserShortDto;
 
 public interface UserInterservice {
     boolean existsById(Long userId);

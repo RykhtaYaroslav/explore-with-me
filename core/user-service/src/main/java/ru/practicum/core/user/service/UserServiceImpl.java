@@ -3,14 +3,15 @@ package ru.practicum.core.user.service;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.core.common.dto.user.UserAverageScore;
 import ru.practicum.core.common.exception.ConflictException;
 import ru.practicum.core.common.exception.NotFoundException;
-import ru.practicum.core.user.dto.UserMapper;
+import ru.practicum.core.user.dto.NewUserRequest;
+import ru.practicum.core.user.dto.UserDto;
+import ru.practicum.core.user.interservice.ReviewInterservice;
+import ru.practicum.core.user.mapper.UserMapper;
 import ru.practicum.core.user.model.User;
 import ru.practicum.core.user.repository.UserRepository;
-import ru.practicum.main.review.repository.UserReviewRepository;
-import ru.practicum.user.dto.NewUserRequest;
-import ru.practicum.user.dto.UserDto;
 
 import java.util.List;
 import java.util.Map;
@@ -22,7 +23,7 @@ import java.util.stream.Collectors;
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper mapper;
-    private final UserReviewRepository reviewRepository;
+    private final ReviewInterservice reviewInterservice;
 
     @Override
     @Transactional(readOnly = true)
@@ -38,19 +39,17 @@ public class UserServiceImpl implements UserService {
                 .map(User::getId)
                 .toList();
 
-        List<Object[]> result = reviewRepository.findAverageScoresByTargetIds(userIds);
+        List<UserAverageScore> result = reviewInterservice.findAverageScoresByTargetIds(userIds);
         Map<Long, Double> ratingMap = result.stream()
                 .collect(Collectors.toMap(
-                        arr -> (Long) arr[0],
-                        arr -> (Double) arr[1]
+                        UserAverageScore::targetId,
+                        UserAverageScore::averageScore
                 ));
 
         return users.stream()
                 .map(user -> {
-                    UserDto dto = mapper.toUserDtoOut(user);
                     Double rating = ratingMap.getOrDefault(user.getId(), 0.0);
-                    dto.setRating(rating);
-                    return dto;
+                    return mapper.toUserDtoOut(user, rating);
                 })
                 .toList();
     }
@@ -61,7 +60,7 @@ public class UserServiceImpl implements UserService {
             throw new ConflictException("Юзер с данным email = " + newUser.getEmail() + " уже существует");
         }
         User user = mapper.toUser(newUser);
-        return mapper.toUserDtoOut(userRepository.save(user));
+        return mapper.toUserDtoOut(userRepository.save(user), 0.0);
     }
 
     @Override

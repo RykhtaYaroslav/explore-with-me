@@ -3,7 +3,6 @@ package ru.practicum.core.review.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.core.common.dto.user.UserShortDto;
 import ru.practicum.core.event.dto.response.EventShortDto;
 import ru.practicum.core.review.dto.NewEventReviewDto;
 import ru.practicum.core.review.dto.NewUserReviewDto;
@@ -15,6 +14,7 @@ import ru.practicum.core.review.model.UserReview;
 import ru.practicum.core.review.repository.EventReviewRepository;
 import ru.practicum.core.review.repository.UserReviewRepository;
 import ru.practicum.core.review.validation.ReviewValidator;
+import ru.practicum.core.user.dto.UserShortDto;
 
 import java.util.HashMap;
 import java.util.List;

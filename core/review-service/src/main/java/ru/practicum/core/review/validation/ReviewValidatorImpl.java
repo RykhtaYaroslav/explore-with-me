@@ -2,7 +2,6 @@ package ru.practicum.core.review.validation;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import ru.practicum.core.common.dto.user.UserShortDto;
 import ru.practicum.core.common.exception.ConflictException;
 import ru.practicum.core.common.exception.NotFoundException;
 import ru.practicum.core.event.dto.response.EventShortDto;
@@ -11,6 +10,7 @@ import ru.practicum.core.review.interservice.ParticipationInterservice;
 import ru.practicum.core.review.interservice.UserInterservice;
 import ru.practicum.core.review.repository.EventReviewRepository;
 import ru.practicum.core.review.repository.UserReviewRepository;
+import ru.practicum.core.user.dto.UserShortDto;
 
 import java.time.LocalDateTime;
 

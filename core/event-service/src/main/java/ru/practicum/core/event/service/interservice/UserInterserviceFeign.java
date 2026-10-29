@@ -3,8 +3,8 @@ package ru.practicum.core.event.service.interservice;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.practicum.core.common.exception.NotFoundException;
-import ru.practicum.core.common.dto.user.UserShortDto;
 import ru.practicum.core.event.service.interservice.feign.UserFeignClient;
+import ru.practicum.core.user.dto.UserShortDto;
 
 @RequiredArgsConstructor
 @Component
