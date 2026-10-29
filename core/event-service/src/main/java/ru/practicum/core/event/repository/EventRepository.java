@@ -1,8 +1,8 @@
 package ru.practicum.core.event.repository;
 
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,6 +43,19 @@ public interface EventRepository extends JpaRepository<Event, Long> {
               AND (:delta <= 0 OR e.participantLimit = 0 OR e.confirmedRequests + :delta <= e.participantLimit)
             """)
     int adjustConfirmedRequests(@Param("eventId") Long eventId, @Param("delta") long delta);
+
+    @Modifying
+    @Transactional
+    @Query("""
+            UPDATE Event e
+            SET e.confirmedRequests = :count
+            WHERE e.id = :eventId
+              AND e.confirmedRequests = :expectedCount
+              AND (e.participantLimit = 0 OR :count <= e.participantLimit)
+            """)
+    int setConfirmedRequests(@Param("eventId") Long eventId,
+                             @Param("expectedCount") long expectedCount,
+                             @Param("count") long count);
 
     @SuppressWarnings("all")
     @Query("""

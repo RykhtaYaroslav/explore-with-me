@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.core.common.exception.ConflictException;
 import ru.practicum.core.common.exception.NotFoundException;
 import ru.practicum.core.event.dto.mapper.EventMapper;
+import ru.practicum.core.event.dto.response.EventForParticipationServiceDto;
 import ru.practicum.core.event.dto.response.EventShortDto;
 import ru.practicum.core.event.model.Event;
 import ru.practicum.core.event.repository.EventRepository;
@@ -39,6 +40,23 @@ public class EventInternalServiceImpl implements EventInternalService {
     }
 
     @Override
+    public EventForParticipationServiceDto getParticipationInfoOrThrow(Long eventId) {
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException(
+                        String.format("Event with id = %d was not found", eventId)));
+
+        return new EventForParticipationServiceDto(
+                event.getId(),
+                event.getState(),
+                event.getEventDate(),
+                event.getInitiatorId(),
+                event.getParticipantLimit(),
+                event.getRequestModeration(),
+                event.getConfirmedRequests()
+        );
+    }
+
+    @Override
     @Transactional
     public void adjustCount(Long eventId, long delta) {
         if (delta == 0) {
@@ -55,5 +73,32 @@ public class EventInternalServiceImpl implements EventInternalService {
         }
 
         throw new ConflictException("Confirmed request count would exceed eventId capacity or become negative");
+    }
+
+    @Override
+    @Transactional
+    public void synchronizeConfirmedRequests(Long eventId, long expectedCount, long count) {
+        if (expectedCount < 0 || count < 0) {
+            throw new ConflictException("Confirmed request counts must not be negative");
+        }
+
+        int updated = eventRepository.setConfirmedRequests(eventId, expectedCount, count);
+        if (updated == 1) {
+            return;
+        }
+
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException(
+                        String.format("Event with id = %d was not found", eventId)));
+
+        if (event.getConfirmedRequests() == count) {
+            return;
+        }
+
+        if (event.getConfirmedRequests() != expectedCount) {
+            throw new ConflictException("Confirmed request count changed during synchronization; retry the operation");
+        }
+
+        throw new ConflictException("Confirmed request count would exceed event capacity");
     }
 }
