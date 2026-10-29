@@ -31,13 +31,13 @@ services:
 
   event-db:
     image: postgres:16.1
-    container_name: ewm-event-db
+    container_name: ewm-eventId-db
     ports:
       - "5435:5432"
     environment:
-      POSTGRES_DB: ${EVENT_DB_NAME:-event}
-      POSTGRES_USER: ${EVENT_DB_USERNAME:-event}
-      POSTGRES_PASSWORD: ${EVENT_DB_PASSWORD:-event}
+      POSTGRES_DB: ${EVENT_DB_NAME:-eventId}
+      POSTGRES_USER: ${EVENT_DB_USERNAME:-eventId}
+      POSTGRES_PASSWORD: ${EVENT_DB_PASSWORD:-eventId}
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
@@ -59,6 +59,21 @@ services:
       timeout: 5s
       retries: 5
 
+  participation-db:
+    image: postgres:16.1
+    container_name: ewm-participation-db
+    ports:
+      - "5437:5432"
+    environment:
+      POSTGRES_DB: ${PARTICIPATION_DB_NAME:-participation}
+      POSTGRES_USER: ${PARTICIPATION_DB_USERNAME:-participation}
+      POSTGRES_PASSWORD: ${PARTICIPATION_DB_PASSWORD:-participation}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   config-server:
     build: ./infra/config-server
     container_name: ewm-config-server
@@ -66,7 +81,7 @@ services:
       - ./infra/config-repo:/config-repo:ro
     environment:
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-server:8761/eureka/
-      SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH_LOCATIONS: "file:/config-repo,file:/config-repo/stats-service,file:/config-repo/event-service,file:/config-repo/main-service,file:/config-repo/review-service,file:/config-repo/user-service,file:/config-repo/gateway-server"
+      SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH_LOCATIONS: "file:/config-repo,file:/config-repo/stats-service,file:/config-repo/event-service,file:/config-repo/main-service,file:/config-repo/review-service,file:/config-repo/user-service,file:/config-repo/participation-service,file:/config-repo/gateway-server"
     depends_on:
       discovery-server:
         condition: service_healthy
