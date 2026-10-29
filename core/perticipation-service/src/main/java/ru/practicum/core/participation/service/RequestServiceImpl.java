@@ -1,21 +1,21 @@
-package ru.practicum.main.request.service;
+package ru.practicum.core.participation.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.core.common.enums.RequestStatus;
+import ru.practicum.core.common.exception.ConflictException;
+import ru.practicum.core.common.exception.NotFoundException;
+import ru.practicum.core.event.model.Event;
 import ru.practicum.core.event.model.EventState;
+import ru.practicum.core.event.repository.EventRepository;
+import ru.practicum.core.participation.client.EventFeignClient;
+import ru.practicum.core.participation.dto.mapper.RequestMapper;
+import ru.practicum.core.participation.model.ParticipationRequest;
+import ru.practicum.core.participation.repository.RequestRepository;
 import ru.practicum.core.user.model.User;
 import ru.practicum.core.user.repository.UserRepository;
-import ru.practicum.main.event.model.Event;
-import ru.practicum.main.event.repository.EventRepository;
-import ru.practicum.main.exception.ConflictException;
-import ru.practicum.main.exception.NotFoundException;
-import ru.practicum.main.request.client.EventFeignClient;
 import ru.practicum.main.request.dto.ParticipationRequestDto;
-import ru.practicum.main.request.dto.mapper.RequestMapper;
-import ru.practicum.main.request.model.ParticipationRequest;
-import ru.practicum.main.request.repository.RequestRepository;
 
 import java.util.List;
 import java.util.stream.Collectors;

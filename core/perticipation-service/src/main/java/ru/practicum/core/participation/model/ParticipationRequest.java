@@ -1,4 +1,4 @@
-package ru.practicum.main.request.model;
+package ru.practicum.core.participation.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -19,8 +19,8 @@ import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.proxy.HibernateProxy;
 import ru.practicum.core.common.enums.RequestStatus;
+import ru.practicum.core.event.model.Event;
 import ru.practicum.core.user.model.User;
-import ru.practicum.main.event.model.Event;
 
 import java.time.LocalDateTime;
 import java.util.Objects;

@@ -1,4 +1,4 @@
-package ru.practicum.main.request.client;
+package ru.practicum.core.participation.client;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PatchMapping;

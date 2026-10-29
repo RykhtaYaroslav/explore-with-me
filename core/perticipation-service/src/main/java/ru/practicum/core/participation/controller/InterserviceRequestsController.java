@@ -1,4 +1,4 @@
-package ru.practicum.main.request.controller;
+package ru.practicum.core.participation.controller;
 
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import ru.practicum.main.request.service.RequestService;
+import ru.practicum.core.participation.service.RequestService;
 
 @RestController
 @RequestMapping("/interservice/requests")
