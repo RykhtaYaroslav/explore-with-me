@@ -1,0 +1,29 @@
+spring:
+  datasource:
+    url: ${USER_DB_URL:jdbc:postgresql://localhost:5436/users}
+    username: ${USER_DB_USERNAME:users}
+    password: ${USER_DB_PASSWORD:users}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+
+server:
+  port: 0
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+
+logging:
+  level:
+    org.hibernate: WARN
+    org.hibernate.SQL: WARN
+    root: INFO
+    ru.practicum.core.user: DEBUG
