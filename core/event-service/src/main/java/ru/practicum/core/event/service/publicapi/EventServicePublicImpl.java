@@ -75,7 +75,7 @@ public class EventServicePublicImpl implements EventServicePublic {
     @Override
     public void hitStat(String uri, String ip) {
         statsRepository.hit(EndpointHitDto.builder()
-                .app("main-service")
+                .app("event-service")
                 .ip(ip)
                 .uri(uri)
                 .timestamp(now())

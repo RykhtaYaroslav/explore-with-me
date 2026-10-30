@@ -96,6 +96,12 @@ services:
     container_name: ewm-compilation-service
     ports:
       - "8084:8084"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8084/actuator/health > /dev/null || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 12
+      start_period: 20s
     depends_on:
       compilation-db:
         condition: service_healthy
@@ -111,14 +117,122 @@ services:
       SPRING_SQL_INIT_MODE: always
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-server:8761/eureka/
 
+  event-service:
+    build:
+      context: .
+      dockerfile: core/event-service/Dockerfile
+    container_name: ewm-event-service
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health > /dev/null || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 12
+      start_period: 20s
+    depends_on:
+      event-db:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      stats-server:
+        condition: service_started
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://event-db:5432/${EVENT_DB_NAME:-eventId}
+      SPRING_DATASOURCE_USERNAME: ${EVENT_DB_USERNAME:-eventId}
+      SPRING_DATASOURCE_PASSWORD: ${EVENT_DB_PASSWORD:-eventId}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_SQL_INIT_MODE: always
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-server:8761/eureka/
+
+  user-service:
+    build:
+      context: .
+      dockerfile: core/user-service/Dockerfile
+    container_name: ewm-user-service
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8082/actuator/health > /dev/null || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 12
+      start_period: 20s
+    depends_on:
+      user-db:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://user-db:5432/${USER_DB_NAME:-users}
+      SPRING_DATASOURCE_USERNAME: ${USER_DB_USERNAME:-users}
+      SPRING_DATASOURCE_PASSWORD: ${USER_DB_PASSWORD:-users}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-server:8761/eureka/
+
+  review-service:
+    build:
+      context: .
+      dockerfile: core/review-service/Dockerfile
+    container_name: ewm-review-service
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8081/actuator/health > /dev/null || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 12
+      start_period: 20s
+    depends_on:
+      review-db:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://review-db:5432/${REVIEW_DB_NAME:-review}
+      SPRING_DATASOURCE_USERNAME: ${REVIEW_DB_USERNAME:-review}
+      SPRING_DATASOURCE_PASSWORD: ${REVIEW_DB_PASSWORD:-review}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_SQL_INIT_MODE: always
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-server:8761/eureka/
+
+  participation-service:
+    build:
+      context: .
+      dockerfile: core/participation-service/Dockerfile
+    container_name: ewm-participation-service
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8083/actuator/health > /dev/null || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 12
+      start_period: 20s
+    depends_on:
+      participation-db:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://participation-db:5432/${PARTICIPATION_DB_NAME:-participation}
+      SPRING_DATASOURCE_USERNAME: ${PARTICIPATION_DB_USERNAME:-participation}
+      SPRING_DATASOURCE_PASSWORD: ${PARTICIPATION_DB_PASSWORD:-participation}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_SQL_INIT_MODE: always
+      SERVER_PORT: 8083
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-server:8761/eureka/
+
   config-server:
-    build: ./infra/config-server
+    build:
+      context: .
+      dockerfile: infra/config-server/Dockerfile
     container_name: ewm-config-server
     volumes:
       - ./infra/config-repo:/config-repo:ro
     environment:
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-server:8761/eureka/
-      SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH_LOCATIONS: "file:/config-repo,file:/config-repo/stats-service,file:/config-repo/event-service,file:/config-repo/main-service,file:/config-repo/review-service,file:/config-repo/user-service,file:/config-repo/participation-service,file:/config-repo/compilation-service,file:/config-repo/gateway-server"
+      SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH_LOCATIONS: "file:/config-repo,file:/config-repo/stats-service,file:/config-repo/event-service,file:/config-repo/review-service,file:/config-repo/user-service,file:/config-repo/participation-service,file:/config-repo/compilation-service,file:/config-repo/gateway-server"
     depends_on:
       discovery-server:
         condition: service_healthy
@@ -130,7 +244,9 @@ services:
       start_period: 10s
 
   discovery-server:
-    build: ./infra/discovery-server
+    build:
+      context: .
+      dockerfile: infra/discovery-server/Dockerfile
     container_name: ewm-discovery-server
     ports:
       - "8761:8761"
@@ -142,8 +258,16 @@ services:
       start_period: 10s
 
   stats-server:
-    build: ./stats/stats-server
+    build:
+      context: .
+      dockerfile: stats/stats-server/Dockerfile
     container_name: ewm-stats-server
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:9090/actuator/health > /dev/null || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 12
+      start_period: 20s
     depends_on:
       stats-db:
         condition: service_healthy
@@ -158,42 +282,10 @@ services:
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-server:8761/eureka/
 
-  ewm-db:
-    image: postgres:16.1
-    container_name: ewm-main-db
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_DB: ewm
-      POSTGRES_USER: main
-      POSTGRES_PASSWORD: main
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U main -d ewm"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
-  ewm-service:
-    build: ./core/main-service
-    container_name: ewm-main-service
-    depends_on:
-      ewm-db:
-        condition: service_healthy
-      stats-server:
-        condition: service_started
-      discovery-server:
-        condition: service_healthy
-      config-server:
-        condition: service_healthy
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://ewm-db:5432/ewm
-      SPRING_DATASOURCE_USERNAME: main
-      SPRING_DATASOURCE_PASSWORD: main
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-server:8761/eureka/
-
   gateway-server:
-    build: ./infra/gateway-server
+    build:
+      context: .
+      dockerfile: infra/gateway-server/Dockerfile
     container_name: ewm-gateway-server
     ports:
       - "8080:8080"
@@ -203,8 +295,16 @@ services:
       discovery-server:
         condition: service_healthy
       stats-server:
-        condition: service_started
-      ewm-service:
-        condition: service_started
+        condition: service_healthy
+      compilation-service:
+        condition: service_healthy
+      event-service:
+        condition: service_healthy
+      user-service:
+        condition: service_healthy
+      review-service:
+        condition: service_healthy
+      participation-service:
+        condition: service_healthy
     environment:
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-server:8761/eureka/
