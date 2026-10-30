@@ -10,8 +10,9 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface CompilationMapper {
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "events", source = "events")
-    Compilation toCompilation(NewCompilationDto dto, List<Event> events);
+    @Mapping(target = "events", source = "eventIds")
+    Compilation toCompilation(NewCompilationDto dto, List<Long> eventIds);
 
-    CompilationDto toDto(Compilation compilation);
+    @Mapping(target = "events", source = "events")
+    CompilationDto toDto(Compilation compilation, List<Event> events);
 }

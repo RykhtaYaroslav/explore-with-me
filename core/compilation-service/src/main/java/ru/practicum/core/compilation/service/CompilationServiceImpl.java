@@ -5,7 +5,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 import ru.practicum.core.common.exception.ConflictException;
 import ru.practicum.core.common.exception.NotFoundException;
 import ru.practicum.core.compilation.dto.CompilationDto;
@@ -17,7 +16,6 @@ import ru.practicum.core.compilation.repository.CompilationRepository;
 import ru.practicum.core.event.model.Event;
 import ru.practicum.core.event.repository.EventRepository;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -35,19 +33,11 @@ public class CompilationServiceImpl implements CompilationService {
             throw new ConflictException(String.format("A compilation with title '%s' already exists", compilationDto.getTitle()));
         }
 
-        List<Event> events = Collections.emptyList();
-        if (!CollectionUtils.isEmpty(compilationDto.getEvents())) {
-            events = eventRepository.findAllById(compilationDto.getEvents());
-        }
+        List<Event> events = findEvents(compilationDto.getEvents());
+        List<Long> eventIds = events.stream().map(Event::getId).toList();
+        Compilation comp = mapper.toCompilation(compilationDto, eventIds);
 
-        Compilation comp = mapper.toCompilation(compilationDto, events);
-
-        // На всякий случай гарантируем, что список events не null (защита от особенностей Lombok Builder)
-        if (comp.getEvents() == null) {
-            comp.setEvents(new ArrayList<>());
-        }
-
-        return mapper.toDto(compilationRepository.save(comp));
+        return mapper.toDto(compilationRepository.save(comp), events);
     }
 
     @Override
@@ -69,13 +59,25 @@ public class CompilationServiceImpl implements CompilationService {
             compilation.setTitle(update.getTitle());
         }
         if (update.getEvents() != null) {
-            List<Event> events = eventRepository.findAllById(update.getEvents());
-            compilation.setEvents(events);
+            List<Event> events = findEvents(update.getEvents());
+            compilation.setEvents(events.stream().map(Event::getId).toList());
         }
         if (update.getPinned() != null) {
             compilation.setPinned(update.getPinned());
         }
-        return mapper.toDto(compilationRepository.save(compilation));
+        return toDto(compilationRepository.save(compilation));
+    }
+
+    private List<Event> findEvents(List<Long> eventIds) {
+        if (eventIds == null || eventIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return eventRepository.findAllById(eventIds);
+    }
+
+    private CompilationDto toDto(Compilation compilation) {
+        List<Event> events = findEvents(compilation.getEvents());
+        return mapper.toDto(compilation, events);
     }
 
     private Compilation checkAndReturnCompilation(long compId) {
@@ -99,7 +101,7 @@ public class CompilationServiceImpl implements CompilationService {
         }
 
         return compilations.stream()
-                .map(mapper::toDto)
+                .map(this::toDto)
                 .toList();
     }
 
@@ -110,6 +112,6 @@ public class CompilationServiceImpl implements CompilationService {
         Compilation compilation = compilationRepository.findById(compId)
                 .orElseThrow(() -> new NotFoundException(String.format("Compilation with id = %d was not found", compId)));
 
-        return mapper.toDto(compilation);
+        return toDto(compilation);
     }
 }
