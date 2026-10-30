@@ -18,6 +18,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     @Query("""
             SELECT e
             FROM Event e
+            JOIN FETCH e.category
             WHERE e.initiatorId = :userId
             ORDER BY e.id ASC
             """)
@@ -32,6 +33,14 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     long countEventBySelectCategory(@Param("catId") long catId);
 
     boolean existsByCategoryId(Long categoryId);
+
+    @Query("""
+            SELECT e
+            FROM Event e
+            JOIN FETCH e.category
+            WHERE e.id IN :eventIds
+            """)
+    List<Event> findAllWithCategoryByIdIn(@Param("eventIds") List<Long> eventIds);
 
     @Modifying
     @Transactional
@@ -61,6 +70,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     @Query("""
             SELECT e
             FROM Event e
+            JOIN FETCH e.category
             WHERE (:users IS NULL OR e.initiatorId IN :users)
               AND (:states IS NULL OR e.state IN :states)
               AND (CAST(:text AS string) IS NULL OR (LOWER(e.annotation) LIKE CAST(:text AS string) OR LOWER(e.description) LIKE CAST(:text AS string)))

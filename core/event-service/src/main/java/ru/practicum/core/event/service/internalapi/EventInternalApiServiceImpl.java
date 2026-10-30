@@ -54,7 +54,7 @@ public class EventInternalApiServiceImpl implements EventInternalApiService {
             return List.of();
         }
 
-        List<Event> events = eventRepository.findAllById(eventIds);
+        List<Event> events = eventRepository.findAllWithCategoryByIdIn(eventIds);
         Map<Long, Event> eventsById = events.stream()
                 .collect(Collectors.toMap(Event::getId, event -> event));
         Map<Long, EventShortDto> eventDtosById = new LinkedHashMap<>();
@@ -91,7 +91,7 @@ public class EventInternalApiServiceImpl implements EventInternalApiService {
             return List.of();
         }
 
-        List<Event> events = eventRepository.findAllById(eventIds);
+        List<Event> events = eventRepository.findAllWithCategoryByIdIn(eventIds);
         if (events.isEmpty()) {
             return List.of();
         }
