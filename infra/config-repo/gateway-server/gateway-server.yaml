@@ -7,9 +7,29 @@ spring:
           predicates:
             - Path=/hit,/stats,/stats/**
 
-        - id: main
-          uri: lb://main-service
+        - id: compilation
+          uri: lb://compilation-service
           predicates:
-            - Path=/compilations,/compilations/**,/admin/compilations,/admin/compilations/**,/events,/events/**,/admin/events,/admin/events/**,/users/**,/categories,/categories/**,/admin/categories,/admin/categories/**,/admin/users,/admin/users/**,/rating/**,/test/time,/test/time/**
+            - Path=/compilations,/compilations/**,/admin/compilations,/admin/compilations/**
+
+        - id: events
+          uri: lb://event-service
+          predicates:
+            - Path=/events,/events/**,/admin/events,/admin/events/**,/categories,/categories/**,/admin/categories,/admin/categories/**,/users/*/events,/users/*/events/**
+
+        - id: users
+          uri: lb://user-service
+          predicates:
+            - Path=/admin/users,/admin/users/**
+
+        - id: participation
+          uri: lb://participation-service
+          predicates:
+            - Path=/users/*/requests,/users/*/requests/**
+
+        - id: reviews
+          uri: lb://review-service
+          predicates:
+            - Path=/reviews,/reviews/**,/rating,/rating/**
 server:
   port: 8080
