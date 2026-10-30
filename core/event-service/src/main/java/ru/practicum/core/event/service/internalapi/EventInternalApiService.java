@@ -12,6 +12,8 @@ public interface EventInternalApiService {
 
     EventShortDto getReviewInfo(Long eventId);
 
+    List<EventShortDto> getReviewInfoByIds(List<Long> eventIds);
+
     List<EventShortDto> getCompilationInfo(List<Long> eventIds);
 
     EventForParticipationServiceDto getParticipationInfoOrThrow(Long eventId);

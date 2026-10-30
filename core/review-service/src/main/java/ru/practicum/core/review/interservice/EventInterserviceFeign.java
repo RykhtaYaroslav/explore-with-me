@@ -5,6 +5,8 @@ import org.springframework.stereotype.Component;
 import ru.practicum.core.event.dto.response.EventShortDto;
 import ru.practicum.core.review.interservice.feign.EventFeignClient;
 
+import java.util.List;
+
 @Component
 @RequiredArgsConstructor
 public class EventInterserviceFeign implements EventInterservice {
@@ -23,5 +25,10 @@ public class EventInterserviceFeign implements EventInterservice {
     @Override
     public EventShortDto getReviewInfo(Long eventId) {
         return eventFeignClient.getReviewInfo(eventId);
+    }
+
+    @Override
+    public List<EventShortDto> getReviewInfoByIds(List<Long> eventIds) {
+        return eventFeignClient.getReviewInfoByIds(eventIds);
     }
 }

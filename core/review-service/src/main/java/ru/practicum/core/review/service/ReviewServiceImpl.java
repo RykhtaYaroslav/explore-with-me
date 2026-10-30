@@ -8,6 +8,7 @@ import ru.practicum.core.review.dto.NewEventReviewDto;
 import ru.practicum.core.review.dto.NewUserReviewDto;
 import ru.practicum.core.review.dto.OutputEventReviewDto;
 import ru.practicum.core.review.dto.OutputUserReviewDto;
+import ru.practicum.core.review.interservice.EventInterservice;
 import ru.practicum.core.review.interservice.UserInterservice;
 import ru.practicum.core.review.mapper.ReviewMapper;
 import ru.practicum.core.review.model.EventReview;
@@ -27,6 +28,7 @@ import java.util.stream.Collectors;
 @Transactional
 public class ReviewServiceImpl implements ReviewService {
     private final ReviewValidator reviewValidator;
+    private final EventInterservice eventInterservice;
     private final UserInterservice userInterservice;
 
     private final UserReviewRepository userReviewRepository;
@@ -88,16 +90,33 @@ public class ReviewServiceImpl implements ReviewService {
     public List<OutputUserReviewDto> getAuthorReviews(Long authorId) {
         UserShortDto author = reviewValidator.findUserOrThrow(authorId);
         List<UserReview> reviews = userReviewRepository.findAllByTargetIdOrderByIdDesc(authorId);
+        List<Long> raterIds = reviews.stream()
+                .map(UserReview::getRaterId)
+                .filter(raterId -> !raterId.equals(authorId))
+                .distinct()
+                .toList();
         Map<Long, UserShortDto> usersById = new HashMap<>();
-        Map<Long, EventShortDto> eventsById = new HashMap<>();
         usersById.put(authorId, author);
+        if (!raterIds.isEmpty()) {
+            userInterservice.getShortByIds(raterIds)
+                    .forEach(user -> usersById.put(user.getId(), user));
+        }
+
+        List<Long> eventIds = reviews.stream()
+                .map(UserReview::getEventId)
+                .distinct()
+                .toList();
+        Map<Long, EventShortDto> eventsById = eventIds.isEmpty()
+                ? Map.of()
+                : eventInterservice.getReviewInfoByIds(eventIds).stream()
+                        .collect(Collectors.toMap(EventShortDto::getId, event -> event));
 
         return reviews.stream()
                 .map(review -> reviewMapper.toUserReviewOutDto(
                         review,
-                        usersById.computeIfAbsent(review.getRaterId(), reviewValidator::findUserOrThrow),
+                        usersById.get(review.getRaterId()),
                         author,
-                        eventsById.computeIfAbsent(review.getEventId(), reviewValidator::findEventOrThrow)
+                        eventsById.get(review.getEventId())
                 ))
                 .toList();
     }

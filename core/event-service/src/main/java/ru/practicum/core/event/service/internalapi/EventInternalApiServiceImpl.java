@@ -49,6 +49,43 @@ public class EventInternalApiServiceImpl implements EventInternalApiService {
     }
 
     @Override
+    public List<EventShortDto> getReviewInfoByIds(List<Long> eventIds) {
+        if (eventIds == null || eventIds.isEmpty()) {
+            return List.of();
+        }
+
+        List<Event> events = eventRepository.findAllById(eventIds);
+        Map<Long, Event> eventsById = events.stream()
+                .collect(Collectors.toMap(Event::getId, event -> event));
+        Map<Long, EventShortDto> eventDtosById = new LinkedHashMap<>();
+
+        for (Long eventId : eventIds.stream().distinct().toList()) {
+            Event event = eventsById.get(eventId);
+            if (event == null) {
+                throw new NotFoundException(String.format("Event with id = %d was not found", eventId));
+            }
+            eventDtosById.put(eventId, eventMapper.toShortDto(event, 0L, event.getConfirmedRequests(), null));
+        }
+
+        List<Long> initiatorIds = events.stream()
+                .map(Event::getInitiatorId)
+                .distinct()
+                .toList();
+        Map<Long, UserShortDto> usersById = userInterservice.getShortByIds(initiatorIds).stream()
+                .collect(Collectors.toMap(UserShortDto::getId, user -> user));
+
+        eventDtosById.forEach((eventId, eventDto) -> {
+            Event event = eventsById.get(eventId);
+            eventDto.setInitiator(usersById.get(event.getInitiatorId()));
+        });
+
+        return eventIds.stream()
+                .distinct()
+                .map(eventDtosById::get)
+                .toList();
+    }
+
+    @Override
     public List<EventShortDto> getCompilationInfo(List<Long> eventIds) {
         if (eventIds == null || eventIds.isEmpty()) {
             return List.of();

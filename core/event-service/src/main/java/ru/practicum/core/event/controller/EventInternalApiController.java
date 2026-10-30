@@ -40,6 +40,11 @@ public class EventInternalApiController {
         return eventInternalApiService.getReviewInfo(eventId);
     }
 
+    @GetMapping("/review-info")
+    public List<EventShortDto> getReviewInfoByIds(@RequestParam("ids") List<@Positive Long> eventIds) {
+        return eventInternalApiService.getReviewInfoByIds(eventIds);
+    }
+
     @GetMapping("/compilation-info")
     public List<EventShortDto> getCompilationInfo(@RequestParam("ids") List<@Positive Long> eventIds) {
         return eventInternalApiService.getCompilationInfo(eventIds);
