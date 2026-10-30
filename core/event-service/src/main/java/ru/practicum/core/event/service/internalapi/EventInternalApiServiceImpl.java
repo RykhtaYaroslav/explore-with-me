@@ -1,4 +1,4 @@
-package ru.practicum.core.event.service.interservice;
+package ru.practicum.core.event.service.internalapi;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -11,6 +11,7 @@ import ru.practicum.core.event.dto.response.EventShortDto;
 import ru.practicum.core.event.model.Event;
 import ru.practicum.core.event.repository.EventRepository;
 import ru.practicum.core.event.service.EventStatsCollector;
+import ru.practicum.core.event.service.interservice.UserInterservice;
 import ru.practicum.core.user.dto.UserShortDto;
 
 import java.util.LinkedHashMap;
@@ -21,7 +22,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class EventInternalServiceImpl implements EventInternalService {
+public class EventInternalApiServiceImpl implements EventInternalApiService {
     private final EventRepository eventRepository;
     private final EventMapper eventMapper;
     private final UserInterservice userInterservice;

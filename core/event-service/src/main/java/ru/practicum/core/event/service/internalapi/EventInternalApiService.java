@@ -1,11 +1,11 @@
-package ru.practicum.core.event.service.interservice;
+package ru.practicum.core.event.service.internalapi;
 
 import ru.practicum.core.event.dto.response.EventForParticipationServiceDto;
 import ru.practicum.core.event.dto.response.EventShortDto;
 
 import java.util.List;
 
-public interface EventInternalService {
+public interface EventInternalApiService {
     boolean existsById(Long eventId);
 
     boolean isOrganizer(Long eventId, Long userId);

@@ -1,4 +1,4 @@
-package ru.practicum.core.user.service;
+package ru.practicum.core.user.service.internalapi;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,7 +14,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
-public class UserInternalServiceImpl implements UserInternalService {
+public class UserInternalApiServiceImpl implements UserInternalApiService {
     private final UserRepository repository;
     private final UserMapper userMapper;
 

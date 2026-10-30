@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.core.user.dto.UserShortDto;
-import ru.practicum.core.user.service.UserInternalService;
+import ru.practicum.core.user.service.internalapi.UserInternalApiService;
 
 import java.util.List;
 
@@ -17,21 +17,21 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/interservice/users")
 @Validated
-public class InterserviceUsersController {
-    private final UserInternalService userInternalService;
+public class UserInternalApiController {
+    private final UserInternalApiService userInternalApiService;
 
     @GetMapping("/exist/{id}")
     public boolean existsById(@PathVariable @Positive Long id) {
-        return userInternalService.existsById(id);
+        return userInternalApiService.existsById(id);
     }
 
     @GetMapping("/short/{id}")
     public UserShortDto getShortById(@PathVariable @Positive Long id) {
-        return userInternalService.getShortById(id);
+        return userInternalApiService.getShortById(id);
     }
 
     @GetMapping("/short")
     public List<UserShortDto> getShortByIds(@RequestParam("ids") List<@Positive Long> ids) {
-        return userInternalService.getShortByIds(ids);
+        return userInternalApiService.getShortByIds(ids);
     }
 }

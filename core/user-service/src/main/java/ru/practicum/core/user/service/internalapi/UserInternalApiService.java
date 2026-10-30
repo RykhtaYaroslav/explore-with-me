@@ -1,10 +1,10 @@
-package ru.practicum.core.user.service;
+package ru.practicum.core.user.service.internalapi;
 
 import ru.practicum.core.user.dto.UserShortDto;
 
 import java.util.List;
 
-public interface UserInternalService {
+public interface UserInternalApiService {
     boolean existsById(Long id);
 
     UserShortDto getShortById(Long id);
