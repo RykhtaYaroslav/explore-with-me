@@ -89,6 +89,28 @@ services:
       timeout: 5s
       retries: 5
 
+  compilation-service:
+    build:
+      context: .
+      dockerfile: core/compilation-service/Dockerfile
+    container_name: ewm-compilation-service
+    ports:
+      - "8084:8084"
+    depends_on:
+      compilation-db:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://compilation-db:5432/${COMPILATION_DB_NAME:-compilation}
+      SPRING_DATASOURCE_USERNAME: ${COMPILATION_DB_USERNAME:-compilation}
+      SPRING_DATASOURCE_PASSWORD: ${COMPILATION_DB_PASSWORD:-compilation}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_SQL_INIT_MODE: always
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-server:8761/eureka/
+
   config-server:
     build: ./infra/config-server
     container_name: ewm-config-server
