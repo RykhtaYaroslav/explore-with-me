@@ -17,7 +17,11 @@ import ru.practicum.core.compilation.repository.CompilationRepository;
 import ru.practicum.core.event.dto.response.EventShortDto;
 
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @Service
@@ -100,8 +104,29 @@ public class CompilationServiceImpl implements CompilationService {
             compilations = compilationRepository.findAllByPinned(pinned, pageable);
         }
 
+        Map<Long, List<Long>> eventIdsByCompilationId = new LinkedHashMap<>();
+        compilations.forEach(compilation ->
+                eventIdsByCompilationId.put(compilation.getId(), compilation.getEvents()));
+
+        List<Long> eventIds = eventIdsByCompilationId.values().stream()
+                .flatMap(List::stream)
+                .distinct()
+                .toList();
+
+        List<EventShortDto> eventDtos = eventIds.isEmpty()
+                ? Collections.emptyList()
+                : eventInterservice.findByIds(eventIds);
+        Map<Long, EventShortDto> eventDtosById = eventDtos.stream()
+                .collect(Collectors.toMap(EventShortDto::getId, eventDto -> eventDto));
+
         return compilations.stream()
-                .map(this::toDto)
+                .map(compilation -> {
+                    List<EventShortDto> compilationEvents = eventIdsByCompilationId.get(compilation.getId()).stream()
+                            .map(eventDtosById::get)
+                            .filter(Objects::nonNull)
+                            .toList();
+                    return mapper.toDto(compilation, compilationEvents);
+                })
                 .toList();
     }
 
