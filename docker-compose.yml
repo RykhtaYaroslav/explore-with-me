@@ -74,6 +74,21 @@ services:
       timeout: 5s
       retries: 5
 
+  compilation-db:
+    image: postgres:16.1
+    container_name: ewm-compilation-db
+    ports:
+      - "5438:5432"
+    environment:
+      POSTGRES_DB: ${COMPILATION_DB_NAME:-compilation}
+      POSTGRES_USER: ${COMPILATION_DB_USERNAME:-compilation}
+      POSTGRES_PASSWORD: ${COMPILATION_DB_PASSWORD:-compilation}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   config-server:
     build: ./infra/config-server
     container_name: ewm-config-server
@@ -81,7 +96,7 @@ services:
       - ./infra/config-repo:/config-repo:ro
     environment:
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-server:8761/eureka/
-      SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH_LOCATIONS: "file:/config-repo,file:/config-repo/stats-service,file:/config-repo/event-service,file:/config-repo/main-service,file:/config-repo/review-service,file:/config-repo/user-service,file:/config-repo/participation-service,file:/config-repo/gateway-server"
+      SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH_LOCATIONS: "file:/config-repo,file:/config-repo/stats-service,file:/config-repo/event-service,file:/config-repo/main-service,file:/config-repo/review-service,file:/config-repo/user-service,file:/config-repo/participation-service,file:/config-repo/compilation-service,file:/config-repo/gateway-server"
     depends_on:
       discovery-server:
         condition: service_healthy
