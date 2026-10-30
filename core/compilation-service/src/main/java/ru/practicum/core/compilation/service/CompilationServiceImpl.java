@@ -11,10 +11,10 @@ import ru.practicum.core.compilation.dto.CompilationDto;
 import ru.practicum.core.compilation.dto.CompilationMapper;
 import ru.practicum.core.compilation.dto.NewCompilationDto;
 import ru.practicum.core.compilation.dto.UpdateCompilationRequest;
+import ru.practicum.core.compilation.interservice.EventInterservice;
 import ru.practicum.core.compilation.model.Compilation;
 import ru.practicum.core.compilation.repository.CompilationRepository;
-import ru.practicum.core.event.model.Event;
-import ru.practicum.core.event.repository.EventRepository;
+import ru.practicum.core.event.dto.response.EventShortDto;
 
 import java.util.Collections;
 import java.util.List;
@@ -24,7 +24,7 @@ import java.util.List;
 @Transactional
 public class CompilationServiceImpl implements CompilationService {
     private final CompilationRepository compilationRepository;
-    private final EventRepository eventRepository;
+    private final EventInterservice eventInterservice;
     private final CompilationMapper mapper;
 
     @Override
@@ -33,11 +33,11 @@ public class CompilationServiceImpl implements CompilationService {
             throw new ConflictException(String.format("A compilation with title '%s' already exists", compilationDto.getTitle()));
         }
 
-        List<Event> events = findEvents(compilationDto.getEvents());
-        List<Long> eventIds = events.stream().map(Event::getId).toList();
-        Compilation comp = mapper.toCompilation(compilationDto, eventIds);
+        List<EventShortDto> events = findEvents(compilationDto.getEvents());
+        List<Long> eventIds = events.stream().map(EventShortDto::getId).toList();
+        Compilation compilation = mapper.toCompilation(compilationDto, eventIds);
 
-        return mapper.toDto(compilationRepository.save(comp), events);
+        return mapper.toDto(compilationRepository.save(compilation), events);
     }
 
     @Override
@@ -59,8 +59,8 @@ public class CompilationServiceImpl implements CompilationService {
             compilation.setTitle(update.getTitle());
         }
         if (update.getEvents() != null) {
-            List<Event> events = findEvents(update.getEvents());
-            compilation.setEvents(events.stream().map(Event::getId).toList());
+            List<EventShortDto> events = findEvents(update.getEvents());
+            compilation.setEvents(events.stream().map(EventShortDto::getId).toList());
         }
         if (update.getPinned() != null) {
             compilation.setPinned(update.getPinned());
@@ -68,15 +68,15 @@ public class CompilationServiceImpl implements CompilationService {
         return toDto(compilationRepository.save(compilation));
     }
 
-    private List<Event> findEvents(List<Long> eventIds) {
+    private List<EventShortDto> findEvents(List<Long> eventIds) {
         if (eventIds == null || eventIds.isEmpty()) {
             return Collections.emptyList();
         }
-        return eventRepository.findAllById(eventIds);
+        return eventInterservice.findByIds(eventIds);
     }
 
     private CompilationDto toDto(Compilation compilation) {
-        List<Event> events = findEvents(compilation.getEvents());
+        List<EventShortDto> events = findEvents(compilation.getEvents());
         return mapper.toDto(compilation, events);
     }
 

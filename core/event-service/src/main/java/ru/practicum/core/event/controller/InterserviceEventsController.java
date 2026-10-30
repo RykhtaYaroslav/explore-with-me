@@ -15,6 +15,8 @@ import ru.practicum.core.event.dto.response.EventForParticipationServiceDto;
 import ru.practicum.core.event.dto.response.EventShortDto;
 import ru.practicum.core.event.service.interservice.EventInternalService;
 
+import java.util.List;
+
 @Validated
 @RestController
 @RequestMapping("/interservice/events")
@@ -36,6 +38,11 @@ public class InterserviceEventsController {
     @GetMapping("/{eventId}/review-info")
     public EventShortDto getReviewInfo(@PathVariable @Positive Long eventId) {
         return eventInternalService.getReviewInfo(eventId);
+    }
+
+    @GetMapping("/compilation-info")
+    public List<EventShortDto> getCompilationInfo(@RequestParam("ids") List<@Positive Long> eventIds) {
+        return eventInternalService.getCompilationInfo(eventIds);
     }
 
     @GetMapping("/{eventId}/participation-info")

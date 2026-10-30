@@ -10,6 +10,11 @@ import ru.practicum.core.event.dto.response.EventForParticipationServiceDto;
 import ru.practicum.core.event.dto.response.EventShortDto;
 import ru.practicum.core.event.model.Event;
 import ru.practicum.core.event.repository.EventRepository;
+import ru.practicum.core.event.service.EventStatsCollector;
+
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -18,6 +23,7 @@ public class EventInternalServiceImpl implements EventInternalService {
     private final EventRepository eventRepository;
     private final EventMapper eventMapper;
     private final UserInterservice userInterservice;
+    private final EventStatsCollector eventStatsCollector;
 
     @Override
     public boolean existsById(Long eventId) {
@@ -37,6 +43,31 @@ public class EventInternalServiceImpl implements EventInternalService {
         EventShortDto eventDto = eventMapper.toShortDto(event, 0L, event.getConfirmedRequests(), null);
         eventDto.setInitiator(userInterservice.getShortById(event.getInitiatorId()));
         return eventDto;
+    }
+
+    @Override
+    public List<EventShortDto> getCompilationInfo(List<Long> eventIds) {
+        if (eventIds == null || eventIds.isEmpty()) {
+            return List.of();
+        }
+
+        List<Event> events = eventRepository.findAllById(eventIds);
+        List<EventShortDto> eventDtos = eventStatsCollector.getShortDtoListWithStats(events);
+        Map<Long, EventShortDto> eventDtosById = new LinkedHashMap<>();
+        eventDtos.forEach(eventDto -> eventDtosById.put(eventDto.getId(), eventDto));
+
+        Map<Long, Event> eventsById = new LinkedHashMap<>();
+        events.forEach(event -> eventsById.put(event.getId(), event));
+
+        return eventIds.stream()
+                .distinct()
+                .filter(eventDtosById::containsKey)
+                .map(eventId -> {
+                    EventShortDto eventDto = eventDtosById.get(eventId);
+                    eventDto.setInitiator(userInterservice.getShortById(eventsById.get(eventId).getInitiatorId()));
+                    return eventDto;
+                })
+                .toList();
     }
 
     @Override
