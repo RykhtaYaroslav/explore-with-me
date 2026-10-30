@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 public class CommonErrorHandler {
     @ExceptionHandler(BaseAppException.class)
     public ResponseEntity<ErrorResponse> handleAppException(BaseAppException e) {
-        log.error("Получена ошибка {}: {}", e.getStatus(), e.getMessage(), e);
+        log.error("Received error {}: {}", e.getStatus(), e.getMessage(), e);
 
         ErrorResponse response = ErrorResponse.builder()
                 .status(e.getStatus().name())
@@ -72,7 +72,7 @@ public class CommonErrorHandler {
     private ResponseEntity<ErrorResponse> buildValidationResponse(String message) {
         ErrorResponse response = ErrorResponse.builder()
                 .status(HttpStatus.BAD_REQUEST.name())
-                .reason("Ошибка валидации данных")
+                .reason("Data validation failed")
                 .message(message)
                 .timestamp(LocalDateTime.now())
                 .build();

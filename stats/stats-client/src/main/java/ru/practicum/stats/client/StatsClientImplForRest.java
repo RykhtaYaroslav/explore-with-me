@@ -49,7 +49,7 @@ public class StatsClientImplForRest implements StatsClient {
                     .retrieve()
                     .toBodilessEntity();
         } catch (Exception e) {
-            log.error("Не удалось отправить статистику для uri: {}. Ошибка: {}",
+            log.error("Failed to send statistics for URI: {}. Error: {}",
                     hitDto.getUri(), e.getMessage());
         }
 
@@ -77,13 +77,13 @@ public class StatsClientImplForRest implements StatsClient {
                 .retrieve()
                 // Перехват ответа ошибки и проброс нового исключения для дальнейшей обработке в мэйне
                 .onStatus(HttpStatusCode::is4xxClientError, (request, response) -> {
-                    log.error("Ошибка запроса статистики (4xx): {}", response.getStatusCode());
-                    throw new IllegalArgumentException("Некорректный интервал дат для сбора статистики");
+                    log.error("Statistics request failed (4xx): {}", response.getStatusCode());
+                    throw new IllegalArgumentException("Invalid date range for statistics collection");
                 })
                 // Перехват ответа ошибки и проброс нового исключения для дальнейшей обработке в мэйне
                 .onStatus(HttpStatusCode::is5xxServerError, (request, response) -> {
-                    log.error("Сервер статистики недоступен (5xx): {}", response.getStatusCode());
-                    throw new IllegalStateException("Сервер статистики временно недоступен");
+                    log.error("Statistics server is unavailable (5xx): {}", response.getStatusCode());
+                    throw new IllegalStateException("The statistics server is temporarily unavailable");
                 })
                 .body(new ParameterizedTypeReference<List<ViewStatsDto>>() {
                 });

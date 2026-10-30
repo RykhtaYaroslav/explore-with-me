@@ -13,12 +13,12 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class NewUserRequest {
-    @Email(message = "Неверный формат почты")
-    @Size(min = 6, max = 254, message = "Почта должна быть от {min} до {max} символов")
-    @NotBlank(message = "Почта не может быть пустой")
+    @Email(message = "Must be a well-formed email address")
+    @Size(min = 6, max = 254, message = "Email must be between {min} and {max} characters")
+    @NotBlank(message = "Email must not be blank")
     private String email;
 
-    @Size(min = 2, max = 250, message = "Имя должно быть от {min} до {max} символов")
-    @NotBlank(message = "Имя не может быть пустым")
+    @Size(min = 2, max = 250, message = "Name must be between {min} and {max} characters")
+    @NotBlank(message = "Name must not be blank")
     private String name;
 }

@@ -13,6 +13,6 @@ import lombok.NoArgsConstructor;
 public class CategoryDto {
     private Long id;
 
-    @Size(min = 1, max = 50, message = "Имя должно быть от {min} до {max} символов")
+    @Size(min = 1, max = 50, message = "Name must be between {min} and {max} characters")
     private String name;
 }

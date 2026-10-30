@@ -21,7 +21,7 @@ public class NewCompilationDto {
     @Builder.Default
     private Boolean pinned = false;
 
-    @NotBlank(message = "Заголовок не может быть пустым")
-    @Size(min = 1, max = 50, message = "Заголовок должен быть от {min} до {max} символов")
+    @NotBlank(message = "Title must not be blank")
+    @Size(min = 1, max = 50, message = "Title must be between {min} and {max} characters")
     private String title;
 }

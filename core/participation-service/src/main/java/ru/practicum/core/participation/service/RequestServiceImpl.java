@@ -60,7 +60,7 @@ public class RequestServiceImpl implements RequestService {
     public ParticipationRequestDto cancelRequest(Long userId, Long requestId) {
 
         ParticipationRequest request = requestRepository.findById(requestId)
-                .orElseThrow(() -> new NotFoundException("Заявка с id = " + requestId + " не найдена!"));
+                .orElseThrow(() -> new NotFoundException(String.format("Request with id = %d was not found", requestId)));
 
         requestValidator.validateCancelRequest(userId, request);
 

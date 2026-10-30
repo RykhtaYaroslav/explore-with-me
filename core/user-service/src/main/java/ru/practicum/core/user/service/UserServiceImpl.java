@@ -57,7 +57,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto createUser(NewUserRequest newUser) {
         if (userRepository.existsByEmail(newUser.getEmail())) {
-            throw new ConflictException("Юзер с данным email = " + newUser.getEmail() + " уже существует");
+            throw new ConflictException(String.format("A user with email '%s' already exists", newUser.getEmail()));
         }
         User user = mapper.toUser(newUser);
         return mapper.toUserDtoOut(userRepository.save(user), 0.0);
@@ -66,7 +66,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void deleteUser(long userId) {
         userRepository.findById(userId).orElseThrow(()
-                -> new NotFoundException("Юзер с id = " + userId + " не найден"));
+                -> new NotFoundException(String.format("User with id = %d was not found", userId)));
 
         userRepository.deleteById(userId);
     }

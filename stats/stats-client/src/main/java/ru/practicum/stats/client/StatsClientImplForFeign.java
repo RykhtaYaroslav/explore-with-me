@@ -1,9 +1,9 @@
 package ru.practicum.stats.client;
 
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import feign.FeignException;
 import org.springframework.stereotype.Component;
 import ru.practicum.stats.dto.EndpointHitDto;
 import ru.practicum.stats.dto.ViewStatsDto;
@@ -31,7 +31,7 @@ public class StatsClientImplForFeign implements StatsClient {
         try {
             feign.saveHit(hitDto);
         } catch (FeignException exception) {
-            log.error("Не удалось отправить статистику для uri: {}. Ошибка: {}",
+            log.error("Failed to send statistics for URI: {}. Error: {}",
                     hitDto.getUri(), exception.getMessage());
         }
     }
@@ -45,13 +45,13 @@ public class StatsClientImplForFeign implements StatsClient {
         } catch (FeignException exception) {
             int status = exception.status();
             if (status >= 400 && status < 500) {
-                log.error("Ошибка запроса статистики (4xx): {}", status, exception);
+                log.error("Statistics request failed (4xx): {}", status, exception);
                 throw new IllegalArgumentException(
-                        "Некорректный интервал дат для сбора статистики", exception);
+                        "Invalid date range for statistics collection", exception);
             }
 
-            log.error("Сервер статистики недоступен. Ошибка: {}", exception.getMessage(), exception);
-            throw new IllegalStateException("Сервер статистики временно недоступен", exception);
+            log.error("Statistics server is unavailable. Error: {}", exception.getMessage(), exception);
+            throw new IllegalStateException("The statistics server is temporarily unavailable", exception);
         }
     }
 }

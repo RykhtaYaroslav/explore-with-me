@@ -27,7 +27,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public CategoryDto createCategory(NewCategoryDto category) {
         if (categoryRepository.findByName(category.getName()) != null) {
-            throw new ConflictException("Данная категория уже существует!");
+            throw new ConflictException("This category already exists");
         }
         Category ct = mapper.toCategory(category);
         return mapper.toCategoryDtoOut(categoryRepository.save(ct));
@@ -37,7 +37,7 @@ public class CategoryServiceImpl implements CategoryService {
     public void deleteCategory(Long catId) {
         checkAndReturnCategory(catId);
         if (eventRepository.existsByCategoryId(catId)) {
-            throw new ConflictException("Категория еще используется каким-то событием!");
+            throw new ConflictException("This category is still used by an event");
         }
         categoryRepository.deleteById(catId);
     }
@@ -46,7 +46,7 @@ public class CategoryServiceImpl implements CategoryService {
     public CategoryDto updateCategory(CategoryDto category, long catId) {
         Category ct = checkAndReturnCategory(catId);
         if (categoryRepository.findByName(category.getName()) != null && !ct.getName().equals(category.getName())) {
-            throw new ConflictException("Данная категория уже существует!");
+            throw new ConflictException("This category already exists");
         }
         ct.setName(category.getName());
         return mapper.toCategoryDtoOut(categoryRepository.save(ct));
@@ -54,7 +54,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     private Category checkAndReturnCategory(long catId) {
         return categoryRepository.findById(catId).orElseThrow(() ->
-                new NotFoundException("Категория с id = " + catId + " не найдена!"));
+                new NotFoundException(String.format("Category with id = %d was not found", catId)));
     }
 
     @Override
@@ -69,7 +69,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Transactional(readOnly = true)
     public CategoryDto getCategoryById(Long catId) {
         Category category = categoryRepository.findById(catId)
-                .orElseThrow(() -> new NotFoundException("Категория с id = " + catId + " не найдена!"));
+                .orElseThrow(() -> new NotFoundException(String.format("Category with id = %d was not found", catId)));
         return mapper.toCategoryDtoOut(category);
     }
 }

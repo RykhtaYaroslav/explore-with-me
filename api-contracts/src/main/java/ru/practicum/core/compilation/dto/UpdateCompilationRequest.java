@@ -17,6 +17,6 @@ public class UpdateCompilationRequest {
 
     private Boolean pinned;
 
-    @Size(min = 1, max = 50, message = "Имя должно быть от {min} до {max} символов")
+    @Size(min = 1, max = 50, message = "Title must be between {min} and {max} characters")
     private String title;
 }

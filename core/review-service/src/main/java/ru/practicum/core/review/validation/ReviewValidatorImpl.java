@@ -48,15 +48,15 @@ public class ReviewValidatorImpl implements ReviewValidator {
 
         if (eventReviewRepository.existsByParams(raterId, event.getId())) {
             throw new ConflictException(String.format(
-                    "Пользователь с id = %d уже оставил оценку событию с id = %d", raterId, event.getId()));
+                    "User with id = %d has already reviewed event with id = %d", raterId, event.getId()));
         }
     }
 
     @Override
     public void validateAuthorReview(Long raterId, Long authorId, EventShortDto event) {
         if (!eventInterservice.isOrganizer(event.getId(), authorId)) {
-            throw new ConflictException("Пользователь с id = " + authorId
-                    + " не является организатором события с id = " + event.getId());
+            throw new ConflictException(String.format("User with id = %d is not the organizer of event with id = %d",
+                    authorId, event.getId()));
         }
 
         validateDateTime(event.getEventDate());
@@ -64,7 +64,7 @@ public class ReviewValidatorImpl implements ReviewValidator {
 
         if (userReviewRepository.existsByParams(raterId, event.getId(), authorId)) {
             throw new ConflictException(String.format(
-                    "Пользователь с id = %d уже оценивал организатора с id = %d события с id = %d",
+                    "User with id = %d has already reviewed organizer with id = %d for event with id = %d",
                     raterId, authorId, event.getId()));
         }
     }
@@ -73,7 +73,7 @@ public class ReviewValidatorImpl implements ReviewValidator {
         LocalDateTime allowedTime = eventDate.plusHours(HOURS_OFFSET_FOR_REVIEWS_CREATING);
         if (LocalDateTime.now().isBefore(allowedTime)) {
             throw new ConflictException(String.format(
-                    "Оставить оценку событию можно только спустя %d часов после начала",
+                    "An event can only be reviewed %d hours after it starts",
                     HOURS_OFFSET_FOR_REVIEWS_CREATING));
         }
     }
@@ -81,7 +81,7 @@ public class ReviewValidatorImpl implements ReviewValidator {
     private void validateParticipation(Long eventId, Long userId) {
         if (!participationInterservice.isConfirmedParticipant(userId, eventId)) {
             throw new ConflictException(String.format(
-                    "Пользователь с id = %d не является участником события с id = %d", userId, eventId));
+                    "User with id = %d is not a participant of event with id = %d", userId, eventId));
         }
     }
 }

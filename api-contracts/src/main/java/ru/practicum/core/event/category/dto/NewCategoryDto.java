@@ -12,7 +12,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class NewCategoryDto {
-    @NotBlank(message = "Имя не может быть пустым")
-    @Size(min = 1, max = 50, message = "Имя должно быть от {min} до {max} символов")
+    @NotBlank(message = "Name must not be blank")
+    @Size(min = 1, max = 50, message = "Name must be between {min} and {max} characters")
     private String name;
 }

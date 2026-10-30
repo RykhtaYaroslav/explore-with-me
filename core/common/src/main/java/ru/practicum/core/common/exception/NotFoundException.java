@@ -4,6 +4,6 @@ import org.springframework.http.HttpStatus;
 
 public class NotFoundException extends BaseAppException {
     public NotFoundException(String message) {
-        super(message, HttpStatus.NOT_FOUND, "Искомый объект не был найден");
+        super(message, HttpStatus.NOT_FOUND, "The requested resource was not found");
     }
 }

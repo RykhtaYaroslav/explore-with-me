@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @Component
 @RequiredArgsConstructor
 public class RequestValidatorImpl implements RequestValidator {
-    private static final String OUT_OF_LIMIT_MESSAGE = "На это событие больше нет свободных мест";
+    private static final String OUT_OF_LIMIT_MESSAGE = "There are no available spots left for this event";
 
     private final UserInterservice userInterservice;
     private final EventInterservice eventInterservice;
@@ -33,19 +33,19 @@ public class RequestValidatorImpl implements RequestValidator {
         EventForParticipationServiceDto event = eventInterservice.findByIdOrThrow(eventId);
 
         if (requestRepository.existsByEventIdAndRequesterId(eventId, userId)) {
-            throw new ConflictException("Вы уже подали заявку на участие в этом событии!");
+            throw new ConflictException("You have already requested participation in this event");
         }
 
         if (event.initiatorId().equals(userId)) {
-            throw new ConflictException("Организатор события не может подать заявку на участие в нём!");
+            throw new ConflictException("The event initiator cannot request participation in their own event");
         }
 
         if (event.state() != EventState.PUBLISHED) {
-            throw new ConflictException("Нельзя подать заявку на неопубликованное событие!");
+            throw new ConflictException("You cannot request participation in an unpublished event");
         }
 
         if (!event.eventDate().isAfter(LocalDateTime.now())) {
-            throw new ConflictException("Нельзя подать заявку на уже начавшееся событие!");
+            throw new ConflictException("You cannot request participation in an event that has already started");
         }
 
         long confirmedCount = requestRepository.countByEventIdAndStatus(eventId, RequestStatus.CONFIRMED);
@@ -72,7 +72,7 @@ public class RequestValidatorImpl implements RequestValidator {
     @Override
     public void validateCancelRequest(Long userId, ParticipationRequest request) {
         if (!request.getRequesterId().equals(userId)) {
-            throw new ConflictException("Вы не можете отменить чужую заявку на участие!");
+            throw new ConflictException("You cannot cancel another user's participation request");
         }
     }
 }

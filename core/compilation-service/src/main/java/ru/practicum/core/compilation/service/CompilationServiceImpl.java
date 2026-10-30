@@ -32,7 +32,7 @@ public class CompilationServiceImpl implements CompilationService {
     @Override
     public CompilationDto createCompilation(NewCompilationDto compilationDto) {
         if (compilationRepository.existsByTitle(compilationDto.getTitle())) {
-            throw new ConflictException("Подборка с заголовком = " + compilationDto.getTitle() + " уже существует");
+            throw new ConflictException(String.format("A compilation with title '%s' already exists", compilationDto.getTitle()));
         }
 
         List<Event> events = Collections.emptyList();
@@ -63,7 +63,7 @@ public class CompilationServiceImpl implements CompilationService {
         if (update.getTitle() != null
                 && !update.getTitle().equals(compilation.getTitle())
                 && compilationRepository.existsByTitle(update.getTitle())) {
-            throw new ConflictException("Подборка с заголовком = " + update.getTitle() + " уже существует");
+            throw new ConflictException(String.format("A compilation with title '%s' already exists", update.getTitle()));
         }
         if (update.getTitle() != null) {
             compilation.setTitle(update.getTitle());
@@ -80,7 +80,7 @@ public class CompilationServiceImpl implements CompilationService {
 
     private Compilation checkAndReturnCompilation(long compId) {
         return compilationRepository.findById(compId).orElseThrow(() ->
-                new NotFoundException("Подборка с id = " + compId + " не найдена!"));
+                new NotFoundException(String.format("Compilation with id = %d was not found", compId)));
     }
 
     @Override
@@ -108,7 +108,7 @@ public class CompilationServiceImpl implements CompilationService {
     public CompilationDto getCompilationById(Long compId) {
 
         Compilation compilation = compilationRepository.findById(compId)
-                .orElseThrow(() -> new NotFoundException("Подборка с id=" + compId + " не найдена"));
+                .orElseThrow(() -> new NotFoundException(String.format("Compilation with id = %d was not found", compId)));
 
         return mapper.toDto(compilation);
     }
