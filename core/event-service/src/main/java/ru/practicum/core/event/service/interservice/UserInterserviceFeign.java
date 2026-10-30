@@ -6,6 +6,8 @@ import ru.practicum.core.common.exception.NotFoundException;
 import ru.practicum.core.event.service.interservice.feign.UserFeignClient;
 import ru.practicum.core.user.dto.UserShortDto;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 @Component
 public class UserInterserviceFeign implements UserInterservice {
@@ -22,5 +24,10 @@ public class UserInterserviceFeign implements UserInterservice {
     public UserShortDto getShortById(Long userId) {
         existsById(userId);
         return userFeignClient.getShortById(userId);
+    }
+
+    @Override
+    public List<UserShortDto> getShortByIds(List<Long> userIds) {
+        return userFeignClient.getShortByIds(userIds);
     }
 }

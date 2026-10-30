@@ -11,10 +11,12 @@ import ru.practicum.core.event.dto.response.EventShortDto;
 import ru.practicum.core.event.model.Event;
 import ru.practicum.core.event.repository.EventRepository;
 import ru.practicum.core.event.service.EventStatsCollector;
+import ru.practicum.core.user.dto.UserShortDto;
 
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -52,19 +54,29 @@ public class EventInternalServiceImpl implements EventInternalService {
         }
 
         List<Event> events = eventRepository.findAllById(eventIds);
+        if (events.isEmpty()) {
+            return List.of();
+        }
+
         List<EventShortDto> eventDtos = eventStatsCollector.getShortDtoListWithStats(events);
         Map<Long, EventShortDto> eventDtosById = new LinkedHashMap<>();
         eventDtos.forEach(eventDto -> eventDtosById.put(eventDto.getId(), eventDto));
 
-        Map<Long, Event> eventsById = new LinkedHashMap<>();
-        events.forEach(event -> eventsById.put(event.getId(), event));
+        Map<Long, Long> initiatorIdsByEventId = new LinkedHashMap<>();
+        events.forEach(event -> initiatorIdsByEventId.put(event.getId(), event.getInitiatorId()));
+        List<Long> initiatorIds = events.stream()
+                .map(Event::getInitiatorId)
+                .distinct()
+                .toList();
+        Map<Long, UserShortDto> usersById = userInterservice.getShortByIds(initiatorIds).stream()
+                .collect(Collectors.toMap(UserShortDto::getId, user -> user));
 
         return eventIds.stream()
                 .distinct()
                 .filter(eventDtosById::containsKey)
                 .map(eventId -> {
                     EventShortDto eventDto = eventDtosById.get(eventId);
-                    eventDto.setInitiator(userInterservice.getShortById(eventsById.get(eventId).getInitiatorId()));
+                    eventDto.setInitiator(usersById.get(initiatorIdsByEventId.get(eventId)));
                     return eventDto;
                 })
                 .toList();
