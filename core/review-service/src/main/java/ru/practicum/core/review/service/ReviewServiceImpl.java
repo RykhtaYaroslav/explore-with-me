@@ -8,6 +8,7 @@ import ru.practicum.core.review.dto.NewEventReviewDto;
 import ru.practicum.core.review.dto.NewUserReviewDto;
 import ru.practicum.core.review.dto.OutputEventReviewDto;
 import ru.practicum.core.review.dto.OutputUserReviewDto;
+import ru.practicum.core.review.interservice.UserInterservice;
 import ru.practicum.core.review.mapper.ReviewMapper;
 import ru.practicum.core.review.model.EventReview;
 import ru.practicum.core.review.model.UserReview;
@@ -19,12 +20,14 @@ import ru.practicum.core.user.dto.UserShortDto;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class ReviewServiceImpl implements ReviewService {
     private final ReviewValidator reviewValidator;
+    private final UserInterservice userInterservice;
 
     private final UserReviewRepository userReviewRepository;
     private final EventReviewRepository eventReviewRepository;
@@ -62,12 +65,19 @@ public class ReviewServiceImpl implements ReviewService {
     public List<OutputEventReviewDto> getEventReviews(Long eventId) {
         EventShortDto event = reviewValidator.findEventOrThrow(eventId);
         List<EventReview> reviews = eventReviewRepository.findAllByEventIdOrderByIdDesc(eventId);
-        Map<Long, UserShortDto> usersById = new HashMap<>();
+        List<Long> raterIds = reviews.stream()
+                .map(EventReview::getRaterId)
+                .distinct()
+                .toList();
+        Map<Long, UserShortDto> usersById = raterIds.isEmpty()
+                ? Map.of()
+                : userInterservice.getShortByIds(raterIds).stream()
+                        .collect(Collectors.toMap(UserShortDto::getId, user -> user));
 
         return reviews.stream()
                 .map(review -> reviewMapper.toEventReviewOutDto(
                         review,
-                        usersById.computeIfAbsent(review.getRaterId(), reviewValidator::findUserOrThrow),
+                        usersById.get(review.getRaterId()),
                         event
                 ))
                 .toList();
