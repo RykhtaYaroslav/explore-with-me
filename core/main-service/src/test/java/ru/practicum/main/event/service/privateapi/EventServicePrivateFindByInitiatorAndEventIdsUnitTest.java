@@ -11,7 +11,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import ru.practicum.core.category.dto.CategoryDto;
+import ru.practicum.core.event.category.dto.CategoryDto;
 import ru.practicum.core.event.dto.response.EventFullDto;
 import ru.practicum.core.user.dto.UserShortDto;
 import ru.practicum.core.user.model.User;

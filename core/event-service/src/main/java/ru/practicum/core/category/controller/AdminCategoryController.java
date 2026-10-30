@@ -13,9 +13,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import ru.practicum.core.category.dto.CategoryDto;
-import ru.practicum.core.category.dto.NewCategoryDto;
 import ru.practicum.core.category.service.CategoryService;
+import ru.practicum.core.event.category.dto.CategoryDto;
+import ru.practicum.core.event.category.dto.NewCategoryDto;
 
 @AllArgsConstructor
 @RequestMapping("/admin/categories")

@@ -12,8 +12,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import ru.practicum.core.participation.dto.ParticipationRequestDto;
 import ru.practicum.core.participation.service.RequestService;
-import ru.practicum.main.request.dto.ParticipationRequestDto;
 
 import java.util.List;
 

@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import ru.practicum.core.category.dto.CategoryDto;
 import ru.practicum.core.category.service.CategoryService;
+import ru.practicum.core.event.category.dto.CategoryDto;
 
 import java.util.List;
 

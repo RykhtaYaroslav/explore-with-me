@@ -1,4 +1,4 @@
-package ru.practicum.main.request.dto;
+package ru.practicum.core.participation.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

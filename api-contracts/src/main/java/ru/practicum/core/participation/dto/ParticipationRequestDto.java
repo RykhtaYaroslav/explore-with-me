@@ -1,4 +1,4 @@
-package ru.practicum.main.request.dto;
+package ru.practicum.core.participation.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;

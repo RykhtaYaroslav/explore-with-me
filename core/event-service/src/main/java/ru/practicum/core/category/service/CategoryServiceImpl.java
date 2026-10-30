@@ -4,13 +4,13 @@ import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.core.category.dto.CategoryDto;
 import ru.practicum.core.category.dto.CategoryMapper;
-import ru.practicum.core.category.dto.NewCategoryDto;
 import ru.practicum.core.category.model.Category;
 import ru.practicum.core.category.repository.CategoryRepository;
 import ru.practicum.core.common.exception.ConflictException;
 import ru.practicum.core.common.exception.NotFoundException;
+import ru.practicum.core.event.category.dto.CategoryDto;
+import ru.practicum.core.event.category.dto.NewCategoryDto;
 import ru.practicum.core.event.repository.EventRepository;
 
 import java.util.List;

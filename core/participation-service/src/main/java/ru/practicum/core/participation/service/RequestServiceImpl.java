@@ -6,11 +6,11 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.core.common.enums.RequestStatus;
 import ru.practicum.core.common.exception.NotFoundException;
 import ru.practicum.core.participation.client.EventFeignClient;
+import ru.practicum.core.participation.dto.ParticipationRequestDto;
 import ru.practicum.core.participation.dto.mapper.RequestMapper;
 import ru.practicum.core.participation.model.ParticipationRequest;
 import ru.practicum.core.participation.repository.RequestRepository;
 import ru.practicum.core.participation.validation.RequestValidator;
-import ru.practicum.main.request.dto.ParticipationRequestDto;
 
 import java.time.LocalDateTime;
 import java.util.List;
