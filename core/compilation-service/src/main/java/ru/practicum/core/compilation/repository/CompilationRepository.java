@@ -1,8 +1,8 @@
-package ru.practicum.main.compilation.repository;
+package ru.practicum.core.compilation.repository;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import ru.practicum.main.compilation.model.Compilation;
+import ru.practicum.core.compilation.model.Compilation;
 
 import java.util.List;
 

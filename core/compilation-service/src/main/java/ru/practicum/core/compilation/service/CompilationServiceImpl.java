@@ -1,4 +1,4 @@
-package ru.practicum.main.compilation.service;
+package ru.practicum.core.compilation.service;
 
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -6,12 +6,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import ru.practicum.core.compilation.dto.CompilationMapper;
+import ru.practicum.core.compilation.model.Compilation;
+import ru.practicum.core.compilation.repository.CompilationRepository;
 import ru.practicum.main.compilation.dto.CompilationDto;
-import ru.practicum.main.compilation.dto.CompilationMapper;
 import ru.practicum.main.compilation.dto.NewCompilationDto;
 import ru.practicum.main.compilation.dto.UpdateCompilationRequest;
-import ru.practicum.main.compilation.model.Compilation;
-import ru.practicum.main.compilation.repository.CompilationRepository;
 import ru.practicum.main.event.model.Event;
 import ru.practicum.main.event.repository.EventRepository;
 import ru.practicum.main.exception.ConflictException;

@@ -1,4 +1,4 @@
-package ru.practicum.main.compilation.service;
+package ru.practicum.core.compilation.service;
 
 import ru.practicum.main.compilation.dto.CompilationDto;
 import ru.practicum.main.compilation.dto.NewCompilationDto;

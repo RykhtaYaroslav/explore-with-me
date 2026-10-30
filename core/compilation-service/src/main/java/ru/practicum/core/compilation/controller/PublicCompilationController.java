@@ -1,4 +1,4 @@
-package ru.practicum.main.compilation.controller;
+package ru.practicum.core.compilation.controller;
 
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import ru.practicum.core.compilation.service.CompilationService;
 import ru.practicum.main.compilation.dto.CompilationDto;
-import ru.practicum.main.compilation.service.CompilationService;
 
 import java.util.List;
 

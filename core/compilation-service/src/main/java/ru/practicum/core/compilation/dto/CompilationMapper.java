@@ -1,8 +1,8 @@
-package ru.practicum.main.compilation.dto;
+package ru.practicum.core.compilation.dto;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import ru.practicum.main.compilation.model.Compilation;
+import ru.practicum.core.compilation.model.Compilation;
 import ru.practicum.main.event.model.Event;
 
 import java.util.List;
