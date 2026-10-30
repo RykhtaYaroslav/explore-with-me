@@ -3,7 +3,7 @@ package ru.practicum.core.compilation.dto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import ru.practicum.core.compilation.model.Compilation;
-import ru.practicum.main.event.model.Event;
+import ru.practicum.core.event.model.Event;
 
 import java.util.List;
 
