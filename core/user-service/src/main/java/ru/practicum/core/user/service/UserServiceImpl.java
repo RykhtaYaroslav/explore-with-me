@@ -1,6 +1,7 @@
 package ru.practicum.core.user.service;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.core.common.dto.user.UserAverageScore;
@@ -17,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @AllArgsConstructor
 @Service
 @Transactional
@@ -33,6 +35,10 @@ public class UserServiceImpl implements UserService {
             users = userRepository.getUsersWithoutIds(from, size);
         } else {
             users = userRepository.findAllById(ids);
+        }
+
+        if (users.isEmpty()) {
+            return List.of();
         }
 
         List<Long> userIds = users.stream()
@@ -66,7 +72,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public void deleteUser(long userId) {
         userRepository.findById(userId).orElseThrow(()
-                -> new NotFoundException(String.format("User with id = %d was not found", userId)));
+                -> {
+            log.error((String.format("User with id = %d was not found", userId)));
+            throw new NotFoundException(String.format("User with id = %d was not found", userId));
+        });
+
 
         userRepository.deleteById(userId);
     }
