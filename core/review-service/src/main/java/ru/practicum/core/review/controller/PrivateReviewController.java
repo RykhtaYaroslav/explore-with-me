@@ -33,7 +33,7 @@ public class PrivateReviewController {
         return reviewService.createAuthorReview(raterId, eventId, authorId, request);
     }
 
-    @PostMapping("/eventId/{eventId}")
+    @PostMapping("/event/{eventId}")
     @ResponseStatus(HttpStatus.CREATED)
     public OutputEventReviewDto createEventReview(@PathVariable @Positive(message = "Rater id must be positive") Long raterId,
                                                   @PathVariable @Positive(message = "Event id must be positive") Long eventId,

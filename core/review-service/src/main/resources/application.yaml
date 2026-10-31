@@ -9,7 +9,7 @@ spring:
         enabled: true
         service-id: config-server
   profiles:
-    active: test
+    active: test-time
 eureka:
   client:
     service-url:

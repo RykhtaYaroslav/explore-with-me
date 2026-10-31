@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.practicum.core.common.exception.ConflictException;
 import ru.practicum.core.common.exception.NotFoundException;
+import ru.practicum.core.common.time.TimeProvider;
 import ru.practicum.core.event.dto.response.EventShortDto;
 import ru.practicum.core.review.interservice.EventInterservice;
 import ru.practicum.core.review.interservice.ParticipationInterservice;
@@ -24,6 +25,7 @@ public class ReviewValidatorImpl implements ReviewValidator {
     private final ParticipationInterservice participationInterservice;
     private final UserReviewRepository userReviewRepository;
     private final EventReviewRepository eventReviewRepository;
+    private final TimeProvider timeProvider;
 
     @Override
     public UserShortDto findUserOrThrow(Long userId) {
@@ -71,7 +73,7 @@ public class ReviewValidatorImpl implements ReviewValidator {
 
     private void validateDateTime(LocalDateTime eventDate) {
         LocalDateTime allowedTime = eventDate.plusHours(HOURS_OFFSET_FOR_REVIEWS_CREATING);
-        if (LocalDateTime.now().isBefore(allowedTime)) {
+        if (timeProvider.now().isBefore(allowedTime)) {
             throw new ConflictException(String.format(
                     "An event can only be reviewed %d hours after it starts",
                     HOURS_OFFSET_FOR_REVIEWS_CREATING));

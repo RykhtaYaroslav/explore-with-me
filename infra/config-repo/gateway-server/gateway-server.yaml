@@ -30,6 +30,6 @@ spring:
         - id: reviews
           uri: lb://review-service
           predicates:
-            - Path=/reviews,/reviews/**,/rating,/rating/**
+            - Path=/reviews,/reviews/**,/rating,/rating/**,/test/time
 server:
   port: 8080

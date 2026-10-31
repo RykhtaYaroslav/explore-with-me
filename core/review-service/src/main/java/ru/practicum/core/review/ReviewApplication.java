@@ -6,10 +6,11 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Import;
 import ru.practicum.core.common.exception.CommonErrorHandler;
 import ru.practicum.core.common.logging.RequestLoggingConfiguration;
+import ru.practicum.core.common.time.TimeConfig;
 
 @SpringBootApplication
 @EnableFeignClients(basePackages = "ru.practicum.core.review.interservice.feign")
-@Import({CommonErrorHandler.class, RequestLoggingConfiguration.class})
+@Import({CommonErrorHandler.class, RequestLoggingConfiguration.class, TimeConfig.class})
 public class ReviewApplication {
     public static void main(String[] args) {
         SpringApplication.run(ReviewApplication.class, args);

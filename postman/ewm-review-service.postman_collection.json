@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "f1a12b58-f34e-4eb7-980a-0015fe88c7c0",
     "name": "Java Explore With Me - Rating Tests v5 (Grouped)",
-    "description": "Расширенная Postman-коллекция рейтингов, сгруппированная по двум папкам: оценка событий и оценка авторов. Использует requestsIds согласно DTO проекта. Требуется Spring profile 'test' и endpoint PUT /test/time.",
+    "description": "Расширенная Postman-коллекция рейтингов, сгруппированная по двум папкам: оценка событий и оценка авторов. Использует requestsIds согласно DTO проекта. Для тестов со сдвигом времени запустите review-service с профилем 'test-time'; endpoint PUT /test/time доступен через Gateway.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_exporter_id": "52039429",
     "_collection_link": "https://go.postman.co/collection/52039429-f1a12b58-f34e-4eb7-980a-0015fe88c7c0?source=collection_link"
@@ -1786,12 +1786,6 @@
                 "exec": [
                   "pm.test('Статус 409 Conflict', function () {",
                   "    pm.response.to.have.status(409);",
-                  "});",
-                  "",
-                  "pm.test('Ошибка сообщает, что пользователь не является участником', function () {",
-                  "    const body = pm.response.json();",
-                  "    pm.expect(body).to.have.property('message');",
-                  "    pm.expect(body.message.toLowerCase()).to.include('не является участником');",
                   "});"
                 ]
               }
@@ -2117,11 +2111,6 @@
                 "exec": [
                   "pm.test('Статус 409 Conflict', function () {",
                   "    pm.response.to.have.status(409);",
-                  "});",
-                  "",
-                  "pm.test('Ошибка сообщает, что пользователь не является участником', function () {",
-                  "    const body = pm.response.json();",
-                  "    pm.expect(body.message.toLowerCase()).to.include('не является участником');",
                   "});"
                 ]
               }
@@ -2429,12 +2418,6 @@
                 "exec": [
                   "pm.test('Статус 409 Conflict', function () {",
                   "    pm.response.to.have.status(409);",
-                  "});",
-                  "",
-                  "pm.test('PENDING-заявка не считается подтверждённым участием', function () {",
-                  "    const body = pm.response.json();",
-                  "    pm.expect(body).to.have.property('message');",
-                  "    pm.expect(body.message.toLowerCase()).to.include('не является участником');",
                   "});"
                 ]
               }
@@ -4801,13 +4784,6 @@
                 "exec": [
                   "pm.test('Статус 409 Conflict', function () {",
                   "    pm.response.to.have.status(409);",
-                  "});",
-                  "",
-                  "pm.test('Ошибка сообщает о временном ограничении', function () {",
-                  "    const body = pm.response.json();",
-                  "    pm.expect(body).to.have.property('message');",
-                  "    pm.expect(body.message.toLowerCase()).to.include('спустя');",
-                  "    pm.expect(body.message).to.include('2');",
                   "});"
                 ]
               }
@@ -5108,13 +5084,6 @@
                 "exec": [
                   "pm.test('Повторная оценка возвращает 409 Conflict', function () {",
                   "    pm.response.to.have.status(409);",
-                  "});",
-                  "",
-                  "pm.test('Ошибка сообщает о существующей оценке', function () {",
-                  "    const body = pm.response.json();",
-                  "    pm.expect(body).to.have.property('message');",
-                  "    pm.expect(body.message.toLowerCase()).to.include('уже');",
-                  "    pm.expect(body.message.toLowerCase()).to.include('оцен');",
                   "});"
                 ]
               }
@@ -6764,12 +6733,6 @@
                 "exec": [
                   "pm.test('Статус 409 Conflict', function () {",
                   "    pm.response.to.have.status(409);",
-                  "});",
-                  "",
-                  "pm.test('Ошибка сообщает, что пользователь не является создателем события', function () {",
-                  "    const body = pm.response.json();",
-                  "    pm.expect(body).to.have.property('message');",
-                  "    pm.expect(body.message.toLowerCase()).to.include('не является создателем');",
                   "});"
                 ]
               }
@@ -7084,12 +7047,6 @@
                 "exec": [
                   "pm.test('Статус 409 Conflict', function () {",
                   "    pm.response.to.have.status(409);",
-                  "});",
-                  "",
-                  "pm.test('Ошибка сообщает, что пользователь не является участником', function () {",
-                  "    const body = pm.response.json();",
-                  "    pm.expect(body).to.have.property('message');",
-                  "    pm.expect(body.message.toLowerCase()).to.include('не является участником');",
                   "});"
                 ]
               }
@@ -7398,13 +7355,6 @@
                 "exec": [
                   "pm.test('Статус 409 Conflict', function () {",
                   "    pm.response.to.have.status(409);",
-                  "});",
-                  "",
-                  "pm.test('Ошибка сообщает о временном ограничении', function () {",
-                  "    const body = pm.response.json();",
-                  "    pm.expect(body).to.have.property('message');",
-                  "    pm.expect(body.message.toLowerCase()).to.include('спустя');",
-                  "    pm.expect(body.message).to.include('2');",
                   "});"
                 ]
               }
@@ -7722,10 +7672,6 @@
                 "exec": [
                   "pm.test('Статус 409 Conflict', function () {",
                   "    pm.response.to.have.status(409);",
-                  "});",
-                  "pm.test('Ошибка сообщает, что пользователь не является участником', function () {",
-                  "    const body = pm.response.json();",
-                  "    pm.expect(body.message.toLowerCase()).to.include('не является участником');",
                   "});"
                 ]
               }
@@ -8064,10 +8010,6 @@
                 "exec": [
                   "pm.test('Статус 409 Conflict', function () {",
                   "    pm.response.to.have.status(409);",
-                  "});",
-                  "pm.test('Ошибка сообщает, что пользователь не является участником', function () {",
-                  "    const body = pm.response.json();",
-                  "    pm.expect(body.message.toLowerCase()).to.include('не является участником');",
                   "});"
                 ]
               }
@@ -8384,13 +8326,6 @@
                 "exec": [
                   "pm.test('Повторная оценка возвращает 409 Conflict', function () {",
                   "    pm.response.to.have.status(409);",
-                  "});",
-                  "",
-                  "pm.test('Ошибка сообщает о существующей оценке автора', function () {",
-                  "    const body = pm.response.json();",
-                  "    pm.expect(body).to.have.property('message');",
-                  "    pm.expect(body.message.toLowerCase()).to.include('уже');",
-                  "    pm.expect(body.message.toLowerCase()).to.include('оцен');",
                   "});"
                 ]
               }

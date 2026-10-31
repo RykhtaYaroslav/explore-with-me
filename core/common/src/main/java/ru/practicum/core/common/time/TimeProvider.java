@@ -1,4 +1,4 @@
-package ru.practicum.main.time;
+package ru.practicum.core.common.time;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

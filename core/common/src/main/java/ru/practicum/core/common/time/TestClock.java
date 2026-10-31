@@ -1,4 +1,4 @@
-package ru.practicum.main.time;
+package ru.practicum.core.common.time;
 
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 import java.time.Instant;
 
 @Component
-@Profile("test")
+@Profile("test-time")
 public class TestClock {
 
     private volatile Instant currentTime = Instant.now();

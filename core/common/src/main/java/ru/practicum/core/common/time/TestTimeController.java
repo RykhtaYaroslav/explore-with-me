@@ -1,4 +1,4 @@
-package ru.practicum.main.time;
+package ru.practicum.core.common.time;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
@@ -13,7 +13,7 @@ import java.time.ZoneId;
 
 @RestController
 @RequestMapping("/test/time")
-@Profile("test")
+@Profile("test-time")
 @RequiredArgsConstructor
 public class TestTimeController {
 
