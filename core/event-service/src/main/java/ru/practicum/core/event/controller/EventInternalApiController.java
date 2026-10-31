@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import ru.practicum.core.event.dto.response.EventForParticipationServiceDto;
+import ru.practicum.core.event.dto.response.EventDtoForParticipationService;
 import ru.practicum.core.event.dto.response.EventShortDto;
 import ru.practicum.core.event.service.internalapi.EventInternalApiService;
 
@@ -51,7 +51,7 @@ public class EventInternalApiController {
     }
 
     @GetMapping("/{eventId}/participation-info")
-    public EventForParticipationServiceDto getParticipationInfo(@PathVariable @Positive Long eventId) {
+    public EventDtoForParticipationService getParticipationInfo(@PathVariable @Positive Long eventId) {
         return eventInternalApiService.getParticipationInfoOrThrow(eventId);
     }
 

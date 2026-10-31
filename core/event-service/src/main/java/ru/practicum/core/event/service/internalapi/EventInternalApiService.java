@@ -1,6 +1,6 @@
 package ru.practicum.core.event.service.internalapi;
 
-import ru.practicum.core.event.dto.response.EventForParticipationServiceDto;
+import ru.practicum.core.event.dto.response.EventDtoForParticipationService;
 import ru.practicum.core.event.dto.response.EventShortDto;
 
 import java.util.List;
@@ -16,7 +16,7 @@ public interface EventInternalApiService {
 
     List<EventShortDto> getCompilationInfo(List<Long> eventIds);
 
-    EventForParticipationServiceDto getParticipationInfoOrThrow(Long eventId);
+    EventDtoForParticipationService getParticipationInfoOrThrow(Long eventId);
 
     void adjustCount(Long eventId, long delta);
 

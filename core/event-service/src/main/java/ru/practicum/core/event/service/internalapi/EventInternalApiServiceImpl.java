@@ -6,7 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.core.common.exception.ConflictException;
 import ru.practicum.core.common.exception.NotFoundException;
 import ru.practicum.core.event.dto.mapper.EventMapper;
-import ru.practicum.core.event.dto.response.EventForParticipationServiceDto;
+import ru.practicum.core.event.dto.response.EventDtoForParticipationService;
 import ru.practicum.core.event.dto.response.EventShortDto;
 import ru.practicum.core.event.model.Event;
 import ru.practicum.core.event.repository.EventRepository;
@@ -121,12 +121,12 @@ public class EventInternalApiServiceImpl implements EventInternalApiService {
     }
 
     @Override
-    public EventForParticipationServiceDto getParticipationInfoOrThrow(Long eventId) {
+    public EventDtoForParticipationService getParticipationInfoOrThrow(Long eventId) {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException(
                         String.format("Event with id = %d was not found", eventId)));
 
-        return new EventForParticipationServiceDto(
+        return new EventDtoForParticipationService(
                 event.getId(),
                 event.getState(),
                 event.getEventDate(),

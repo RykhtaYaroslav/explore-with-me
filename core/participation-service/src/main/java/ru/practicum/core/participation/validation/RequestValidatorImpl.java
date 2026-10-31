@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import ru.practicum.core.common.enums.RequestStatus;
 import ru.practicum.core.common.exception.ConflictException;
 import ru.practicum.core.common.exception.NotFoundException;
-import ru.practicum.core.event.dto.response.EventForParticipationServiceDto;
+import ru.practicum.core.event.dto.response.EventDtoForParticipationService;
 import ru.practicum.core.event.model.EventState;
 import ru.practicum.core.participation.dto.EventRequestStatusUpdateRequest;
 import ru.practicum.core.participation.dto.internal.RequestStatusUpdateContext;
@@ -36,7 +36,7 @@ public class RequestValidatorImpl implements RequestValidator {
     @Override
     public RequestStatus validateCreateRequestAndGetStatus(Long userId, Long eventId) {
         validateUserExists(userId);
-        EventForParticipationServiceDto event = eventInterservice.findByIdOrThrow(eventId);
+        EventDtoForParticipationService event = eventInterservice.findByIdOrThrow(eventId);
 
         if (requestRepository.existsByEventIdAndRequesterId(eventId, userId)) {
             throw new ConflictException("You have already requested participation in this event");
@@ -91,7 +91,7 @@ public class RequestValidatorImpl implements RequestValidator {
     @Override
     public RequestStatusUpdateContext validateChangeRequestsStatus(Long userId, Long eventId,
                                                                    EventRequestStatusUpdateRequest update) {
-        EventForParticipationServiceDto event = eventInterservice.findByIdForOrganizerOrThrow(eventId, userId);
+        EventDtoForParticipationService event = eventInterservice.findByIdForOrganizerOrThrow(eventId, userId);
         validateEventRequiresRequestModeration(event);
 
         RequestStatus targetStatus = validateAndGetTargetStatus(update);
@@ -149,14 +149,14 @@ public class RequestValidatorImpl implements RequestValidator {
         }
     }
 
-    private void validateEventRequiresRequestModeration(EventForParticipationServiceDto event) {
+    private void validateEventRequiresRequestModeration(EventDtoForParticipationService event) {
         if (event.participantLimit() == 0 || !event.requestModeration()) {
             throw new ConflictException(
                     "Confirmation is not required for events with 0 limit or disabled moderation");
         }
     }
 
-    private long getConfirmedRequestCount(Long eventId, EventForParticipationServiceDto event) {
+    private long getConfirmedRequestCount(Long eventId, EventDtoForParticipationService event) {
         long repositoryCount = requestRepository.countByEventIdAndStatus(eventId, RequestStatus.CONFIRMED);
         Long eventCount = event.confirmedRequests();
         if (eventCount == null) {

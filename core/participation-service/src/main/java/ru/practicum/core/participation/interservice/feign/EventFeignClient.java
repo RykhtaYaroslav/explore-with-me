@@ -6,13 +6,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import ru.practicum.core.common.constants.ServiceNames;
-import ru.practicum.core.event.dto.response.EventForParticipationServiceDto;
+import ru.practicum.core.event.dto.response.EventDtoForParticipationService;
 
 @FeignClient(name = ServiceNames.EVENT_SERVICE, contextId = "participationEventInfoClient")
 public interface EventFeignClient {
 
     @GetMapping("/interservice/events/{eventId}/participation-info")
-    EventForParticipationServiceDto findByIdOrThrow(@PathVariable("eventId") Long eventId);
+    EventDtoForParticipationService findByIdOrThrow(@PathVariable("eventId") Long eventId);
 
     @PutMapping("/interservice/events/{eventId}/confirmed-requests")
     void synchronizeConfirmedRequests(@PathVariable("eventId") Long eventId,

@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.core.common.exception.ConflictException;
 import ru.practicum.core.common.exception.NotFoundException;
-import ru.practicum.core.event.dto.response.EventForParticipationServiceDto;
+import ru.practicum.core.event.dto.response.EventDtoForParticipationService;
 import ru.practicum.core.participation.interservice.feign.EventFeignClient;
 
 @RequiredArgsConstructor
@@ -19,8 +19,8 @@ public class EventInterserviceFeign implements EventInterservice {
     }
 
     @Override
-    public EventForParticipationServiceDto findByIdForOrganizerOrThrow(Long eventId, Long userId) {
-        EventForParticipationServiceDto event = findByIdOrThrow(eventId);
+    public EventDtoForParticipationService findByIdForOrganizerOrThrow(Long eventId, Long userId) {
+        EventDtoForParticipationService event = findByIdOrThrow(eventId);
         if (!event.initiatorId().equals(userId)) {
             throw new ConflictException("Only the event initiator can manage participation requests");
         }
@@ -28,7 +28,7 @@ public class EventInterserviceFeign implements EventInterservice {
     }
 
     @Override
-    public EventForParticipationServiceDto findByIdOrThrow(Long eventId) {
+    public EventDtoForParticipationService findByIdOrThrow(Long eventId) {
         try {
             return eventFeignClient.findByIdOrThrow(eventId);
         } catch (FeignException e) {
