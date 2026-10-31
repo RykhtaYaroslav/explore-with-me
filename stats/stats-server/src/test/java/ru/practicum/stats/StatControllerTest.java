@@ -3,6 +3,8 @@ package ru.practicum.stats;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.DisplayName;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -19,7 +21,15 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.times;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @WebMvcTest(StatController.class)
 @ContextConfiguration(classes = StatsServerApplication.class)
@@ -37,7 +47,13 @@ class StatControllerTest {
     @MockBean
     private StatService statService;
 
+    @AfterEach
+    void verifyNoMoreServiceInteractions() {
+        verifyNoMoreInteractions(statService);
+    }
+
     @Test
+    @DisplayName("POST /hit delegates the hit to the statistics service once")
     void saveHitTest() throws Exception {
         EndpointHitDto hit = new EndpointHitDto("app", "uri", "192.0.0.1", LocalDateTime.now());
 
@@ -45,9 +61,16 @@ class StatControllerTest {
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(hit)))
                 .andExpect(MockMvcResultMatchers.status().isCreated());
+        org.mockito.ArgumentCaptor<EndpointHitDto> captor = org.mockito.ArgumentCaptor.forClass(EndpointHitDto.class);
+        verify(statService, times(1)).saveHit(captor.capture());
+        assertThat(captor.getValue().getApp()).isEqualTo(hit.getApp());
+        assertThat(captor.getValue().getUri()).isEqualTo(hit.getUri());
+        assertThat(captor.getValue().getIp()).isEqualTo(hit.getIp());
+        assertThat(captor.getValue().getTimestamp()).isEqualTo(hit.getTimestamp().withNano(0));
     }
 
     @Test
+    @DisplayName("GET /stats forwards parsed dates, URI filters, and unique flag")
     void getStatsWithUris() throws Exception {
         List<String> uris = List.of("/users", "/events");
 
@@ -69,9 +92,11 @@ class StatControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$[0].app").value("app1"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$[0].uri").value("/users"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$[0].hits").value(2));
+        verify(statService, times(1)).getStats(start, end, uris, false);
     }
 
     @Test
+    @DisplayName("GET /stats supports omitted URI filters")
     void getEmptyStatsWithoutUris() throws Exception {
         when(statService.getStats(start, end, null, true))
                 .thenReturn(List.of());
@@ -82,14 +107,17 @@ class StatControllerTest {
                         .param("unique", "true"))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.content().json("[]"));
+        verify(statService, times(1)).getStats(start, end, null, true);
     }
 
     @Test
+    @DisplayName("GET /stats rejects a start time after the end time without calling the service")
     void getStatsWhereStartAfterEnd() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.get("/stats")
                         .param("start", endStr)
                         .param("end", startStr)
                         .param("unique", "true"))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest());
+        verifyNoInteractions(statService);
     }
 }
