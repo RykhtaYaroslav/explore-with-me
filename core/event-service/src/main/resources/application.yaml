@@ -9,7 +9,7 @@ spring:
         enabled: true
         service-id: config-server
   profiles:
-    active: test-postman
+    active: test
 eureka:
   client:
     service-url:
