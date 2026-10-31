@@ -1,0 +1,1108 @@
+openapi: 3.0.3
+info:
+  title: Explore With Me API
+  version: 1.0.0
+  description: |
+    HTTP API сервиса Explore With Me. Все перечисленные маршруты доступны через API Gateway.
+
+    Даты передаются в формате `yyyy-MM-dd HH:mm:ss` (например, `2026-11-01 18:30:00`).
+    Для административных операций в текущей конфигурации отдельная схема авторизации не задана.
+  contact:
+    name: Explore With Me
+  license:
+    name: Project license
+servers:
+  - url: http://localhost:8080
+    description: Локальный API Gateway
+tags:
+  - name: События
+    description: Публичный поиск и просмотр событий
+  - name: События пользователя
+    description: Создание и управление собственными событиями
+  - name: События администратора
+    description: Поиск, публикация и отклонение событий
+  - name: Категории
+    description: Просмотр категорий
+  - name: Категории администратора
+    description: Управление категориями
+  - name: Заявки
+    description: Заявки на участие в событиях
+  - name: Оценки
+    description: Оценки событий и их организаторов
+  - name: Пользователи администратора
+    description: Управление пользователями
+  - name: Подборки
+    description: Публичный просмотр подборок событий
+  - name: Подборки администратора
+    description: Создание и изменение подборок
+  - name: Статистика
+    description: Регистрация просмотров и получение статистики
+  - name: Тестирование
+    description: Вспомогательные методы, доступные с профилем `test-time`
+paths:
+  /events:
+    get:
+      tags: [События]
+      operationId: searchEvents
+      summary: Поиск опубликованных событий
+      description: Возвращает события, подходящие под фильтры. По умолчанию нижняя граница даты — текущее время.
+      parameters:
+        - name: text
+          in: query
+          description: Подстрока для поиска в аннотации и описании; поиск без учёта регистра.
+          schema: { type: string }
+          example: концерт
+        - name: categories
+          in: query
+          description: Идентификаторы категорий. Параметр можно передавать несколько раз.
+          style: form
+          explode: true
+          schema:
+            type: array
+            items: { type: integer, format: int64, minimum: 1 }
+          example: [3, 7]
+        - name: paid
+          in: query
+          description: Фильтр по платным или бесплатным событиям.
+          schema: { type: boolean }
+        - name: rangeStart
+          in: query
+          description: Не показывать события раньше этой даты.
+          schema: { type: string, pattern: '^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$' }
+          example: '2026-11-01 00:00:00'
+        - name: rangeEnd
+          in: query
+          description: Не показывать события позже этой даты.
+          schema: { type: string, pattern: '^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$' }
+          example: '2026-12-31 23:59:59'
+        - name: onlyAvailable
+          in: query
+          description: Оставить только события со свободными местами.
+          schema: { type: boolean, default: false }
+        - name: sort
+          in: query
+          description: Сортировка результата.
+          schema: { $ref: '#/components/schemas/EventSort' }
+        - name: from
+          in: query
+          description: Смещение от начала списка.
+          schema: { type: integer, minimum: 0, default: 0 }
+        - name: size
+          in: query
+          description: Максимальное число событий в ответе.
+          schema: { type: integer, minimum: 1, default: 10 }
+      responses:
+        '200':
+          description: Список кратких карточек событий.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/EventShort' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /events/{id}:
+    get:
+      tags: [События]
+      operationId: getEvent
+      summary: Получить событие
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Идентификатор события.
+          schema: { type: integer, format: int64, minimum: 1 }
+      responses:
+        '200':
+          description: Полная карточка события.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EventFull' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /users/{userId}/events:
+    post:
+      tags: [События пользователя]
+      operationId: createEvent
+      summary: Создать событие
+      description: Новое событие создаётся в состоянии `PENDING`.
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/NewEvent' }
+            example:
+              title: Городской фестиваль
+              annotation: Фестиваль музыки, еды и локальных проектов в центре города.
+              description: Полная программа фестиваля, площадки, участники и правила посещения.
+              category: 4
+              eventDate: '2026-12-10 18:30:00'
+              location: { lat: 55.751244, lon: 37.618423 }
+              paid: false
+              participantLimit: 0
+              requestModeration: true
+      responses:
+        '201':
+          description: Событие создано.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EventFull' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/ServerError' }
+    get:
+      tags: [События пользователя]
+      operationId: getUserEvents
+      summary: Получить события пользователя
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+        - $ref: '#/components/parameters/From'
+        - $ref: '#/components/parameters/Size'
+      responses:
+        '200':
+          description: Список кратких карточек событий пользователя.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/EventShort' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /users/{userId}/events/{eventId}:
+    get:
+      tags: [События пользователя]
+      operationId: getUserEvent
+      summary: Получить событие пользователя
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+        - $ref: '#/components/parameters/PositiveEventId'
+      responses:
+        '200':
+          description: Полная карточка события.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EventFull' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/ServerError' }
+    patch:
+      tags: [События пользователя]
+      operationId: updateUserEvent
+      summary: Изменить или отменить событие пользователя
+      description: Передавайте только поля, которые нужно изменить.
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+        - $ref: '#/components/parameters/PositiveEventId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateEventUser' }
+            example:
+              annotation: Обновлённая программа фестиваля с уточнёнными площадками и временем.
+              stateAction: SEND_TO_REVIEW
+      responses:
+        '200':
+          description: Событие обновлено.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EventFull' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /admin/events:
+    get:
+      tags: [События администратора]
+      operationId: searchEventsAdmin
+      summary: Поиск событий для администрирования
+      parameters:
+        - name: users
+          in: query
+          description: Идентификаторы инициаторов; параметр можно повторять.
+          style: form
+          explode: true
+          schema:
+            type: array
+            items: { type: integer, format: int64, minimum: 1 }
+        - name: states
+          in: query
+          description: Состояния событий; параметр можно повторять.
+          style: form
+          explode: true
+          schema:
+            type: array
+            items: { $ref: '#/components/schemas/EventState' }
+        - name: categories
+          in: query
+          description: Идентификаторы категорий; параметр можно повторять.
+          style: form
+          explode: true
+          schema:
+            type: array
+            items: { type: integer, format: int64, minimum: 1 }
+        - name: rangeStart
+          in: query
+          schema: { type: string, pattern: '^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$' }
+          example: '2026-11-01 00:00:00'
+        - name: rangeEnd
+          in: query
+          schema: { type: string, pattern: '^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$' }
+          example: '2026-12-31 23:59:59'
+        - $ref: '#/components/parameters/From'
+        - $ref: '#/components/parameters/Size'
+      responses:
+        '200':
+          description: Список полных карточек событий.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/EventFull' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /admin/events/{eventId}:
+    patch:
+      tags: [События администратора]
+      operationId: updateEventAdmin
+      summary: Изменить, опубликовать или отклонить событие
+      parameters:
+        - $ref: '#/components/parameters/PositiveEventId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateEventAdmin' }
+            example:
+              stateAction: PUBLISH_EVENT
+      responses:
+        '200':
+          description: Событие обновлено.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EventFull' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /categories:
+    get:
+      tags: [Категории]
+      operationId: getCategories
+      summary: Список категорий
+      parameters:
+        - $ref: '#/components/parameters/From'
+        - $ref: '#/components/parameters/Size'
+      responses:
+        '200':
+          description: Страница категорий.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Category' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+  /categories/{catId}:
+    get:
+      tags: [Категории]
+      operationId: getCategory
+      summary: Получить категорию
+      parameters:
+        - name: catId
+          in: path
+          required: true
+          schema: { type: integer, format: int64, minimum: 1 }
+      responses:
+        '200':
+          description: Категория.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Category' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /admin/categories:
+    post:
+      tags: [Категории администратора]
+      operationId: createCategory
+      summary: Создать категорию
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/NewCategory' }
+            example: { name: Культура }
+      responses:
+        '201':
+          description: Категория создана.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Category' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /admin/categories/{catId}:
+    patch:
+      tags: [Категории администратора]
+      operationId: updateCategory
+      summary: Изменить категорию
+      parameters:
+        - name: catId
+          in: path
+          required: true
+          schema: { type: integer, format: int64, minimum: 1 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Category' }
+            example: { id: 4, name: Искусство }
+      responses:
+        '200':
+          description: Категория обновлена.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Category' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+    delete:
+      tags: [Категории администратора]
+      operationId: deleteCategory
+      summary: Удалить категорию
+      parameters:
+        - name: catId
+          in: path
+          required: true
+          schema: { type: integer, format: int64, minimum: 1 }
+      responses:
+        '204': { description: Категория удалена. }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /users/{userId}/requests:
+    get:
+      tags: [Заявки]
+      operationId: getUserRequests
+      summary: Получить заявки пользователя
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      responses:
+        '200':
+          description: Список заявок пользователя.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/ParticipationRequest' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    post:
+      tags: [Заявки]
+      operationId: createParticipationRequest
+      summary: Подать заявку на участие
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+        - name: eventId
+          in: query
+          required: true
+          schema: { type: integer, format: int64, minimum: 1 }
+      responses:
+        '201':
+          description: Заявка создана.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ParticipationRequest' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /users/{userId}/requests/{requestId}/cancel:
+    patch:
+      tags: [Заявки]
+      operationId: cancelParticipationRequest
+      summary: Отменить заявку
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+        - name: requestId
+          in: path
+          required: true
+          schema: { type: integer, format: int64, minimum: 1 }
+      responses:
+        '200':
+          description: Заявка отменена.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ParticipationRequest' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /users/{userId}/events/{eventId}/requests:
+    get:
+      tags: [Заявки]
+      operationId: getEventRequests
+      summary: Получить заявки на событие
+      description: Доступно инициатору события.
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+        - $ref: '#/components/parameters/PositiveEventId'
+      responses:
+        '200':
+          description: Список заявок на событие.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/ParticipationRequest' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+    patch:
+      tags: [Заявки]
+      operationId: updateParticipationRequestStatuses
+      summary: Подтвердить или отклонить заявки
+      description: |
+        Инициатор может подтвердить или отклонить выбранные заявки. Если `requestIds` пуст или отсутствует,
+        сервис обрабатывает все ожидающие заявки на событие. Поле `requestIds` поддерживается как alias
+        для `requestsIds`.
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+        - $ref: '#/components/parameters/PositiveEventId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateRequestStatuses' }
+            examples:
+              confirm:
+                summary: Подтвердить выбранные заявки
+                value: { requestIds: [12, 13], status: CONFIRMED }
+              rejectAllPending:
+                summary: Отклонить все ожидающие заявки
+                value: { requestsIds: [], status: REJECTED }
+      responses:
+        '200':
+          description: Результат обновления со списками подтверждённых и отклонённых заявок.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UpdateRequestStatusesResult' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '500': { $ref: '#/components/responses/ServerError' }
+  /reviews/events/{eventId}:
+    get:
+      tags: [Оценки]
+      operationId: getEventReviews
+      summary: Получить оценки события
+      parameters:
+        - $ref: '#/components/parameters/PositiveEventId'
+      responses:
+        '200':
+          description: Оценки события.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/EventReview' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /reviews/authors/{authorId}:
+    get:
+      tags: [Оценки]
+      operationId: getAuthorReviews
+      summary: Получить оценки организатора
+      parameters:
+        - name: authorId
+          in: path
+          required: true
+          schema: { type: integer, format: int64, minimum: 1 }
+      responses:
+        '200':
+          description: Оценки организатора.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/UserReview' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /rating/{raterId}/event/{eventId}:
+    post:
+      tags: [Оценки]
+      operationId: createEventReview
+      summary: Оценить событие
+      description: Для события можно оставить одну оценку; оценка доступна после наступления события.
+      parameters:
+        - $ref: '#/components/parameters/RaterId'
+        - $ref: '#/components/parameters/PositiveEventId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/NewReview' }
+            example: { score: 5, comment: Отличная организация и насыщенная программа. }
+      responses:
+        '201':
+          description: Оценка создана.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EventReview' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /rating/{raterId}/author/{eventId}/{authorId}:
+    post:
+      tags: [Оценки]
+      operationId: createAuthorReview
+      summary: Оценить организатора события
+      description: Для пары «оценка — организатор — событие» можно оставить одну оценку после события.
+      parameters:
+        - $ref: '#/components/parameters/RaterId'
+        - $ref: '#/components/parameters/PositiveEventId'
+        - name: authorId
+          in: path
+          required: true
+          schema: { type: integer, format: int64, minimum: 1 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/NewReview' }
+            example: { score: 4, comment: Внимательный организатор. }
+      responses:
+        '201':
+          description: Оценка организатора создана.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UserReview' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /admin/users:
+    get:
+      tags: [Пользователи администратора]
+      operationId: getUsers
+      summary: Список пользователей
+      parameters:
+        - name: ids
+          in: query
+          description: Идентификаторы пользователей; параметр можно повторять.
+          style: form
+          explode: true
+          schema:
+            type: array
+            items: { type: integer, format: int64 }
+        - $ref: '#/components/parameters/From'
+        - $ref: '#/components/parameters/Size'
+      responses:
+        '200':
+          description: Список пользователей.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/User' }
+        '500': { $ref: '#/components/responses/ServerError' }
+    post:
+      tags: [Пользователи администратора]
+      operationId: createUser
+      summary: Создать пользователя
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/NewUser' }
+            example: { name: Анна Смирнова, email: anna@example.org }
+      responses:
+        '201':
+          description: Пользователь создан.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /admin/users/{userId}:
+    delete:
+      tags: [Пользователи администратора]
+      operationId: deleteUser
+      summary: Удалить пользователя
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      responses:
+        '204': { description: Пользователь удалён. }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /compilations:
+    get:
+      tags: [Подборки]
+      operationId: getCompilations
+      summary: Список подборок
+      parameters:
+        - name: pinned
+          in: query
+          description: Фильтр по закреплённым подборкам.
+          schema: { type: boolean }
+        - $ref: '#/components/parameters/From'
+        - $ref: '#/components/parameters/Size'
+      responses:
+        '200':
+          description: Список подборок.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Compilation' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+  /compilations/{compId}:
+    get:
+      tags: [Подборки]
+      operationId: getCompilation
+      summary: Получить подборку
+      parameters:
+        - name: compId
+          in: path
+          required: true
+          schema: { type: integer, format: int64, minimum: 1 }
+      responses:
+        '200':
+          description: Подборка событий.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Compilation' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /admin/compilations:
+    post:
+      tags: [Подборки администратора]
+      operationId: createCompilation
+      summary: Создать подборку
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/NewCompilation' }
+            example:
+              title: Идеи на выходные
+              pinned: true
+              events: [15, 19, 27]
+      responses:
+        '201':
+          description: Подборка создана.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Compilation' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /admin/compilations/{compId}:
+    patch:
+      tags: [Подборки администратора]
+      operationId: updateCompilation
+      summary: Изменить подборку
+      description: Все поля запроса необязательны; передавайте только изменяемые поля.
+      parameters:
+        - name: compId
+          in: path
+          required: true
+          schema: { type: integer, format: int64, minimum: 1 }
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateCompilation' }
+            example: { title: Выходные в городе, pinned: false, events: [15, 27] }
+      responses:
+        '200':
+          description: Подборка обновлена.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Compilation' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [Подборки администратора]
+      operationId: deleteCompilation
+      summary: Удалить подборку
+      parameters:
+        - name: compId
+          in: path
+          required: true
+          schema: { type: integer, format: int64, minimum: 1 }
+      responses:
+        '204': { description: Подборка удалена. }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /hit:
+    post:
+      tags: [Статистика]
+      operationId: saveHit
+      summary: Зарегистрировать просмотр
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EndpointHit' }
+            example:
+              app: ewm-main-service
+              uri: /events/42
+              ip: 192.0.2.10
+              timestamp: '2026-11-01 18:30:00'
+      responses:
+        '201': { description: Просмотр зарегистрирован. }
+        '400': { $ref: '#/components/responses/BadRequest' }
+  /stats:
+    get:
+      tags: [Статистика]
+      operationId: getStats
+      summary: Получить статистику просмотров
+      parameters:
+        - name: start
+          in: query
+          required: true
+          description: Начало периода, формат `yyyy-MM-dd HH:mm:ss`.
+          schema: { type: string, pattern: '^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$' }
+          example: '2026-11-01 00:00:00'
+        - name: end
+          in: query
+          required: true
+          description: Конец периода, формат `yyyy-MM-dd HH:mm:ss`.
+          schema: { type: string, pattern: '^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$' }
+          example: '2026-11-02 00:00:00'
+        - name: uris
+          in: query
+          description: Фильтр по URI; параметр можно повторять.
+          style: form
+          explode: true
+          schema:
+            type: array
+            items: { type: string }
+        - name: unique
+          in: query
+          description: Учитывать уникальные IP-адреса.
+          schema: { type: boolean, default: false }
+      responses:
+        '200':
+          description: Статистика по URI.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/ViewStats' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+  /test/time:
+    get:
+      tags: [Тестирование]
+      operationId: getTestTime
+      summary: Получить тестовое системное время
+      description: Доступно только при запуске сервиса с профилем `test-time`.
+      responses:
+        '200':
+          description: Текущее тестовое время.
+          content:
+            application/json:
+              schema: { type: string, pattern: '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$' }
+              example: '2026-11-01T18:30:00'
+    put:
+      tags: [Тестирование]
+      operationId: setTestTime
+      summary: Установить тестовое системное время
+      description: Доступно только при запуске сервиса с профилем `test-time`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: string, pattern: '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$' }
+            example: '2026-11-01T18:30:00'
+      responses:
+        '200': { description: Тестовое время установлено. }
+        '400': { $ref: '#/components/responses/BadRequest' }
+components:
+  parameters:
+    UserId:
+      name: userId
+      in: path
+      required: true
+      description: Идентификатор пользователя.
+      schema: { type: integer, format: int64, minimum: 1 }
+    RaterId:
+      name: raterId
+      in: path
+      required: true
+      description: Идентификатор пользователя, оставляющего оценку.
+      schema: { type: integer, format: int64, minimum: 1 }
+    PositiveEventId:
+      name: eventId
+      in: path
+      required: true
+      description: Идентификатор события.
+      schema: { type: integer, format: int64, minimum: 1 }
+    From:
+      name: from
+      in: query
+      description: Смещение от начала списка.
+      schema: { type: integer, minimum: 0, default: 0 }
+    Size:
+      name: size
+      in: query
+      description: Размер страницы.
+      schema: { type: integer, minimum: 1, default: 10 }
+  responses:
+    BadRequest:
+      description: Некорректные параметры или тело запроса.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example:
+            message: 'title: Event title must not be blank'
+            reason: Data validation failed
+            status: BAD_REQUEST
+            timestamp: '2026-11-01 18:30:00'
+    NotFound:
+      description: Ресурс не найден.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example:
+            message: Event with id = 42 was not found
+            reason: The required object was not found.
+            status: NOT_FOUND
+            timestamp: '2026-11-01 18:30:00'
+    Conflict:
+      description: Запрос нарушает бизнес-правило или конфликтует с текущим состоянием ресурса.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example:
+            message: Event cannot be published because it has already started
+            reason: A data integrity constraint or business rule was violated.
+            status: CONFLICT
+            timestamp: '2026-11-01 18:30:00'
+    ServerError:
+      description: Внутренняя ошибка сервиса.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example:
+            message: Unexpected error
+            reason: java.lang.IllegalStateException
+            status: INTERNAL_SERVER_ERROR
+            timestamp: '2026-11-01 18:30:00'
+  schemas:
+    Error:
+      type: object
+      description: Единый формат ошибки приложения.
+      properties:
+        message: { type: string, example: Некорректные данные запроса }
+        reason: { type: string, example: Data validation failed }
+        status: { type: string, example: BAD_REQUEST }
+        timestamp:
+          type: string
+          pattern: '^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$'
+          example: '2026-11-01 18:30:00'
+      required: [message, reason, status, timestamp]
+    EventState:
+      type: string
+      enum: [PENDING, PUBLISHED, CANCELED]
+    EventSort:
+      type: string
+      enum: [EVENT_DATE, VIEWS, RATING]
+    RequestStatus:
+      type: string
+      enum: [PENDING, CONFIRMED, REJECTED, CANCELED]
+    Location:
+      type: object
+      properties:
+        lat: { type: number, format: double, example: 55.751244 }
+        lon: { type: number, format: double, example: 37.618423 }
+      required: [lat, lon]
+    Category:
+      type: object
+      properties:
+        id: { type: integer, format: int64, example: 4 }
+        name: { type: string, minLength: 1, maxLength: 50, example: Культура }
+      required: [id, name]
+    NewCategory:
+      type: object
+      properties:
+        name: { type: string, minLength: 1, maxLength: 50, example: Культура }
+      required: [name]
+    User:
+      type: object
+      properties:
+        id: { type: integer, format: int64, example: 21 }
+        name: { type: string, example: Анна Смирнова }
+        email: { type: string, format: email, example: anna@example.org }
+        rating: { type: number, format: double, nullable: true, example: 4.8 }
+      required: [id, name, email]
+    NewUser:
+      type: object
+      properties:
+        name: { type: string, minLength: 2, maxLength: 250, example: Анна Смирнова }
+        email: { type: string, format: email, minLength: 6, maxLength: 254, example: anna@example.org }
+      required: [name, email]
+    UserShort:
+      type: object
+      properties:
+        id: { type: integer, format: int64, example: 21 }
+        name: { type: string, example: Анна Смирнова }
+        rating: { type: number, format: double, nullable: true, example: 4.8 }
+    NewEvent:
+      type: object
+      properties:
+        title: { type: string, minLength: 3, maxLength: 120, example: Городской фестиваль }
+        annotation: { type: string, minLength: 20, maxLength: 2000, example: Фестиваль музыки, еды и локальных проектов в центре города. }
+        description: { type: string, minLength: 20, maxLength: 7000, example: Полная программа фестиваля, площадки, участники и правила посещения. }
+        category: { type: integer, format: int64, example: 4 }
+        eventDate:
+          type: string
+          pattern: '^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$'
+          example: '2026-12-10 18:30:00'
+        location: { $ref: '#/components/schemas/Location' }
+        paid: { type: boolean, default: false, example: false }
+        participantLimit: { type: integer, minimum: 0, default: 0, example: 100 }
+        requestModeration: { type: boolean, default: true, example: true }
+      required: [title, annotation, description, category, eventDate, location]
+    UpdateEventUser:
+      type: object
+      description: Все поля необязательны. Для состояния используйте `SEND_TO_REVIEW` или `CANCEL_REVIEW`.
+      properties:
+        title: { type: string, minLength: 3, maxLength: 120 }
+        annotation: { type: string, minLength: 20, maxLength: 2000 }
+        description: { type: string, minLength: 20, maxLength: 7000 }
+        category: { type: integer, format: int64 }
+        eventDate: { type: string, pattern: '^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$' }
+        location: { $ref: '#/components/schemas/Location' }
+        paid: { type: boolean }
+        participantLimit: { type: integer, minimum: 0 }
+        requestModeration: { type: boolean }
+        stateAction: { type: string, enum: [SEND_TO_REVIEW, CANCEL_REVIEW] }
+    UpdateEventAdmin:
+      type: object
+      description: Все поля необязательны. Для публикации или отклонения используйте `stateAction`.
+      properties:
+        title: { type: string, minLength: 3, maxLength: 120 }
+        annotation: { type: string, minLength: 20, maxLength: 2000 }
+        description: { type: string, minLength: 20, maxLength: 7000 }
+        category: { type: integer, format: int64 }
+        eventDate: { type: string, pattern: '^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$' }
+        location: { $ref: '#/components/schemas/Location' }
+        paid: { type: boolean }
+        participantLimit: { type: integer, minimum: 0 }
+        requestModeration: { type: boolean }
+        stateAction: { type: string, enum: [PUBLISH_EVENT, REJECT_EVENT] }
+    EventShort:
+      type: object
+      properties:
+        id: { type: integer, format: int64, example: 42 }
+        title: { type: string, example: Городской фестиваль }
+        description: { type: string, example: Полная программа фестиваля и правила посещения. }
+        annotation: { type: string, example: Фестиваль музыки, еды и локальных проектов. }
+        category: { $ref: '#/components/schemas/Category' }
+        confirmedRequests: { type: integer, format: int64, example: 18 }
+        eventDate: { type: string, pattern: '^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$', example: '2026-12-10 18:30:00' }
+        initiator: { $ref: '#/components/schemas/UserShort' }
+        paid: { type: boolean, example: false }
+        views: { type: integer, format: int64, example: 240 }
+        rating: { type: number, format: double, example: 4.7 }
+    EventFull:
+      allOf:
+        - $ref: '#/components/schemas/EventShort'
+        - type: object
+          properties:
+            createdOn: { type: string, pattern: '^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$', example: '2026-10-20 12:00:00' }
+            publishedOn: { type: string, nullable: true, pattern: '^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$', example: '2026-10-21 09:00:00' }
+            location: { $ref: '#/components/schemas/Location' }
+            participantLimit: { type: integer, minimum: 0, example: 100 }
+            requestModeration: { type: boolean, example: true }
+            state: { $ref: '#/components/schemas/EventState' }
+    ParticipationRequest:
+      type: object
+      properties:
+        id: { type: integer, format: int64, example: 12 }
+        created: { type: string, pattern: '^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$', example: '2026-11-01 14:30:00' }
+        event: { type: integer, format: int64, example: 42 }
+        requester: { type: integer, format: int64, example: 21 }
+        status: { $ref: '#/components/schemas/RequestStatus' }
+      required: [id, created, event, requester, status]
+    UpdateRequestStatuses:
+      type: object
+      properties:
+        requestIds:
+          type: array
+          description: Alias `requestsIds` also принимается сервером.
+          items: { type: integer, format: int64, minimum: 1 }
+        requestsIds:
+          type: array
+          items: { type: integer, format: int64, minimum: 1 }
+        status: { type: string, enum: [CONFIRMED, REJECTED] }
+      required: [status]
+    UpdateRequestStatusesResult:
+      type: object
+      properties:
+        confirmedRequests:
+          type: array
+          items: { $ref: '#/components/schemas/ParticipationRequest' }
+        rejectedRequests:
+          type: array
+          items: { $ref: '#/components/schemas/ParticipationRequest' }
+      required: [confirmedRequests, rejectedRequests]
+    NewReview:
+      type: object
+      properties:
+        score: { type: integer, minimum: 1, maximum: 5, example: 5 }
+        comment: { type: string, maxLength: 200, nullable: true, example: Отличная организация и насыщенная программа. }
+      required: [score]
+    EventReview:
+      type: object
+      properties:
+        rater: { $ref: '#/components/schemas/UserShort' }
+        event: { $ref: '#/components/schemas/EventShort' }
+        score: { type: integer, minimum: 1, maximum: 5, example: 5 }
+        comment: { type: string, nullable: true, example: Отличная организация и насыщенная программа. }
+    UserReview:
+      type: object
+      properties:
+        rater: { $ref: '#/components/schemas/UserShort' }
+        target: { $ref: '#/components/schemas/UserShort' }
+        event: { $ref: '#/components/schemas/EventShort' }
+        score: { type: integer, minimum: 1, maximum: 5, example: 4 }
+        comment: { type: string, nullable: true, example: Внимательный организатор. }
+    Compilation:
+      type: object
+      properties:
+        id: { type: integer, format: int64, example: 5 }
+        events:
+          type: array
+          items: { $ref: '#/components/schemas/EventShort' }
+        pinned: { type: boolean, example: true }
+        title: { type: string, example: Идеи на выходные }
+      required: [id, events, pinned, title]
+    NewCompilation:
+      type: object
+      properties:
+        events:
+          type: array
+          items: { type: integer, format: int64, minimum: 1 }
+        pinned: { type: boolean, default: false, example: true }
+        title: { type: string, minLength: 1, maxLength: 50, example: Идеи на выходные }
+      required: [title]
+    UpdateCompilation:
+      type: object
+      properties:
+        events:
+          type: array
+          items: { type: integer, format: int64, minimum: 1 }
+        pinned: { type: boolean }
+        title: { type: string, minLength: 1, maxLength: 50 }
+    EndpointHit:
+      type: object
+      properties:
+        app: { type: string, minLength: 1, example: ewm-main-service }
+        uri: { type: string, minLength: 1, example: /events/42 }
+        ip: { type: string, minLength: 1, example: 192.0.2.10 }
+        timestamp: { type: string, pattern: '^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$', example: '2026-11-01 18:30:00' }
+      required: [app, uri, ip, timestamp]
+    ViewStats:
+      type: object
+      properties:
+        app: { type: string, example: ewm-main-service }
+        uri: { type: string, example: /events/42 }
+        hits: { type: integer, format: int64, example: 240 }
+      required: [app, uri, hits]
