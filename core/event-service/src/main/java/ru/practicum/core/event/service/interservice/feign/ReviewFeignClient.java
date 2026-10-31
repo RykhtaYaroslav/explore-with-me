@@ -11,6 +11,6 @@ import java.util.List;
 @FeignClient(name = ServiceNames.REVIEW_SERVICE)
 public interface ReviewFeignClient {
 
-    @PostMapping("/interservice/reviews/ratings")
+    @PostMapping("/interservice/reviews/events")
     List<EventRatingCount> getRatingByIds(@RequestBody List<Long> ids);
 }

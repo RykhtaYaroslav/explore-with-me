@@ -21,9 +21,9 @@ import java.util.List;
 public class ReviewInternalApiController {
     private final ReviewInternalApiService reviewInternalApiService;
 
-    @PostMapping("/ratings")
+    @PostMapping("/events")
     public List<EventRatingCount> getEventsRatingsByIds(@RequestBody @NotEmpty List<@Positive Long> ids) {
-        return reviewInternalApiService.getEventsRatingsByIds(ids); //TODO fix endpoint uri
+        return reviewInternalApiService.getEventsRatingsByIds(ids);
     }
 
     @PostMapping("users")
