@@ -5,10 +5,17 @@ import ru.practicum.core.common.enums.RequestStatus;
 import ru.practicum.core.participation.model.ParticipationRequest;
 
 import java.util.List;
+import java.util.Set;
 
 public interface RequestRepository extends JpaRepository<ParticipationRequest, Long> {
 
     List<ParticipationRequest> findAllByEventId(Long eventId);
+
+    List<ParticipationRequest> findAllByEventIdAndStatus(Long eventId, RequestStatus status);
+
+    List<ParticipationRequest> findAllByEventIdAndStatusAndIdNotIn(Long eventId,
+                                                                   RequestStatus status,
+                                                                   Set<Long> excludedIds);
 
     List<ParticipationRequest> findAllByRequesterId(Long requesterId);
 

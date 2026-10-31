@@ -6,7 +6,7 @@ import ru.practicum.core.event.model.EventState;
 import java.time.LocalDateTime;
 
 import static ru.practicum.core.common.util.EwmConstants.DATE_TIME_FORMAT;
-
+// TODO rename
 public record EventForParticipationServiceDto(
         Long id,
         EventState state,

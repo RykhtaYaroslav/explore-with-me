@@ -12,6 +12,11 @@ spring:
           predicates:
             - Path=/compilations,/compilations/**,/admin/compilations,/admin/compilations/**
 
+        - id: participation
+          uri: lb://participation-service
+          predicates:
+            - Path=/users/*/requests,/users/*/requests/**,/users/*/events/*/requests
+
         - id: events
           uri: lb://event-service
           predicates:
@@ -21,11 +26,6 @@ spring:
           uri: lb://user-service
           predicates:
             - Path=/admin/users,/admin/users/**
-
-        - id: participation
-          uri: lb://participation-service
-          predicates:
-            - Path=/users/*/requests,/users/*/requests/**
 
         - id: reviews
           uri: lb://review-service

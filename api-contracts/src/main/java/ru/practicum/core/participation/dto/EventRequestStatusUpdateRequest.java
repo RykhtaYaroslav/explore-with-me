@@ -1,5 +1,6 @@
 package ru.practicum.core.participation.dto;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,6 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class EventRequestStatusUpdateRequest {
+    @JsonAlias("requestIds")
     private List<Long> requestsIds;
     private RequestStatus status;
 }

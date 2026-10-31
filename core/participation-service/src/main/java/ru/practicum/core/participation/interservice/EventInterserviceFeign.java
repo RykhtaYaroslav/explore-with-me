@@ -15,7 +15,16 @@ public class EventInterserviceFeign implements EventInterservice {
 
     @Override
     public void ensureOrganizerOrThrow(Long eventId, Long userId) {
+        findByIdForOrganizerOrThrow(eventId, userId);
+    }
 
+    @Override
+    public EventForParticipationServiceDto findByIdForOrganizerOrThrow(Long eventId, Long userId) {
+        EventForParticipationServiceDto event = findByIdOrThrow(eventId);
+        if (!event.initiatorId().equals(userId)) {
+            throw new ConflictException("Only the event initiator can manage participation requests");
+        }
+        return event;
     }
 
     @Override
