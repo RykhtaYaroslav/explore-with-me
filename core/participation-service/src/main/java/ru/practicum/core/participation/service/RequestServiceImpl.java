@@ -1,6 +1,7 @@
 package ru.practicum.core.participation.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.core.common.enums.RequestStatus;
@@ -29,6 +30,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@Slf4j
 public class RequestServiceImpl implements RequestService {
 
     private final RequestRepository requestRepository;
@@ -71,7 +73,11 @@ public class RequestServiceImpl implements RequestService {
                 .build();
 
         ParticipationRequest savedRequest = requestRepository.save(request);
+        log.info("Created participation request: eventId={}, requestId={}, requesterId={}, status={}",
+                eventId, savedRequest.getId(), userId, savedRequest.getStatus());
         if (startStatus == RequestStatus.CONFIRMED) {
+            log.info("Incrementing event confirmed request count: eventId={}, delta=1, requestId={}",
+                    eventId, savedRequest.getId());
             eventFeignClient.adjustConfirmedRequestCount(eventId, 1);
         }
         return requestMapper.toDtoOut(savedRequest);
@@ -135,7 +141,19 @@ public class RequestServiceImpl implements RequestService {
     @Transactional
     public EventRequestStatusUpdateResult changeRequestsStatus(Long userId, Long eventId,
                                                                EventRequestStatusUpdateRequest update) {
+        log.info("Processing participation request status update: eventId={}, organizerId={}, status={}, requestIds={}",
+                eventId,
+                userId,
+                update == null ? null : update.getStatus(),
+                update == null ? null : update.getRequestsIds());
         RequestStatusUpdateContext context = requestValidator.validateChangeRequestsStatus(userId, eventId, update);
+        log.info("Validated participation request status update: eventId={}, status={}, selectedRequestIds={}, " +
+                        "confirmedCountBefore={}, participantLimit={}",
+                eventId,
+                context.status(),
+                context.requests().stream().map(ParticipationRequest::getId).toList(),
+                context.confirmedRequestCount(),
+                context.participantLimit());
         return switch (context.status()) {
             case CONFIRMED -> confirmRequestsWithinLimit(eventId, context);
             case REJECTED -> rejectRequests(context.requests());
@@ -199,7 +217,19 @@ public class RequestServiceImpl implements RequestService {
             requestRepository.saveAll(rejectedRequests);
         }
         if (!confirmedRequests.isEmpty()) {
+            List<Long> confirmedRequestIds = confirmedRequests.stream().map(ParticipationRequest::getId).toList();
+            log.info("Confirmed participation requests: eventId={}, requestIds={}, delta={}",
+                    eventId, confirmedRequestIds, confirmedRequests.size());
             eventFeignClient.adjustConfirmedRequestCount(eventId, confirmedRequests.size());
+            log.info("Event confirmed request count update acknowledged: eventId={}, delta={}, requestIds={}",
+                    eventId, confirmedRequests.size(), confirmedRequestIds);
+        } else {
+            log.warn("No participation requests were confirmed: eventId={}, selectedRequestIds={}, " +
+                            "confirmedCountBefore={}, participantLimit={}",
+                    eventId,
+                    selectedRequests.stream().map(ParticipationRequest::getId).toList(),
+                    context.confirmedRequestCount(),
+                    participantLimit);
         }
 
         return toStatusUpdateResult(rejectedRequests, confirmedRequests);

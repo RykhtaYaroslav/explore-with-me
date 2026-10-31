@@ -1,6 +1,7 @@
 package ru.practicum.core.event.service.internalapi;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.core.common.exception.ConflictException;
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@Slf4j
 public class EventInternalApiServiceImpl implements EventInternalApiService {
     private final EventRepository eventRepository;
     private final EventMapper eventMapper;
@@ -140,14 +142,23 @@ public class EventInternalApiServiceImpl implements EventInternalApiService {
     @Override
     @Transactional
     public void adjustCount(Long eventId, long delta) {
+        log.info("Received confirmed request count adjustment: eventId={}, delta={}", eventId, delta);
         if (delta == 0) {
             throw new ConflictException("Change to confirmed request count must not be zero");
         }
 
         int updated = eventRepository.adjustConfirmedRequests(eventId, delta);
         if (updated == 1) {
+            Long confirmedRequests = eventRepository.findById(eventId)
+                    .map(Event::getConfirmedRequests)
+                    .orElse(null);
+            log.info("Confirmed request count adjustment applied: eventId={}, delta={}, updatedRows={}, confirmedRequests={}",
+                    eventId, delta, updated, confirmedRequests);
             return;
         }
+
+        log.warn("Confirmed request count adjustment did not update an event: eventId={}, delta={}, updatedRows={}",
+                eventId, delta, updated);
 
         if (!eventRepository.existsById(eventId)) {
             throw new NotFoundException(String.format("Event with id = %d was not found", eventId));

@@ -1,6 +1,7 @@
 package ru.practicum.core.event.service.adminapi;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class EventServiceAdminImpl implements EventServiceAdmin {
     private final EventRepository eventRepository;
     private final EventStatsCollector eventStatsCollector;
@@ -38,7 +40,12 @@ public class EventServiceAdminImpl implements EventServiceAdmin {
     public List<EventFullDto> getAllFullInfoWithParams(EventQueryParams params) {
         List<Event> events = getEventsWithParamsFromRepository(params);
 
-        return eventStatsCollector.getFullDtoListWithStats(events);
+        List<EventFullDto> result = eventStatsCollector.getFullDtoListWithStats(events);
+        log.debug("Admin event search confirmed request counts (eventId:count): {}",
+                result.stream()
+                        .map(event -> event.getId() + ":" + event.getConfirmedRequests())
+                        .toList());
+        return result;
     }
 
     @Override

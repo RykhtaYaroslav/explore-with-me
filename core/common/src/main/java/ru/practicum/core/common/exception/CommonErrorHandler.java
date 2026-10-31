@@ -54,6 +54,7 @@ public class CommonErrorHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleAnyException(Exception e) {
+        log.error("Unhandled exception while processing request", e);
         String message = e.getMessage();
         if (e.getCause() != null) {
             message += " -> " + e.getCause().getMessage();
