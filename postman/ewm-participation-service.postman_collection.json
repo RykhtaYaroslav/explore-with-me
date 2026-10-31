@@ -1,0 +1,1943 @@
+{
+  "info": {
+    "_postman_id": "a071b115-bfd4-4a56-9e9c-ca1db9dda004",
+    "name": "Explore With Me - Participation Service Tests",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "23073145"
+  },
+  "item": [
+    {
+      "name": "Validation",
+      "item": [
+        {
+          "name": "Event",
+          "item": [
+            {
+              "name": "Required query params",
+              "item": [
+                {
+                  "name": "Добавление запроса от текущего пользователя на участие в событии без обязательного query params",
+                  "event": [
+                    {
+                      "listen": "prerequest",
+                      "script": {
+                        "exec": [
+                          "const main = async () => {\r",
+                          "    const api = new API(pm);\r",
+                          "    const rnd = new RandomUtils();\r",
+                          "\r",
+                          "    try {\r",
+                          "        const submittedUser = await api.addUser(rnd.getUser());\r",
+                          "        pm.request.removeQueryParams(['eventId']);\r",
+                          "        pm.collectionVariables.set('uid', submittedUser.id);\r",
+                          "    } catch(err) {\r",
+                          "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                          "    }\r",
+                          "};\r",
+                          "\r",
+                          "const interval = setInterval(() => {}, 1000);\r",
+                          "\r",
+                          "setTimeout(async () => \r",
+                          "    {\r",
+                          "        try {\r",
+                          "            // выполняем наш скрипт\r",
+                          "            await main();\r",
+                          "        } catch (e) {\r",
+                          "            console.error(e);\r",
+                          "        } finally {\r",
+                          "            clearInterval(interval);\r",
+                          "        }\r",
+                          "    },  \r",
+                          "    100 \r",
+                          ");"
+                        ],
+                        "type": "text/javascript"
+                      }
+                    },
+                    {
+                      "listen": "test",
+                      "script": {
+                        "exec": [
+                          "pm.test(\"Ответ должен содержать код статуса 400 и данные в формате json\", function () {\r",
+                          "    pm.response.to.be.badRequest;    \r",
+                          "    pm.response.to.be.withBody;\r",
+                          "    pm.response.to.be.json;\r",
+                          "});\r",
+                          ""
+                        ],
+                        "type": "text/javascript"
+                      }
+                    }
+                  ],
+                  "request": {
+                    "method": "POST",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "application/json"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{participationBaseUrl}}/users/:userId/requests",
+                      "host": [
+                        "{{participationBaseUrl}}"
+                      ],
+                      "path": [
+                        "users",
+                        ":userId",
+                        "requests"
+                      ],
+                      "query": [
+                        {
+                          "key": "eventId",
+                          "value": "0",
+                          "description": "(Required) id события",
+                          "disabled": true
+                        }
+                      ],
+                      "variable": [
+                        {
+                          "key": "userId",
+                          "value": "{{uid}}",
+                          "description": "(Required) id текущего пользователя"
+                        }
+                      ]
+                    },
+                    "description": "Обратите внимание:\n- нельзя добавить повторный запрос\n- инициатор события не может добавить запрос на участие в своём событии\n- нельзя участвовать в неопубликованном событии\n- если у события достигнут лимит запросов на участие - необходимо вернуть ошибку\n- если для события отключена пре-модерация запросов на участие, то запрос должен автоматически перейти в состояние подтвержденного"
+                  },
+                  "response": []
+                }
+              ]
+            },
+            {
+              "name": "Misc tests",
+              "item": [
+                {
+                  "name": "Добавление запроса на участие при participantLimit == 0",
+                  "event": [
+                    {
+                      "listen": "prerequest",
+                      "script": {
+                        "exec": [
+                          "const main = async () => {\r",
+                          "    const api = new API(pm);\r",
+                          "    const rnd = new RandomUtils();\r",
+                          "\r",
+                          "    try {\r",
+                          "        const user = await api.addUser(rnd.getUser());\r",
+                          "        const category = await api.addCategory(rnd.getCategory());\r",
+                          "        let eventBody = rnd.getEvent(category.id);\r",
+                          "        eventBody['requestModeration'] = true\r",
+                          "        eventBody['participantLimit'] = 0\r",
+                          "        let event = await api.addEvent(user.id, eventBody);\r",
+                          "        event = await api.publishEvent(event.id);\r",
+                          "        const submittedUser = await api.addUser(rnd.getUser());\r",
+                          "        pm.request.removeQueryParams(['eventId']);\r",
+                          "        pm.request.addQueryParams([`eventId=` + event.id]);\r",
+                          "        pm.collectionVariables.set('uid', submittedUser.id);\r",
+                          "    } catch(err) {\r",
+                          "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                          "    }\r",
+                          "};\r",
+                          "\r",
+                          "const interval = setInterval(() => {}, 1000);\r",
+                          "\r",
+                          "setTimeout(async () => \r",
+                          "    {\r",
+                          "        try {\r",
+                          "            // выполняем наш скрипт\r",
+                          "            await main();\r",
+                          "        } catch (e) {\r",
+                          "            console.error(e);\r",
+                          "        } finally {\r",
+                          "            clearInterval(interval);\r",
+                          "        }\r",
+                          "    },  \r",
+                          "    100 \r",
+                          ");"
+                        ],
+                        "type": "text/javascript"
+                      }
+                    },
+                    {
+                      "listen": "test",
+                      "script": {
+                        "exec": [
+                          "pm.test(\"Ответ должен содержать код статуса 201 и данные в формате json\", function () {\r",
+                          "    pm.response.to.have.status(201);   \r",
+                          "    pm.response.to.be.withBody;\r",
+                          "    pm.response.to.be.json;\r",
+                          "});\r",
+                          "\r",
+                          "const target = pm.response.json();\r",
+                          "var query = {};\r",
+                          "pm.request.url.query.all().forEach((param) => { query[param.key] = param.value});\r",
+                          "\r",
+                          "pm.test(\"Запрос на участие должен содержать поля: id, requester, event, status, created\", function () {\r",
+                          "pm.expect(target).to.have.property('id');\r",
+                          "pm.expect(target).to.have.property('requester');\r",
+                          "pm.expect(target).to.have.property('event');\r",
+                          "pm.expect(target).to.have.property('status');\r",
+                          "pm.expect(target).to.have.property('created');\r",
+                          "});\r",
+                          "\r",
+                          "pm.test(\"При создании у запроса на участие должен быть статус CONFIRMED\", function () {\r",
+                          "    pm.expect(target.status).equal(\"CONFIRMED\");\r",
+                          "});\r",
+                          "\r",
+                          "pm.test(\"Id ивента в запросе и в ответе должны совпадать\", function () {\r",
+                          "    pm.expect(target.event.toString()).equal(query['eventId'].toString());\r",
+                          "});"
+                        ],
+                        "type": "text/javascript"
+                      }
+                    }
+                  ],
+                  "request": {
+                    "method": "POST",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "application/json"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{participationBaseUrl}}/users/:userId/requests?eventId=0",
+                      "host": [
+                        "{{participationBaseUrl}}"
+                      ],
+                      "path": [
+                        "users",
+                        ":userId",
+                        "requests"
+                      ],
+                      "query": [
+                        {
+                          "key": "eventId",
+                          "value": "0",
+                          "description": "(Required) id события"
+                        }
+                      ],
+                      "variable": [
+                        {
+                          "key": "userId",
+                          "value": "{{uid}}",
+                          "description": "(Required) id текущего пользователя"
+                        }
+                      ]
+                    },
+                    "description": "Обратите внимание:\n- нельзя добавить повторный запрос\n- инициатор события не может добавить запрос на участие в своём событии\n- нельзя участвовать в неопубликованном событии\n- если у события достигнут лимит запросов на участие - необходимо вернуть ошибку\n- если для события отключена пре-модерация запросов на участие, то запрос должен автоматически перейти в состояние подтвержденного"
+                  },
+                  "response": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "409 Conflict",
+      "item": [
+        {
+          "name": "Добавление повторного запроса от пользователя на участие в событии",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const main = async () => {\r",
+                  "    const api = new API(pm);\r",
+                  "    const rnd = new RandomUtils();\r",
+                  "\r",
+                  "    try {\r",
+                  "        const user = await api.addUser(rnd.getUser());\r",
+                  "        const category = await api.addCategory(rnd.getCategory());\r",
+                  "        let event = await api.addEvent(user.id, rnd.getEvent(category.id));\r",
+                  "        event = await api.publishEvent(event.id);\r",
+                  "        const submittedUser = await api.addUser(rnd.getUser());\r",
+                  "        await api.publishParticipationRequest(event.id, submittedUser.id);\r",
+                  "        pm.request.removeQueryParams(['eventId']);\r",
+                  "        pm.request.addQueryParams([`eventId=` + event.id]);\r",
+                  "        pm.collectionVariables.set('uid', submittedUser.id);\r",
+                  "    } catch(err) {\r",
+                  "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                  "    }\r",
+                  "};\r",
+                  "\r",
+                  "const interval = setInterval(() => {}, 1000);\r",
+                  "\r",
+                  "setTimeout(async () => \r",
+                  "    {\r",
+                  "        try {\r",
+                  "            // выполняем наш скрипт\r",
+                  "            await main();\r",
+                  "        } catch (e) {\r",
+                  "            console.error(e);\r",
+                  "        } finally {\r",
+                  "            clearInterval(interval);\r",
+                  "        }\r",
+                  "    },  \r",
+                  "    100 \r",
+                  ");"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Ответ должен содержать код статуса 409 и данные в формате json\", function () {\r",
+                  "    pm.response.to.have.status(409);\r",
+                  "    pm.response.to.be.withBody;\r",
+                  "    pm.response.to.be.json;\r",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{participationBaseUrl}}/users/:userId/requests?eventId=0",
+              "host": [
+                "{{participationBaseUrl}}"
+              ],
+              "path": [
+                "users",
+                ":userId",
+                "requests"
+              ],
+              "query": [
+                {
+                  "key": "eventId",
+                  "value": "0",
+                  "description": "(Required) id события"
+                }
+              ],
+              "variable": [
+                {
+                  "key": "userId",
+                  "value": "{{uid}}",
+                  "description": "(Required) id текущего пользователя"
+                }
+              ]
+            },
+            "description": "Обратите внимание:\n- нельзя добавить повторный запрос\n- инициатор события не может добавить запрос на участие в своём событии\n- нельзя участвовать в неопубликованном событии\n- если у события достигнут лимит запросов на участие - необходимо вернуть ошибку\n- если для события отключена пре-модерация запросов на участие, то запрос должен автоматически перейти в состояние подтвержденного"
+          },
+          "response": []
+        },
+        {
+          "name": "Добавление запроса от инициатора события на участие в нём",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const main = async () => {\r",
+                  "    const api = new API(pm);\r",
+                  "    const rnd = new RandomUtils();\r",
+                  "\r",
+                  "    try {\r",
+                  "        const user = await api.addUser(rnd.getUser());\r",
+                  "        const category = await api.addCategory(rnd.getCategory());\r",
+                  "        let event = await api.addEvent(user.id, rnd.getEvent(category.id));\r",
+                  "        event = await api.publishEvent(event.id);\r",
+                  "        pm.request.removeQueryParams(['eventId']);\r",
+                  "        pm.request.addQueryParams([`eventId=` + event.id]);\r",
+                  "        pm.collectionVariables.set('uid', user.id);\r",
+                  "    } catch(err) {\r",
+                  "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                  "    }\r",
+                  "};\r",
+                  "\r",
+                  "const interval = setInterval(() => {}, 1000);\r",
+                  "\r",
+                  "setTimeout(async () => \r",
+                  "    {\r",
+                  "        try {\r",
+                  "            // выполняем наш скрипт\r",
+                  "            await main();\r",
+                  "        } catch (e) {\r",
+                  "            console.error(e);\r",
+                  "        } finally {\r",
+                  "            clearInterval(interval);\r",
+                  "        }\r",
+                  "    },  \r",
+                  "    100 \r",
+                  ");"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Ответ должен содержать код статуса 409 и данные в формате json\", function () {\r",
+                  "    pm.response.to.have.status(409);\r",
+                  "    pm.response.to.be.withBody;\r",
+                  "    pm.response.to.be.json;\r",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{participationBaseUrl}}/users/:userId/requests?eventId=0",
+              "host": [
+                "{{participationBaseUrl}}"
+              ],
+              "path": [
+                "users",
+                ":userId",
+                "requests"
+              ],
+              "query": [
+                {
+                  "key": "eventId",
+                  "value": "0",
+                  "description": "(Required) id события"
+                }
+              ],
+              "variable": [
+                {
+                  "key": "userId",
+                  "value": "{{uid}}",
+                  "description": "(Required) id текущего пользователя"
+                }
+              ]
+            },
+            "description": "Обратите внимание:\n- нельзя добавить повторный запрос\n- инициатор события не может добавить запрос на участие в своём событии\n- нельзя участвовать в неопубликованном событии\n- если у события достигнут лимит запросов на участие - необходимо вернуть ошибку\n- если для события отключена пре-модерация запросов на участие, то запрос должен автоматически перейти в состояние подтвержденного"
+          },
+          "response": []
+        },
+        {
+          "name": "Добавление запроса на участие в неопубликованном событии",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const main = async () => {\r",
+                  "    const api = new API(pm);\r",
+                  "    const rnd = new RandomUtils();\r",
+                  "\r",
+                  "    try {\r",
+                  "        const user = await api.addUser(rnd.getUser());\r",
+                  "        const category = await api.addCategory(rnd.getCategory());\r",
+                  "        const event = await api.addEvent(user.id, rnd.getEvent(category.id));\r",
+                  "        const submittedUser = await api.addUser(rnd.getUser());\r",
+                  "        pm.request.removeQueryParams(['eventId']);\r",
+                  "        pm.request.addQueryParams([`eventId=` + event.id]);\r",
+                  "        pm.collectionVariables.set('uid', submittedUser.id);\r",
+                  "    } catch(err) {\r",
+                  "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                  "    }\r",
+                  "};\r",
+                  "\r",
+                  "const interval = setInterval(() => {}, 1000);\r",
+                  "\r",
+                  "setTimeout(async () => \r",
+                  "    {\r",
+                  "        try {\r",
+                  "            // выполняем наш скрипт\r",
+                  "            await main();\r",
+                  "        } catch (e) {\r",
+                  "            console.error(e);\r",
+                  "        } finally {\r",
+                  "            clearInterval(interval);\r",
+                  "        }\r",
+                  "    },  \r",
+                  "    100 \r",
+                  ");"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Ответ должен содержать код статуса 409 и данные в формате json\", function () {\r",
+                  "    pm.response.to.have.status(409);\r",
+                  "    pm.response.to.be.withBody;\r",
+                  "    pm.response.to.be.json;\r",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{participationBaseUrl}}/users/:userId/requests?eventId=0",
+              "host": [
+                "{{participationBaseUrl}}"
+              ],
+              "path": [
+                "users",
+                ":userId",
+                "requests"
+              ],
+              "query": [
+                {
+                  "key": "eventId",
+                  "value": "0",
+                  "description": "(Required) id события"
+                }
+              ],
+              "variable": [
+                {
+                  "key": "userId",
+                  "value": "{{uid}}",
+                  "description": "(Required) id текущего пользователя"
+                }
+              ]
+            },
+            "description": "Обратите внимание:\n- нельзя добавить повторный запрос\n- инициатор события не может добавить запрос на участие в своём событии\n- нельзя участвовать в неопубликованном событии\n- если у события достигнут лимит запросов на участие - необходимо вернуть ошибку\n- если для события отключена пре-модерация запросов на участие, то запрос должен автоматически перейти в состояние подтвержденного"
+          },
+          "response": []
+        },
+        {
+          "name": "Добавление запроса на участие в событии, у которого заполнен лимит участников",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const main = async () => {\r",
+                  "    const api = new API(pm);\r",
+                  "    const rnd = new RandomUtils();\r",
+                  "\r",
+                  "    try {\r",
+                  "        const user = await api.addUser(rnd.getUser());\r",
+                  "        const category = await api.addCategory(rnd.getCategory());\r",
+                  "        let eventBody = rnd.getEvent(category.id);\r",
+                  "        eventBody.participantLimit = 1;\r",
+                  "        eventBody.requestModeration = false;\r",
+                  "        let event = await api.addEvent(user.id, eventBody);\r",
+                  "        event = await api.publishEvent(event.id);\r",
+                  "        const submittedUser1 = await api.addUser(rnd.getUser());\r",
+                  "        const submittedUser2 = await api.addUser(rnd.getUser());\r",
+                  "        await api.publishParticipationRequest(event.id, submittedUser1.id);\r",
+                  "        pm.request.removeQueryParams(['eventId']);\r",
+                  "        pm.request.addQueryParams([`eventId=` + event.id]);\r",
+                  "        pm.collectionVariables.set('uid', submittedUser2.id);\r",
+                  "    } catch(err) {\r",
+                  "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                  "    }\r",
+                  "};\r",
+                  "\r",
+                  "const interval = setInterval(() => {}, 1000);\r",
+                  "\r",
+                  "setTimeout(async () => \r",
+                  "    {\r",
+                  "        try {\r",
+                  "            // выполняем наш скрипт\r",
+                  "            await main();\r",
+                  "        } catch (e) {\r",
+                  "            console.error(e);\r",
+                  "        } finally {\r",
+                  "            clearInterval(interval);\r",
+                  "        }\r",
+                  "    },  \r",
+                  "    100 \r",
+                  ");"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Ответ должен содержать код статуса 409 и данные в формате json\", function () {\r",
+                  "    pm.response.to.have.status(409);\r",
+                  "    pm.response.to.be.withBody;\r",
+                  "    pm.response.to.be.json;\r",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{participationBaseUrl}}/users/:userId/requests?eventId=0",
+              "host": [
+                "{{participationBaseUrl}}"
+              ],
+              "path": [
+                "users",
+                ":userId",
+                "requests"
+              ],
+              "query": [
+                {
+                  "key": "eventId",
+                  "value": "0",
+                  "description": "(Required) id события"
+                }
+              ],
+              "variable": [
+                {
+                  "key": "userId",
+                  "value": "{{uid}}",
+                  "description": "(Required) id текущего пользователя"
+                }
+              ]
+            },
+            "description": "Обратите внимание:\n- нельзя добавить повторный запрос\n- инициатор события не может добавить запрос на участие в своём событии\n- нельзя участвовать в неопубликованном событии\n- если у события достигнут лимит запросов на участие - необходимо вернуть ошибку\n- если для события отключена пре-модерация запросов на участие, то запрос должен автоматически перейти в состояние подтвержденного"
+          },
+          "response": []
+        },
+        {
+          "name": "Попытка принять заявку на участие в событии, когда лимит уже достигнут",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const main = async () => {\r",
+                  "    const api = new API(pm);\r",
+                  "    const rnd = new RandomUtils();\r",
+                  "\r",
+                  "    try {\r",
+                  "        const user = await api.addUser(rnd.getUser());\r",
+                  "        const category = await api.addCategory(rnd.getCategory());\r",
+                  "        let eventBody = rnd.getEvent(category.id);\r",
+                  "        eventBody['requestModeration'] = true;\r",
+                  "        eventBody['participantLimit'] =  1;\r",
+                  "        let event = await api.addEvent(user.id, eventBody);\r",
+                  "        event = await api.publishEvent(event.id);\r",
+                  "        const submittedUser1 = await api.addUser(rnd.getUser());\r",
+                  "        const submittedUser2 = await api.addUser(rnd.getUser());\r",
+                  "        const requestToParticipate = await api.publishParticipationRequest(event.id, submittedUser1.id);\r",
+                  "        const requestToParticipate2 = await api.publishParticipationRequest(event.id, submittedUser2.id);\r",
+                  "        await api.acceptParticipationRequest(event.id, user.id, requestToParticipate.id);\r",
+                  "        pm.collectionVariables.set('uid', user.id);\r",
+                  "        pm.collectionVariables.set('eid', event.id);\r",
+                  "        pm.request.body.update({\r",
+                  "            mode: 'raw',\r",
+                  "            raw: JSON.stringify({requestIds: [requestToParticipate2.id],\r",
+                  "            status:\"CONFIRMED\"}),\r",
+                  "            options: { raw: { language: 'json' } }\r",
+                  "        });\r",
+                  "    } catch(err) {\r",
+                  "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                  "    }\r",
+                  "};\r",
+                  "\r",
+                  "const interval = setInterval(() => {}, 1000);\r",
+                  "\r",
+                  "setTimeout(async () => \r",
+                  "    {\r",
+                  "        try {\r",
+                  "            // выполняем наш скрипт\r",
+                  "            await main();\r",
+                  "        } catch (e) {\r",
+                  "            console.error(e);\r",
+                  "        } finally {\r",
+                  "            clearInterval(interval);\r",
+                  "        }\r",
+                  "    },  \r",
+                  "    100 \r",
+                  ");"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Ответ должен содержать код статуса 409 и данные в формате json\", function () {\r",
+                  "    pm.response.to.have.status(409);\r",
+                  "    pm.response.to.be.withBody;\r",
+                  "    pm.response.to.be.json;\r",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{participationBaseUrl}}/users/:userId/events/:eventId/requests",
+              "host": [
+                "{{participationBaseUrl}}"
+              ],
+              "path": [
+                "users",
+                ":userId",
+                "events",
+                ":eventId",
+                "requests"
+              ],
+              "variable": [
+                {
+                  "key": "userId",
+                  "value": "{{uid}}",
+                  "description": "(Required) id текущего пользователя"
+                },
+                {
+                  "key": "eventId",
+                  "value": "{{eid}}",
+                  "description": "(Required) id события текущего пользователя"
+                }
+              ]
+            },
+            "description": "Обратите внимание:\n- если для события лимит заявок равен 0 или отключена пре-модерация заявок, то подтверждение заявок не требуется\n- нельзя подтвердить заявку, если уже достигнут лимит по заявкам на данное событие\n- статус можно изменить только у заявок, находящихся в состоянии ожидания\n- если при подтверждении данной заявки, лимит заявок для события исчерпан, то все неподтверждённые заявки необходимо отклонить"
+          },
+          "response": []
+        },
+        {
+          "name": "Попытка отменить уже принятую заявку на участие в событии",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const main = async () => {\r",
+                  "    const api = new API(pm);\r",
+                  "    const rnd = new RandomUtils();\r",
+                  "\r",
+                  "    try {\r",
+                  "        const user = await api.addUser(rnd.getUser());\r",
+                  "        const category = await api.addCategory(rnd.getCategory());\r",
+                  "        let eventBody = rnd.getEvent(category.id);\r",
+                  "        eventBody['requestModeration'] = true;\r",
+                  "        eventBody['participantLimit'] =  1;\r",
+                  "        let event = await api.addEvent(user.id, eventBody);\r",
+                  "        event = await api.publishEvent(event.id);\r",
+                  "        const submittedUser = await api.addUser(rnd.getUser());\r",
+                  "        const requestToParticipate = await api.publishParticipationRequest(event.id, submittedUser.id);\r",
+                  "        await api.acceptParticipationRequest(event.id, user.id, requestToParticipate.id);\r",
+                  "        pm.collectionVariables.set('uid', user.id);\r",
+                  "        pm.collectionVariables.set('eid', event.id);\r",
+                  "        pm.request.body.update({\r",
+                  "            mode: 'raw',\r",
+                  "            raw: JSON.stringify({requestIds: [requestToParticipate.id],\r",
+                  "            status:\"REJECTED\"}),\r",
+                  "            options: { raw: { language: 'json' } }\r",
+                  "        });\r",
+                  "    } catch(err) {\r",
+                  "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                  "    }\r",
+                  "};\r",
+                  "\r",
+                  "const interval = setInterval(() => {}, 1000);\r",
+                  "\r",
+                  "setTimeout(async () => \r",
+                  "    {\r",
+                  "        try {\r",
+                  "            // выполняем наш скрипт\r",
+                  "            await main();\r",
+                  "        } catch (e) {\r",
+                  "            console.error(e);\r",
+                  "        } finally {\r",
+                  "            clearInterval(interval);\r",
+                  "        }\r",
+                  "    },  \r",
+                  "    100 \r",
+                  ");"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Ответ должен содержать код статуса 409 и данные в формате json\", function () {\r",
+                  "    pm.response.to.have.status(409);\r",
+                  "    pm.response.to.be.withBody;\r",
+                  "    pm.response.to.be.json;\r",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{participationBaseUrl}}/users/:userId/events/:eventId/requests",
+              "host": [
+                "{{participationBaseUrl}}"
+              ],
+              "path": [
+                "users",
+                ":userId",
+                "events",
+                ":eventId",
+                "requests"
+              ],
+              "variable": [
+                {
+                  "key": "userId",
+                  "value": "{{uid}}",
+                  "description": "(Required) id текущего пользователя"
+                },
+                {
+                  "key": "eventId",
+                  "value": "{{eid}}",
+                  "description": "(Required) id события текущего пользователя"
+                }
+              ]
+            },
+            "description": "Обратите внимание:\n- если для события лимит заявок равен 0 или отключена пре-модерация заявок, то подтверждение заявок не требуется\n- нельзя подтвердить заявку, если уже достигнут лимит по заявкам на данное событие\n- статус можно изменить только у заявок, находящихся в состоянии ожидания\n- если при подтверждении данной заявки, лимит заявок для события исчерпан, то все неподтверждённые заявки необходимо отклонить"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Event",
+      "item": [
+        {
+          "name": "Добавление запроса от текущего пользователя на участие в событии",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const main = async () => {\r",
+                  "    const api = new API(pm);\r",
+                  "    const rnd = new RandomUtils();\r",
+                  "\r",
+                  "    try {\r",
+                  "        const user = await api.addUser(rnd.getUser());\r",
+                  "        const category = await api.addCategory(rnd.getCategory());\r",
+                  "        let eventBody = rnd.getEvent(category.id);\r",
+                  "        eventBody['requestModeration'] = true\r",
+                  "        let event = await api.addEvent(user.id, eventBody);\r",
+                  "        event = await api.publishEvent(event.id);\r",
+                  "        const submittedUser = await api.addUser(rnd.getUser());\r",
+                  "        pm.request.removeQueryParams(['eventId']);\r",
+                  "        pm.request.addQueryParams([`eventId=` + event.id]);\r",
+                  "        pm.collectionVariables.set('uid', submittedUser.id);\r",
+                  "    } catch(err) {\r",
+                  "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                  "    }\r",
+                  "};\r",
+                  "\r",
+                  "const interval = setInterval(() => {}, 1000);\r",
+                  "\r",
+                  "setTimeout(async () => \r",
+                  "    {\r",
+                  "        try {\r",
+                  "            // выполняем наш скрипт\r",
+                  "            await main();\r",
+                  "        } catch (e) {\r",
+                  "            console.error(e);\r",
+                  "        } finally {\r",
+                  "            clearInterval(interval);\r",
+                  "        }\r",
+                  "    },  \r",
+                  "    100 \r",
+                  ");"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Ответ должен содержать код статуса 201 и данные в формате json\", function () {\r",
+                  "    pm.response.to.have.status(201);   \r",
+                  "    pm.response.to.be.withBody;\r",
+                  "    pm.response.to.be.json;\r",
+                  "});\r",
+                  "\r",
+                  "const target = pm.response.json();\r",
+                  "var query = {};\r",
+                  "pm.request.url.query.all().forEach((param) => { query[param.key] = param.value});\r",
+                  "\r",
+                  "pm.test(\"Запрос на участие должен содержать поля: id, requester, event, status, created\", function () {\r",
+                  "pm.expect(target).to.have.property('id');\r",
+                  "pm.expect(target).to.have.property('requester');\r",
+                  "pm.expect(target).to.have.property('event');\r",
+                  "pm.expect(target).to.have.property('status');\r",
+                  "pm.expect(target).to.have.property('created');\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"При создании у запроса на участие должен быть статус PENDING\", function () {\r",
+                  "    pm.expect(target.status).equal(\"PENDING\");\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Id ивента в запросе и в ответе должны совпадать\", function () {\r",
+                  "    pm.expect(target.event.toString()).equal(query['eventId'].toString());\r",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{participationBaseUrl}}/users/:userId/requests?eventId=0",
+              "host": [
+                "{{participationBaseUrl}}"
+              ],
+              "path": [
+                "users",
+                ":userId",
+                "requests"
+              ],
+              "query": [
+                {
+                  "key": "eventId",
+                  "value": "0",
+                  "description": "(Required) id события"
+                }
+              ],
+              "variable": [
+                {
+                  "key": "userId",
+                  "value": "{{uid}}",
+                  "description": "(Required) id текущего пользователя"
+                }
+              ]
+            },
+            "description": "Обратите внимание:\n- нельзя добавить повторный запрос\n- инициатор события не может добавить запрос на участие в своём событии\n- нельзя участвовать в неопубликованном событии\n- если у события достигнут лимит запросов на участие - необходимо вернуть ошибку\n- если для события отключена пре-модерация запросов на участие, то запрос должен автоматически перейти в состояние подтвержденного"
+          },
+          "response": []
+        },
+        {
+          "name": "Получение информации о заявках текущего пользователя на участие в чужих событиях",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const main = async () => {\r",
+                  "    const api = new API(pm);\r",
+                  "    const rnd = new RandomUtils();\r",
+                  "\r",
+                  "    try {\r",
+                  "        const user = await api.addUser(rnd.getUser());\r",
+                  "        const category = await api.addCategory(rnd.getCategory());\r",
+                  "        let eventBody = rnd.getEvent(category.id);\r",
+                  "        eventBody['requestModeration'] = true\r",
+                  "        let event = await api.addEvent(user.id, eventBody);\r",
+                  "        event = await api.publishEvent(event.id);\r",
+                  "        const submittedUser = await api.addUser(rnd.getUser());\r",
+                  "        const requestToJoin = await api.publishParticipationRequest(event.id, submittedUser.id);\r",
+                  "        pm.collectionVariables.set('response', requestToJoin);\r",
+                  "        pm.collectionVariables.set('uid', submittedUser.id);\r",
+                  "\r",
+                  "    } catch(err) {\r",
+                  "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                  "    }\r",
+                  "};\r",
+                  "\r",
+                  "const interval = setInterval(() => {}, 1000);\r",
+                  "\r",
+                  "setTimeout(async () => \r",
+                  "    {\r",
+                  "        try {\r",
+                  "            // выполняем наш скрипт\r",
+                  "            await main();\r",
+                  "        } catch (e) {\r",
+                  "            console.error(e);\r",
+                  "        } finally {\r",
+                  "            clearInterval(interval);\r",
+                  "        }\r",
+                  "    },  \r",
+                  "    100 \r",
+                  ");"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Ответ должен содержать код статуса 200 и данные в формате json\", function () {\r",
+                  "    pm.response.to.be.ok;    \r",
+                  "    pm.response.to.be.withBody;\r",
+                  "    pm.response.to.be.json;\r",
+                  "});\r",
+                  "\r",
+                  "const source = pm.collectionVariables.get('response');\r",
+                  "const target = pm.response.json()[0];\r",
+                  "\r",
+                  "pm.test(\"Запрос на участие должен содержать поля: id, requester, event, status, created\", function () {\r",
+                  "pm.expect(target).to.have.property('id');\r",
+                  "pm.expect(target).to.have.property('requester');\r",
+                  "pm.expect(target).to.have.property('event');\r",
+                  "pm.expect(target).to.have.property('status');\r",
+                  "pm.expect(target).to.have.property('created');\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Данные в ответе должны соответствовать данным в запросе\", function () {\r",
+                  "    pm.expect(source.id).equal(target.id, 'Идентификатор запроса на участие в событии должен соответствовать идентификатору запроса, созданного ранее');\r",
+                  "    pm.expect(source.requester).equal(target.requester, 'Пользователя, запрашивающий доступ на участие в событии, должен соответствовать указанному пользователю');\r",
+                  "    pm.expect(source.event).equal(target.event, 'Событие, доступ к которому запрашивает пользователь, должно соответствовать событию, доступ к которому пользователь запрашивал доступ ранее');\r",
+                  "    pm.expect(source.created).equal(target.created, 'Время создания запроса на участие в событии должно соответствовать времени создания запроса, созданного ранее указанным пользователем');\r",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{participationBaseUrl}}/users/:userId/requests",
+              "host": [
+                "{{participationBaseUrl}}"
+              ],
+              "path": [
+                "users",
+                ":userId",
+                "requests"
+              ],
+              "variable": [
+                {
+                  "key": "userId",
+                  "value": "{{uid}}",
+                  "description": "(Required) id текущего пользователя"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Получение информации о запросах на участие в событии текущего пользователя",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const main = async () => {\r",
+                  "    const api = new API(pm);\r",
+                  "    const rnd = new RandomUtils();\r",
+                  "\r",
+                  "    try {\r",
+                  "        const user = await api.addUser(rnd.getUser());\r",
+                  "        const category = await api.addCategory(rnd.getCategory());\r",
+                  "        let eventBody = rnd.getEvent(category.id);\r",
+                  "        eventBody['requestModeration'] = true\r",
+                  "        let event = await api.addEvent(user.id, eventBody);\r",
+                  "        event = await api.publishEvent(event.id);\r",
+                  "        const submittedUser = await api.addUser(rnd.getUser());\r",
+                  "        const requestToJoin = await api.publishParticipationRequest(event.id, submittedUser.id);\r",
+                  "        pm.collectionVariables.set('response', requestToJoin);\r",
+                  "        pm.collectionVariables.set('uid', user.id);\r",
+                  "        pm.collectionVariables.set('eid', event.id);\r",
+                  "\r",
+                  "    } catch(err) {\r",
+                  "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                  "    }\r",
+                  "};\r",
+                  "\r",
+                  "const interval = setInterval(() => {}, 1000);\r",
+                  "\r",
+                  "setTimeout(async () => \r",
+                  "    {\r",
+                  "        try {\r",
+                  "            // выполняем наш скрипт\r",
+                  "            await main();\r",
+                  "        } catch (e) {\r",
+                  "            console.error(e);\r",
+                  "        } finally {\r",
+                  "            clearInterval(interval);\r",
+                  "        }\r",
+                  "    },  \r",
+                  "    100 \r",
+                  ");"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Ответ должен содержать код статуса 200 и данные в формате json\", function () {\r",
+                  "    pm.response.to.be.ok;    \r",
+                  "    pm.response.to.be.withBody;\r",
+                  "    pm.response.to.be.json;\r",
+                  "});\r",
+                  "\r",
+                  "const source = pm.collectionVariables.get('response');\r",
+                  "const target = pm.response.json()[0];\r",
+                  "\r",
+                  "pm.test(\"Запрос на участие должен содержать поля: id, requester, event, status, created\", function () {\r",
+                  "pm.expect(target).to.have.property('id');\r",
+                  "pm.expect(target).to.have.property('requester');\r",
+                  "pm.expect(target).to.have.property('event');\r",
+                  "pm.expect(target).to.have.property('status');\r",
+                  "pm.expect(target).to.have.property('created');\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Данные в ответе должны соответствовать данным в запросе\", function () {\r",
+                  "    pm.expect(source.id).equal(target.id, 'Идентификатор запроса на участие в событии должен соответствовать идентификатору запроса на участие в событии указанного пользователя');\r",
+                  "    pm.expect(source.requester).equal(target.requester, 'Автор запроса на участие в событии должен соответствовать указанному пользователю');\r",
+                  "    pm.expect(source.event).equal(target.event, 'Событие в ответе должно соответствовать событию с запросом на участие от указанного пользователя');\r",
+                  "    pm.expect(source.created).equal(target.created, 'Время создания запроса на участие в событии должно соответствовать времени создания запроса на участие в событии указанного пользователя');\r",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{participationBaseUrl}}/users/:userId/events/:eventId/requests",
+              "host": [
+                "{{participationBaseUrl}}"
+              ],
+              "path": [
+                "users",
+                ":userId",
+                "events",
+                ":eventId",
+                "requests"
+              ],
+              "variable": [
+                {
+                  "key": "userId",
+                  "value": "{{uid}}",
+                  "description": "(Required) id текущего пользователя"
+                },
+                {
+                  "key": "eventId",
+                  "value": "{{eid}}",
+                  "description": "(Required) id события"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Отмена своего запроса на участие в событии",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const main = async () => {\r",
+                  "    const api = new API(pm);\r",
+                  "    const rnd = new RandomUtils();\r",
+                  "\r",
+                  "    try {\r",
+                  "        const user = await api.addUser(rnd.getUser());\r",
+                  "        const category = await api.addCategory(rnd.getCategory());\r",
+                  "        let eventBody = rnd.getEvent(category.id);\r",
+                  "        eventBody['requestModeration'] = true\r",
+                  "        let event = await api.addEvent(user.id, eventBody);\r",
+                  "        event = await api.publishEvent(event.id);\r",
+                  "        const submittedUser = await api.addUser(rnd.getUser());\r",
+                  "        const requestToJoin = await api.publishParticipationRequest(event.id, submittedUser.id);\r",
+                  "        pm.collectionVariables.set('response', requestToJoin);\r",
+                  "        pm.collectionVariables.set('uid', submittedUser.id);\r",
+                  "        pm.collectionVariables.set('reqid', requestToJoin.id);\r",
+                  "\r",
+                  "    } catch(err) {\r",
+                  "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                  "    }\r",
+                  "};\r",
+                  "\r",
+                  "const interval = setInterval(() => {}, 1000);\r",
+                  "\r",
+                  "setTimeout(async () => \r",
+                  "    {\r",
+                  "        try {\r",
+                  "            // выполняем наш скрипт\r",
+                  "            await main();\r",
+                  "        } catch (e) {\r",
+                  "            console.error(e);\r",
+                  "        } finally {\r",
+                  "            clearInterval(interval);\r",
+                  "        }\r",
+                  "    },  \r",
+                  "    100 \r",
+                  ");"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Ответ должен содержать код статуса 200 и данные в формате json\", function () {\r",
+                  "    pm.response.to.be.ok;    \r",
+                  "    pm.response.to.be.withBody;\r",
+                  "    pm.response.to.be.json;\r",
+                  "});\r",
+                  "\r",
+                  "const target = pm.response.json();\r",
+                  "const source = pm.collectionVariables.get('response');\r",
+                  "\r",
+                  "pm.test(\"Запрос на участие должен содержать поля: id, requester, event, status, created\", function () {\r",
+                  "pm.expect(target).to.have.property('id');\r",
+                  "pm.expect(target).to.have.property('requester');\r",
+                  "pm.expect(target).to.have.property('event');\r",
+                  "pm.expect(target).to.have.property('status');\r",
+                  "pm.expect(target).to.have.property('created');\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"При создании у запроса на участие должен быть статус PENDING, а при удалении - CANCELED\", function () {\r",
+                  "    pm.expect(source.status).equal(\"PENDING\");\r",
+                  "    pm.expect(target.status).equal(\"CANCELED\");\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Данные в ответе должны соответствовать данным в запросе\", function () {\r",
+                  "    pm.expect(source.id).equal(target.id, 'Идентификатор отменённого запроса на участие в событии должен соответствовать идентификатору запроса до отмены');\r",
+                  "    pm.expect(source.requester).equal(target.requester, 'Пользователь, отменяющий запрос на участие в событии, должен соответствовать текущему пользователю');\r",
+                  "    pm.expect(source.event).equal(target.event, 'Событие отменённого запроса на участие должно соответствовать запросу на участие в событии до отмены');\r",
+                  "    pm.expect(source.created).equal(target.created, 'Дата создания отменённого запроса на участие в событии должна соответствовать дате создания запроса до отмены');\r",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{participationBaseUrl}}/users/:userId/requests/:requestId/cancel",
+              "host": [
+                "{{participationBaseUrl}}"
+              ],
+              "path": [
+                "users",
+                ":userId",
+                "requests",
+                ":requestId",
+                "cancel"
+              ],
+              "variable": [
+                {
+                  "key": "userId",
+                  "value": "{{uid}}",
+                  "description": "(Required) id текущего пользователя"
+                },
+                {
+                  "key": "requestId",
+                  "value": "{{reqid}}",
+                  "description": "(Required) id запроса на участие"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Отклонение запроса на участие в событии",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const main = async () => {\r",
+                  "    const api = new API(pm);\r",
+                  "    const rnd = new RandomUtils();\r",
+                  "\r",
+                  "    try {\r",
+                  "        const user = await api.addUser(rnd.getUser());\r",
+                  "        const category = await api.addCategory(rnd.getCategory());\r",
+                  "        let eventBody = rnd.getEvent(category.id);\r",
+                  "        eventBody['requestModeration'] = true\r",
+                  "        let event = await api.addEvent(user.id, eventBody);\r",
+                  "        event = await api.publishEvent(event.id);\r",
+                  "        const submittedUser = await api.addUser(rnd.getUser());\r",
+                  "        const requestToJoin = await api.publishParticipationRequest(event.id, submittedUser.id);\r",
+                  "        pm.collectionVariables.set('response', requestToJoin);\r",
+                  "        pm.collectionVariables.set('uid', user.id);\r",
+                  "        pm.collectionVariables.set('eid', event.id);\r",
+                  "        pm.request.body.update({\r",
+                  "            mode: 'raw',\r",
+                  "            raw: JSON.stringify({requestIds: [requestToJoin.id],\r",
+                  "            status:\"REJECTED\"}),\r",
+                  "            options: { raw: { language: 'json' } }\r",
+                  "        });\r",
+                  "    } catch(err) {\r",
+                  "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                  "    }\r",
+                  "};\r",
+                  "\r",
+                  "const interval = setInterval(() => {}, 1000);\r",
+                  "\r",
+                  "setTimeout(async () => \r",
+                  "    {\r",
+                  "        try {\r",
+                  "            // выполняем наш скрипт\r",
+                  "            await main();\r",
+                  "        } catch (e) {\r",
+                  "            console.error(e);\r",
+                  "        } finally {\r",
+                  "            clearInterval(interval);\r",
+                  "        }\r",
+                  "    },  \r",
+                  "    100 \r",
+                  ");"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Ответ должен содержать код статуса 200 и данные в формате json\", function () {\r",
+                  "    pm.response.to.be.ok;    \r",
+                  "    pm.response.to.be.withBody;\r",
+                  "    pm.response.to.be.json;\r",
+                  "});\r",
+                  "\r",
+                  "const source = pm.collectionVariables.get('response');\r",
+                  "const target = pm.response.json()[\"rejectedRequests\"][0];\r",
+                  "\r",
+                  "pm.test(\"Запрос на участие должен содержать поля: id, requester, event, status, created\", function () {\r",
+                  "pm.expect(target).to.have.property('id');\r",
+                  "pm.expect(target).to.have.property('requester');\r",
+                  "pm.expect(target).to.have.property('event');\r",
+                  "pm.expect(target).to.have.property('status');\r",
+                  "pm.expect(target).to.have.property('created');\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Данные в ответе должны соответствовать данным в запросе\", function () {\r",
+                  "    pm.expect(source.id).equal(target.id, 'Идентификатор запроса на участие в событии должен соответствовать идентификатору запроса на участие в событии указанного пользователя');\r",
+                  "    pm.expect(source.requester).equal(target.requester, 'Пользователь, запрашивающий доступ на участие в событии должен пользователю, отправившему запрос на участие в событии указанного пользователя ранее');\r",
+                  "    pm.expect(source.event).equal(target.event, 'Событие, запрос на участие в котором надо подтвердить, должно соответствовать событию указанного пользователя');\r",
+                  "    pm.expect(source.created).equal(target.created, 'Время создания запроса на участие в событии после подтверждения должно соответствовать времени создания запроса на участие в событии указанного пользователя до подтверждения');\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Запрос на участие должен иметь статус PENDING при создании и статус REJECTED после выполнения запроса\", function () {\r",
+                  "    pm.expect(source.status).equal(\"PENDING\");\r",
+                  "    pm.expect(target.status).equal(\"REJECTED\");\r",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"requestIds\": [\n    1,\n    2,\n    3\n  ],\n  \"status\": \"CONFIRMED\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{participationBaseUrl}}/users/:userId/events/:eventId/requests",
+              "host": [
+                "{{participationBaseUrl}}"
+              ],
+              "path": [
+                "users",
+                ":userId",
+                "events",
+                ":eventId",
+                "requests"
+              ],
+              "variable": [
+                {
+                  "key": "userId",
+                  "value": "{{uid}}",
+                  "description": "(Required) id текущего пользователя"
+                },
+                {
+                  "key": "eventId",
+                  "value": "{{eid}}",
+                  "description": "(Required) id события текущего пользователя"
+                }
+              ]
+            },
+            "description": "Обратите внимание:\n- если для события лимит заявок равен 0 или отключена пре-модерация заявок, то подтверждение заявок не требуется\n- нельзя подтвердить заявку, если уже достигнут лимит по заявкам на данное событие\n- статус можно изменить только у заявок, находящихся в состоянии ожидания\n- если при подтверждении данной заявки, лимит заявок для события исчерпан, то все неподтверждённые заявки необходимо отклонить"
+          },
+          "response": []
+        },
+        {
+          "name": "Изменение статуса (подтверждена, отменена) заявок на участие в событии текущего пользователя",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const main = async () => {\r",
+                  "    const api = new API(pm);\r",
+                  "    const rnd = new RandomUtils();\r",
+                  "\r",
+                  "    try {\r",
+                  "        const user = await api.addUser(rnd.getUser());\r",
+                  "        const category = await api.addCategory(rnd.getCategory());\r",
+                  "        let eventBody = rnd.getEvent(category.id);\r",
+                  "        eventBody['requestModeration'] = true\r",
+                  "        let event = await api.addEvent(user.id, eventBody);\r",
+                  "        event = await api.publishEvent(event.id);\r",
+                  "        const submittedUser = await api.addUser(rnd.getUser());\r",
+                  "        const requestToJoin = await api.publishParticipationRequest(event.id, submittedUser.id);\r",
+                  "        pm.collectionVariables.set('response', requestToJoin);\r",
+                  "        pm.collectionVariables.set('uid', user.id);\r",
+                  "        pm.collectionVariables.set('eid', event.id);\r",
+                  "        pm.request.body.update({\r",
+                  "            mode: 'raw',\r",
+                  "            raw: JSON.stringify({requestIds: [requestToJoin.id],\r",
+                  "            status:\"CONFIRMED\"}),\r",
+                  "            options: { raw: { language: 'json' } }\r",
+                  "        });\r",
+                  "    } catch(err) {\r",
+                  "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                  "    }\r",
+                  "};\r",
+                  "\r",
+                  "const interval = setInterval(() => {}, 1000);\r",
+                  "\r",
+                  "setTimeout(async () => \r",
+                  "    {\r",
+                  "        try {\r",
+                  "            // выполняем наш скрипт\r",
+                  "            await main();\r",
+                  "        } catch (e) {\r",
+                  "            console.error(e);\r",
+                  "        } finally {\r",
+                  "            clearInterval(interval);\r",
+                  "        }\r",
+                  "    },  \r",
+                  "    100 \r",
+                  ");"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Ответ должен содержать код статуса 200 и данные в формате json\", function () {\r",
+                  "    pm.response.to.be.ok;    \r",
+                  "    pm.response.to.be.withBody;\r",
+                  "    pm.response.to.be.json;\r",
+                  "});\r",
+                  "\r",
+                  "const source = pm.collectionVariables.get('response');\r",
+                  "const target = pm.response.json()[\"confirmedRequests\"][0];\r",
+                  "\r",
+                  "pm.test(\"Запрос на участие должен содержать поля: id, requester, event, status, created\", function () {\r",
+                  "pm.expect(target).to.have.property('id');\r",
+                  "pm.expect(target).to.have.property('requester');\r",
+                  "pm.expect(target).to.have.property('event');\r",
+                  "pm.expect(target).to.have.property('status');\r",
+                  "pm.expect(target).to.have.property('created');\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Данные в ответе должны соответствовать данным в запросе\", function () {\r",
+                  "    pm.expect(source.id).equal(target.id, 'Идентификатор запроса на участие в событии должен соответствовать идентификатору запроса на участие в событии указанного пользователя');\r",
+                  "    pm.expect(source.requester).equal(target.requester, 'Пользователь, запрашивающий доступ на участие в событии должен пользователю, отправившему запрос на участие в событии указанного пользователя ранее');\r",
+                  "    pm.expect(source.event).equal(target.event, 'Событие, запрос на участие в котором надо подтвердить, должно соответствовать событию указанного пользователя');\r",
+                  "    pm.expect(source.created).equal(target.created, 'Время создания запроса на участие в событии после подтверждения должно соответствовать времени создания запроса на участие в событии указанного пользователя до подтверждения');\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Запрос на участие должен иметь статус PENDING при создании и статус CONFIRMED после выполнения запроса\", function () {\r",
+                  "    pm.expect(source.status).equal(\"PENDING\");\r",
+                  "    pm.expect(target.status).equal(\"CONFIRMED\");\r",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{participationBaseUrl}}/users/:userId/events/:eventId/requests",
+              "host": [
+                "{{participationBaseUrl}}"
+              ],
+              "path": [
+                "users",
+                ":userId",
+                "events",
+                ":eventId",
+                "requests"
+              ],
+              "variable": [
+                {
+                  "key": "userId",
+                  "value": "{{uid}}",
+                  "description": "(Required) id текущего пользователя"
+                },
+                {
+                  "key": "eventId",
+                  "value": "{{eid}}",
+                  "description": "(Required) id события текущего пользователя"
+                }
+              ]
+            },
+            "description": "Обратите внимание:\n- если для события лимит заявок равен 0 или отключена пре-модерация заявок, то подтверждение заявок не требуется\n- нельзя подтвердить заявку, если уже достигнут лимит по заявкам на данное событие\n- статус можно изменить только у заявок, находящихся в состоянии ожидания\n- если при подтверждении данной заявки, лимит заявок для события исчерпан, то все неподтверждённые заявки необходимо отклонить"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "API = class {",
+          "    constructor(postman, verbose = false, baseUrl = postman.collectionVariables.get(\"baseUrl\") || \"http://localhost:8080\") {",
+          "        this.baseUrl = baseUrl;",
+          "        this.pm = postman;",
+          "        this._verbose = verbose;",
+          "    }",
+          "",
+          "    async addUser(user, verbose=null) {",
+          "        return this.post(\"/admin/users\", user, \"Ошибка при добавлении нового пользователя: \", verbose);",
+          "    }",
+          "",
+          "    async addCategory(category, verbose=null) {",
+          "        return this.post(\"/admin/categories\", category, \"Ошибка при добавлении новой категории: \", verbose);",
+          "    }",
+          "",
+          "    async addEvent(userId, event, verbose=null) {",
+          "        return this.post(\"/users/\" + userId + \"/events\", event, \"Ошибка при добавлении нового события: \", verbose);",
+          "    }",
+          "",
+          "    async addCompilation(compilation, verbose=null) {",
+          "        return this.post(\"/admin/compilations\", compilation, \"Ошибка при добавлении новой подборки: \", verbose);",
+          "    }",
+          "",
+          "    async publishParticipationRequest(eventId, userId, verbose=null) {",
+          "        return this.post('/users/' + userId + '/requests?eventId=' + eventId, null, \"Ошибка при добавлении нового запроса на участие в событии\", verbose);",
+          "    }",
+          "",
+          "    async publishEvent(eventId, verbose=null) {",
+          "        return this.patch('/admin/events/' + eventId, {stateAction: \"PUBLISH_EVENT\"}, \"Ошибка при публикации события\", verbose);",
+          "    }",
+          "    ",
+          "    async rejectEvent(eventId, verbose=null) {",
+          "        return this.patch('/admin/events/' + eventId, {stateAction: \"REJECT_EVENT\"}, \"Ошибка при отмене события\", verbose);",
+          "    }",
+          "",
+          "    async acceptParticipationRequest(eventId, userId, reqId, verbose=null) {",
+          "        return this.patch('/users/' + userId + '/events/' + eventId + '/requests', {requestIds:[reqId], status: \"CONFIRMED\"}, \"Ошибка при принятии заявки на участие в событии\", verbose);",
+          "    }",
+          "",
+          "    async findCategory(catId, verbose=null) {",
+          "        return this.get('/categories/' + catId, null, \"Ошибка при поиске категории по id\", verbose);",
+          "    }",
+          "",
+          "    async findCompilation(compId, verbose=null) {",
+          "        return this.get('/compilations/' + compId, null, \"Ошибка при поиске подборки по id\", verbose);",
+          "    }",
+          "",
+          "    async findEvent(eventId, verbose=null) {",
+          "        return this.get('/events/' + eventId, null, \"Ошибка при поиске события по id\", verbose);",
+          "    }",
+          "",
+          "    async findUser(userId, verbose=null) {",
+          "        return this.get('/admin/users?ids=' + userId, null, \"Ошибка при поиске пользователя по id\", verbose);",
+          "    }",
+          "",
+          "    async post(path, body, errorText = \"Ошибка при выполнении post-запроса: \", verbose=null) {",
+          "        return this.sendRequest(\"POST\", path, body, errorText, verbose);",
+          "    }",
+          "",
+          "    async patch(path, body = null, errorText = \"Ошибка при выполнении patch-запроса: \", verbose=null) {",
+          "        return this.sendRequest(\"PATCH\", path, body, errorText, verbose);",
+          "    }",
+          "",
+          "    async get(path, body = null, errorText = \"Ошибка при выполнении get-запроса: \", verbose=null) {",
+          "        return this.sendRequest(\"GET\", path, body, errorText, verbose);",
+          "    }",
+          "    serviceBaseUrl(path) {",
+          "        if (path.startsWith(\"/admin/compilations\") || path.startsWith(\"/compilations\")) return this.pm.collectionVariables.get(\"compilationBaseUrl\") || \"http://localhost:8080\";",
+          "        if (path.startsWith(\"/admin/users\")) return this.pm.collectionVariables.get(\"userBaseUrl\") || \"http://localhost:8080\";",
+          "        if (path.startsWith(\"/users/\") && path.includes(\"/requests\")) return this.pm.collectionVariables.get(\"participationBaseUrl\") || \"http://localhost:8080\";",
+          "        if (path.startsWith(\"/events\") || path.startsWith(\"/admin/events\") || path.startsWith(\"/categories\") || path.startsWith(\"/admin/categories\") || (path.startsWith(\"/users/\") && path.includes(\"/events\"))) return this.pm.collectionVariables.get(\"eventBaseUrl\") || \"http://localhost:8080\";",
+          "        return this.baseUrl;",
+          "    }",
+          "",
+          "    async sendRequest(method, path, body=null, errorText = \"Ошибка при выполнении запроса: \", verbose=null) {",
+          "        return new Promise((resolve, reject) => {",
+          "            verbose = verbose == null ? this._verbose : verbose;",
+          "            const request = {",
+          "                url: this.serviceBaseUrl(path) + path,",
+          "                method: method,",
+          "                body: body == null ? \"\" : JSON.stringify(body),",
+          "                header: { \"Content-Type\": \"application/json\" },",
+          "            };",
+          "            if(verbose) {",
+          "                console.log(\"Отправляю запрос: \", request);",
+          "            }",
+          "",
+          "            try {",
+          "                this.pm.sendRequest(request, (error, response) => {",
+          "                    if(error || (response.code >= 400 && response.code <= 599)) {",
+          "                        let err = error ? error : JSON.stringify(response.json());",
+          "                        console.error(\"При выполнении запроса к серверу возникла ошика.\\n\", err,",
+          "                             \"\\nДля отладки проблемы повторите такой же запрос к вашей программе \" + ",
+          "                             \"на локальном компьютере. Данные запроса:\\n\", JSON.stringify(request));",
+          "",
+          "                        reject(new Error(errorText + err));",
+          "                    }",
+          "                    if(verbose) {",
+          "                        console.log(\"Результат обработки запроса: код состояния - \", response.code, \", тело: \", response.json());",
+          "                    }",
+          "                    if (response.stream.length === 0){",
+          "                        reject(new Error('Отправлено пустое тело ответа'))",
+          "                    }else{",
+          "                        resolve(response.json());",
+          "                    }",
+          "                });",
+          "                ",
+          "            } catch(err) {",
+          "                if(verbose) {",
+          "                    console.error(errorText, err);",
+          "                }",
+          "                return Promise.reject(err);",
+          "            }",
+          "        });",
+          "    }",
+          "};",
+          "",
+          "RandomUtils = class {",
+          "    constructor() {}",
+          "",
+          "    getUser() {",
+          "        return {",
+          "            name: pm.variables.replaceIn('{{$randomFullName}}'),",
+          "            email: pm.variables.replaceIn('{{$randomEmail}}')",
+          "        };",
+          "    }",
+          "",
+          "    getCategory() {",
+          "        return {",
+          "            name: pm.variables.replaceIn('{{$randomWord}}') + Math.floor(Math.random() * 10000 * Math.random()).toString()",
+          "        };",
+          "    }",
+          "",
+          "    getEvent(categoryId) {",
+          "        return {",
+          "            annotation: pm.variables.replaceIn('{{$randomLoremParagraph}}'),",
+          "            category: categoryId,",
+          "            description: pm.variables.replaceIn('{{$randomLoremParagraphs}}'),",
+          "            eventDate: this.getFutureDateTime(),",
+          "            location: {",
+          "                lat: parseFloat(pm.variables.replaceIn('{{$randomLatitude}}')),",
+          "                lon: parseFloat(pm.variables.replaceIn('{{$randomLongitude}}')),",
+          "            },",
+          "            paid: pm.variables.replaceIn('{{$randomBoolean}}'),",
+          "            participantLimit: pm.variables.replaceIn('{{$randomInt}}'),",
+          "            requestModeration: pm.variables.replaceIn('{{$randomBoolean}}'),",
+          "            title: pm.variables.replaceIn('{{$randomLoremSentence}}'),",
+          "        }",
+          "    }",
+          "",
+          "    getCompilation(...eventIds) {",
+          "        return {",
+          "            title: pm.variables.replaceIn('{{$randomLoremSentence}}').slice(0, 50),",
+          "            pinned: pm.variables.replaceIn('{{$randomBoolean}}'),",
+          "            events: eventIds",
+          "        };",
+          "    }",
+          "",
+          "",
+          "    getFutureDateTime(hourShift = 5, minuteShift=0, yearShift=0) {",
+          "        let moment = require('moment');",
+          "",
+          "        let m = moment();",
+          "        m.add(hourShift, 'hour');",
+          "        m.add(minuteShift, 'minute');",
+          "        m.add(yearShift, 'year');",
+          "",
+          "        return m.format('YYYY-MM-DD HH:mm:ss');",
+          "    }",
+          "",
+          "    getWord(length = 1) {",
+          "        let result = '';",
+          "        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';",
+          "        const charactersLength = characters.length;",
+          "        let counter = 0;",
+          "        while (counter < length) {",
+          "            result += characters.charAt(Math.floor(Math.random() * charactersLength));",
+          "            counter += 1;",
+          "        }",
+          "        return result;",
+          "    }",
+          "}"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string",
+      "description": "Default URL for participation service"
+    },
+    {
+      "key": "name",
+      "value": ""
+    },
+    {
+      "key": "usersCount",
+      "value": 1,
+      "type": "number"
+    },
+    {
+      "key": "catid",
+      "value": 1,
+      "type": "number"
+    },
+    {
+      "key": "request_body",
+      "value": ""
+    },
+    {
+      "key": "mail",
+      "value": ""
+    },
+    {
+      "key": "response",
+      "value": ""
+    },
+    {
+      "key": "uid",
+      "value": 1,
+      "type": "number"
+    },
+    {
+      "key": "catname",
+      "value": ""
+    },
+    {
+      "key": "eid",
+      "value": 1,
+      "type": "number"
+    },
+    {
+      "key": "compid",
+      "value": 1,
+      "type": "number"
+    },
+    {
+      "key": "toCheck",
+      "value": ""
+    },
+    {
+      "key": "newDataToSet",
+      "value": ""
+    },
+    {
+      "key": "uid1",
+      "value": ""
+    },
+    {
+      "key": "reqid",
+      "value": 1,
+      "type": "number"
+    },
+    {
+      "key": "catId",
+      "value": ""
+    },
+    {
+      "key": "confirmedRequests",
+      "value": ""
+    },
+    {
+      "key": "responseArr",
+      "value": ""
+    },
+    {
+      "key": "source1",
+      "value": ""
+    },
+    {
+      "key": "source2",
+      "value": ""
+    },
+    {
+      "key": "fromId",
+      "value": "0"
+    },
+    {
+      "key": "source",
+      "value": ""
+    },
+    {
+      "key": "eventBaseUrl",
+      "value": "http://localhost:8080",
+      "type": "string",
+      "description": "Event service Postman profile"
+    },
+    {
+      "key": "userBaseUrl",
+      "value": "http://localhost:8080",
+      "type": "string",
+      "description": "User service Postman profile"
+    },
+    {
+      "key": "participationBaseUrl",
+      "value": "http://localhost:8080",
+      "type": "string",
+      "description": "Participation service Postman profile"
+    },
+    {
+      "key": "compilationBaseUrl",
+      "value": "http://localhost:8080",
+      "type": "string",
+      "description": "Compilation service Postman profile"
+    },
+    {
+      "key": "reviewBaseUrl",
+      "value": "http://localhost:8080",
+      "type": "string",
+      "description": "Review service Postman profile"
+    }
+  ]
+}

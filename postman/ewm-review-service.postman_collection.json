@@ -1,14 +1,15 @@
 {
   "info": {
-    "_postman_id": "aa7f1b7c-d9f0-4e6c-a3bf-62d7e262a606",
+    "_postman_id": "f1a12b58-f34e-4eb7-980a-0015fe88c7c0",
     "name": "Java Explore With Me - Rating Tests v5 (Grouped)",
     "description": "Расширенная Postman-коллекция рейтингов, сгруппированная по двум папкам: оценка событий и оценка авторов. Использует requestsIds согласно DTO проекта. Требуется Spring profile 'test' и endpoint PUT /test/time.",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "52039429",
+    "_collection_link": "https://go.postman.co/collection/52039429-f1a12b58-f34e-4eb7-980a-0015fe88c7c0?source=collection_link"
   },
   "item": [
     {
       "name": "1. Оценка событий",
-      "description": "Тесты рейтинга событий: успешные сценарии, среднее значение, границы времени, статусы заявок, валидация, Not Found, дубликаты и работа с несколькими событиями.",
       "item": [
         {
           "name": "E01. Успех: участник оценивает событие",
@@ -18,11 +19,11 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "const baseUrl = pm.collectionVariables.get('baseUrl') || 'http://localhost:8080';",
+                  "const baseUrl = pm.collectionVariables.get(\"baseUrl\") || \"http://localhost:8080\";\n\nconst serviceBaseUrl = (path) => {\n    if (path.startsWith(\"/admin/users\")) return pm.collectionVariables.get(\"userBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/users/\") && path.includes(\"/requests\")) return pm.collectionVariables.get(\"participationBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/events\") || path.startsWith(\"/admin/events\") || path.startsWith(\"/categories\") || path.startsWith(\"/admin/categories\") || (path.startsWith(\"/users/\") && path.includes(\"/events\"))) return pm.collectionVariables.get(\"eventBaseUrl\") || \"http://localhost:8080\";\n    return baseUrl;\n};",
                   "",
                   "const send = (method, path, body = undefined) => new Promise((resolve, reject) => {",
                   "    const request = {",
-                  "        url: baseUrl + path,",
+                  "        url: serviceBaseUrl(path) + path,",
                   "        method: method,",
                   "        header: {",
                   "            'Content-Type': 'application/json',",
@@ -286,7 +287,6 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{baseUrl}}/rating/{{raterId}}/event/{{eventId}}",
             "body": {
               "mode": "raw",
               "raw": "{\"score\": 5, \"comment\": \"Отличное мероприятие\"}",
@@ -295,6 +295,18 @@
                   "language": "json"
                 }
               }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/rating/{{raterId}}/event/{{eventId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rating",
+                "{{raterId}}",
+                "event",
+                "{{eventId}}"
+              ]
             }
           },
           "response": []
@@ -307,11 +319,11 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "const baseUrl = pm.collectionVariables.get('baseUrl') || 'http://localhost:8080';",
+                  "const baseUrl = pm.collectionVariables.get(\"baseUrl\") || \"http://localhost:8080\";\n\nconst serviceBaseUrl = (path) => {\n    if (path.startsWith(\"/admin/users\")) return pm.collectionVariables.get(\"userBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/users/\") && path.includes(\"/requests\")) return pm.collectionVariables.get(\"participationBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/events\") || path.startsWith(\"/admin/events\") || path.startsWith(\"/categories\") || path.startsWith(\"/admin/categories\") || (path.startsWith(\"/users/\") && path.includes(\"/events\"))) return pm.collectionVariables.get(\"eventBaseUrl\") || \"http://localhost:8080\";\n    return baseUrl;\n};",
                   "",
                   "const send = (method, path, body = undefined) => new Promise((resolve, reject) => {",
                   "    const request = {",
-                  "        url: baseUrl + path,",
+                  "        url: serviceBaseUrl(path) + path,",
                   "        method: method,",
                   "        header: {",
                   "            'Content-Type': 'application/json',",
@@ -608,7 +620,16 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{baseUrl}}/events/{{eventId}}"
+            "url": {
+              "raw": "{{eventBaseUrl}}/events/{{eventId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "events",
+                "{{eventId}}"
+              ]
+            }
           },
           "response": []
         },
@@ -620,11 +641,11 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "const baseUrl = pm.collectionVariables.get('baseUrl') || 'http://localhost:8080';",
+                  "const baseUrl = pm.collectionVariables.get(\"baseUrl\") || \"http://localhost:8080\";\n\nconst serviceBaseUrl = (path) => {\n    if (path.startsWith(\"/admin/users\")) return pm.collectionVariables.get(\"userBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/users/\") && path.includes(\"/requests\")) return pm.collectionVariables.get(\"participationBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/events\") || path.startsWith(\"/admin/events\") || path.startsWith(\"/categories\") || path.startsWith(\"/admin/categories\") || (path.startsWith(\"/users/\") && path.includes(\"/events\"))) return pm.collectionVariables.get(\"eventBaseUrl\") || \"http://localhost:8080\";\n    return baseUrl;\n};",
                   "",
                   "const send = (method, path, body = undefined) => new Promise((resolve, reject) => {",
                   "    const request = {",
-                  "        url: baseUrl + path,",
+                  "        url: serviceBaseUrl(path) + path,",
                   "        method: method,",
                   "        header: {",
                   "            'Content-Type': 'application/json',",
@@ -888,7 +909,6 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{baseUrl}}/rating/{{raterId}}/event/{{eventId}}",
             "body": {
               "mode": "raw",
               "raw": "{\"score\": 4, \"comment\": \"Ровно на временной границе\"}",
@@ -897,6 +917,18 @@
                   "language": "json"
                 }
               }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/rating/{{raterId}}/event/{{eventId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rating",
+                "{{raterId}}",
+                "event",
+                "{{eventId}}"
+              ]
             }
           },
           "response": []
@@ -909,11 +941,11 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "const baseUrl = pm.collectionVariables.get('baseUrl') || 'http://localhost:8080';",
+                  "const baseUrl = pm.collectionVariables.get(\"baseUrl\") || \"http://localhost:8080\";\n\nconst serviceBaseUrl = (path) => {\n    if (path.startsWith(\"/admin/users\")) return pm.collectionVariables.get(\"userBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/users/\") && path.includes(\"/requests\")) return pm.collectionVariables.get(\"participationBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/events\") || path.startsWith(\"/admin/events\") || path.startsWith(\"/categories\") || path.startsWith(\"/admin/categories\") || (path.startsWith(\"/users/\") && path.includes(\"/events\"))) return pm.collectionVariables.get(\"eventBaseUrl\") || \"http://localhost:8080\";\n    return baseUrl;\n};",
                   "",
                   "const send = (method, path, body = undefined) => new Promise((resolve, reject) => {",
                   "    const request = {",
-                  "        url: baseUrl + path,",
+                  "        url: serviceBaseUrl(path) + path,",
                   "        method: method,",
                   "        header: {",
                   "            'Content-Type': 'application/json',",
@@ -1175,7 +1207,6 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{baseUrl}}/rating/{{raterId}}/event/{{eventId}}",
             "body": {
               "mode": "raw",
               "raw": "{\"score\": 5}",
@@ -1184,6 +1215,18 @@
                   "language": "json"
                 }
               }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/rating/{{raterId}}/event/{{eventId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rating",
+                "{{raterId}}",
+                "event",
+                "{{eventId}}"
+              ]
             }
           },
           "response": []
@@ -1196,11 +1239,11 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "const baseUrl = pm.collectionVariables.get('baseUrl') || 'http://localhost:8080';",
+                  "const baseUrl = pm.collectionVariables.get(\"baseUrl\") || \"http://localhost:8080\";\n\nconst serviceBaseUrl = (path) => {\n    if (path.startsWith(\"/admin/users\")) return pm.collectionVariables.get(\"userBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/users/\") && path.includes(\"/requests\")) return pm.collectionVariables.get(\"participationBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/events\") || path.startsWith(\"/admin/events\") || path.startsWith(\"/categories\") || path.startsWith(\"/admin/categories\") || (path.startsWith(\"/users/\") && path.includes(\"/events\"))) return pm.collectionVariables.get(\"eventBaseUrl\") || \"http://localhost:8080\";\n    return baseUrl;\n};",
                   "",
                   "const send = (method, path, body = undefined) => new Promise((resolve, reject) => {",
                   "    const request = {",
-                  "        url: baseUrl + path,",
+                  "        url: serviceBaseUrl(path) + path,",
                   "        method: method,",
                   "        header: {",
                   "            'Content-Type': 'application/json',",
@@ -1462,7 +1505,6 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{baseUrl}}/rating/{{raterId}}/event/{{eventId}}",
             "body": {
               "mode": "raw",
               "raw": "{\"score\": 4, \"comment\": \"\"}",
@@ -1471,6 +1513,18 @@
                   "language": "json"
                 }
               }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/rating/{{raterId}}/event/{{eventId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rating",
+                "{{raterId}}",
+                "event",
+                "{{eventId}}"
+              ]
             }
           },
           "response": []
@@ -1483,11 +1537,11 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "const baseUrl = pm.collectionVariables.get('baseUrl') || 'http://localhost:8080';",
+                  "const baseUrl = pm.collectionVariables.get(\"baseUrl\") || \"http://localhost:8080\";\n\nconst serviceBaseUrl = (path) => {\n    if (path.startsWith(\"/admin/users\")) return pm.collectionVariables.get(\"userBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/users/\") && path.includes(\"/requests\")) return pm.collectionVariables.get(\"participationBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/events\") || path.startsWith(\"/admin/events\") || path.startsWith(\"/categories\") || path.startsWith(\"/admin/categories\") || (path.startsWith(\"/users/\") && path.includes(\"/events\"))) return pm.collectionVariables.get(\"eventBaseUrl\") || \"http://localhost:8080\";\n    return baseUrl;\n};",
                   "",
                   "const send = (method, path, body = undefined) => new Promise((resolve, reject) => {",
                   "    const request = {",
-                  "        url: baseUrl + path,",
+                  "        url: serviceBaseUrl(path) + path,",
                   "        method: method,",
                   "        header: {",
                   "            'Content-Type': 'application/json',",
@@ -1755,7 +1809,6 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{baseUrl}}/rating/{{raterId}}/event/{{eventId}}",
             "body": {
               "mode": "raw",
               "raw": "{\"score\": 4, \"comment\": \"Не должен сохраниться\"}",
@@ -1764,6 +1817,18 @@
                   "language": "json"
                 }
               }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/rating/{{raterId}}/event/{{eventId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rating",
+                "{{raterId}}",
+                "event",
+                "{{eventId}}"
+              ]
             }
           },
           "response": []
@@ -1776,11 +1841,11 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "const baseUrl = pm.collectionVariables.get('baseUrl') || 'http://localhost:8080';",
+                  "const baseUrl = pm.collectionVariables.get(\"baseUrl\") || \"http://localhost:8080\";\n\nconst serviceBaseUrl = (path) => {\n    if (path.startsWith(\"/admin/users\")) return pm.collectionVariables.get(\"userBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/users/\") && path.includes(\"/requests\")) return pm.collectionVariables.get(\"participationBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/events\") || path.startsWith(\"/admin/events\") || path.startsWith(\"/categories\") || path.startsWith(\"/admin/categories\") || (path.startsWith(\"/users/\") && path.includes(\"/events\"))) return pm.collectionVariables.get(\"eventBaseUrl\") || \"http://localhost:8080\";\n    return baseUrl;\n};",
                   "",
                   "const send = (method, path, body = undefined) => new Promise((resolve, reject) => {",
                   "    const request = {",
-                  "        url: baseUrl + path,",
+                  "        url: serviceBaseUrl(path) + path,",
                   "        method: method,",
                   "        header: {",
                   "            'Content-Type': 'application/json',",
@@ -2074,7 +2139,6 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{baseUrl}}/rating/{{raterId}}/event/{{eventId}}",
             "body": {
               "mode": "raw",
               "raw": "{\"score\": 4, \"comment\": \"Заявка отклонена\"}",
@@ -2083,6 +2147,18 @@
                   "language": "json"
                 }
               }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/rating/{{raterId}}/event/{{eventId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rating",
+                "{{raterId}}",
+                "event",
+                "{{eventId}}"
+              ]
             }
           },
           "response": []
@@ -2095,11 +2171,11 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "const baseUrl = pm.collectionVariables.get('baseUrl') || 'http://localhost:8080';",
+                  "const baseUrl = pm.collectionVariables.get(\"baseUrl\") || \"http://localhost:8080\";\n\nconst serviceBaseUrl = (path) => {\n    if (path.startsWith(\"/admin/users\")) return pm.collectionVariables.get(\"userBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/users/\") && path.includes(\"/requests\")) return pm.collectionVariables.get(\"participationBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/events\") || path.startsWith(\"/admin/events\") || path.startsWith(\"/categories\") || path.startsWith(\"/admin/categories\") || (path.startsWith(\"/users/\") && path.includes(\"/events\"))) return pm.collectionVariables.get(\"eventBaseUrl\") || \"http://localhost:8080\";\n    return baseUrl;\n};",
                   "",
                   "const send = (method, path, body = undefined) => new Promise((resolve, reject) => {",
                   "    const request = {",
-                  "        url: baseUrl + path,",
+                  "        url: serviceBaseUrl(path) + path,",
                   "        method: method,",
                   "        header: {",
                   "            'Content-Type': 'application/json',",
@@ -2376,7 +2452,6 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{baseUrl}}/rating/{{raterId}}/event/{{eventId}}",
             "body": {
               "mode": "raw",
               "raw": "{\"score\": 5, \"comment\": \"Заявка ещё не принята\"}",
@@ -2385,6 +2460,18 @@
                   "language": "json"
                 }
               }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/rating/{{raterId}}/event/{{eventId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rating",
+                "{{raterId}}",
+                "event",
+                "{{eventId}}"
+              ]
             }
           },
           "response": []
@@ -2397,11 +2484,11 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "const baseUrl = pm.collectionVariables.get('baseUrl') || 'http://localhost:8080';",
+                  "const baseUrl = pm.collectionVariables.get(\"baseUrl\") || \"http://localhost:8080\";\n\nconst serviceBaseUrl = (path) => {\n    if (path.startsWith(\"/admin/users\")) return pm.collectionVariables.get(\"userBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/users/\") && path.includes(\"/requests\")) return pm.collectionVariables.get(\"participationBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/events\") || path.startsWith(\"/admin/events\") || path.startsWith(\"/categories\") || path.startsWith(\"/admin/categories\") || (path.startsWith(\"/users/\") && path.includes(\"/events\"))) return pm.collectionVariables.get(\"eventBaseUrl\") || \"http://localhost:8080\";\n    return baseUrl;\n};",
                   "",
                   "const send = (method, path, body = undefined) => new Promise((resolve, reject) => {",
                   "    const request = {",
-                  "        url: baseUrl + path,",
+                  "        url: serviceBaseUrl(path) + path,",
                   "        method: method,",
                   "        header: {",
                   "            'Content-Type': 'application/json',",
@@ -2662,7 +2749,6 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{baseUrl}}/rating/{{raterId}}/event/{{eventId}}",
             "body": {
               "mode": "raw",
               "raw": "{\"score\": 0, \"comment\": \"Ниже минимума\"}",
@@ -2671,6 +2757,18 @@
                   "language": "json"
                 }
               }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/rating/{{raterId}}/event/{{eventId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rating",
+                "{{raterId}}",
+                "event",
+                "{{eventId}}"
+              ]
             }
           },
           "response": []
@@ -2683,11 +2781,11 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "const baseUrl = pm.collectionVariables.get('baseUrl') || 'http://localhost:8080';",
+                  "const baseUrl = pm.collectionVariables.get(\"baseUrl\") || \"http://localhost:8080\";\n\nconst serviceBaseUrl = (path) => {\n    if (path.startsWith(\"/admin/users\")) return pm.collectionVariables.get(\"userBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/users/\") && path.includes(\"/requests\")) return pm.collectionVariables.get(\"participationBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/events\") || path.startsWith(\"/admin/events\") || path.startsWith(\"/categories\") || path.startsWith(\"/admin/categories\") || (path.startsWith(\"/users/\") && path.includes(\"/events\"))) return pm.collectionVariables.get(\"eventBaseUrl\") || \"http://localhost:8080\";\n    return baseUrl;\n};",
                   "",
                   "const send = (method, path, body = undefined) => new Promise((resolve, reject) => {",
                   "    const request = {",
-                  "        url: baseUrl + path,",
+                  "        url: serviceBaseUrl(path) + path,",
                   "        method: method,",
                   "        header: {",
                   "            'Content-Type': 'application/json',",
@@ -2948,7 +3046,6 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{baseUrl}}/rating/{{raterId}}/event/{{eventId}}",
             "body": {
               "mode": "raw",
               "raw": "{\"score\": 6, \"comment\": \"Выше максимума\"}",
@@ -2957,6 +3054,18 @@
                   "language": "json"
                 }
               }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/rating/{{raterId}}/event/{{eventId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rating",
+                "{{raterId}}",
+                "event",
+                "{{eventId}}"
+              ]
             }
           },
           "response": []
@@ -2969,11 +3078,11 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "const baseUrl = pm.collectionVariables.get('baseUrl') || 'http://localhost:8080';",
+                  "const baseUrl = pm.collectionVariables.get(\"baseUrl\") || \"http://localhost:8080\";\n\nconst serviceBaseUrl = (path) => {\n    if (path.startsWith(\"/admin/users\")) return pm.collectionVariables.get(\"userBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/users/\") && path.includes(\"/requests\")) return pm.collectionVariables.get(\"participationBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/events\") || path.startsWith(\"/admin/events\") || path.startsWith(\"/categories\") || path.startsWith(\"/admin/categories\") || (path.startsWith(\"/users/\") && path.includes(\"/events\"))) return pm.collectionVariables.get(\"eventBaseUrl\") || \"http://localhost:8080\";\n    return baseUrl;\n};",
                   "",
                   "const send = (method, path, body = undefined) => new Promise((resolve, reject) => {",
                   "    const request = {",
-                  "        url: baseUrl + path,",
+                  "        url: serviceBaseUrl(path) + path,",
                   "        method: method,",
                   "        header: {",
                   "            'Content-Type': 'application/json',",
@@ -3234,7 +3343,6 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{baseUrl}}/rating/{{raterId}}/event/{{eventId}}",
             "body": {
               "mode": "raw",
               "raw": "{\"comment\": \"Без оценки\"}",
@@ -3243,6 +3351,18 @@
                   "language": "json"
                 }
               }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/rating/{{raterId}}/event/{{eventId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rating",
+                "{{raterId}}",
+                "event",
+                "{{eventId}}"
+              ]
             }
           },
           "response": []
@@ -3255,11 +3375,11 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "const baseUrl = pm.collectionVariables.get('baseUrl') || 'http://localhost:8080';",
+                  "const baseUrl = pm.collectionVariables.get(\"baseUrl\") || \"http://localhost:8080\";\n\nconst serviceBaseUrl = (path) => {\n    if (path.startsWith(\"/admin/users\")) return pm.collectionVariables.get(\"userBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/users/\") && path.includes(\"/requests\")) return pm.collectionVariables.get(\"participationBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/events\") || path.startsWith(\"/admin/events\") || path.startsWith(\"/categories\") || path.startsWith(\"/admin/categories\") || (path.startsWith(\"/users/\") && path.includes(\"/events\"))) return pm.collectionVariables.get(\"eventBaseUrl\") || \"http://localhost:8080\";\n    return baseUrl;\n};",
                   "",
                   "const send = (method, path, body = undefined) => new Promise((resolve, reject) => {",
                   "    const request = {",
-                  "        url: baseUrl + path,",
+                  "        url: serviceBaseUrl(path) + path,",
                   "        method: method,",
                   "        header: {",
                   "            'Content-Type': 'application/json',",
@@ -3520,7 +3640,6 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{baseUrl}}/rating/{{raterId}}/event/{{eventId}}",
             "body": {
               "mode": "raw",
               "raw": "{\"score\": 5, \"comment\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
@@ -3529,6 +3648,18 @@
                   "language": "json"
                 }
               }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/rating/{{raterId}}/event/{{eventId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rating",
+                "{{raterId}}",
+                "event",
+                "{{eventId}}"
+              ]
             }
           },
           "response": []
@@ -3541,11 +3672,11 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "const baseUrl = pm.collectionVariables.get('baseUrl') || 'http://localhost:8080';",
+                  "const baseUrl = pm.collectionVariables.get(\"baseUrl\") || \"http://localhost:8080\";\n\nconst serviceBaseUrl = (path) => {\n    if (path.startsWith(\"/admin/users\")) return pm.collectionVariables.get(\"userBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/users/\") && path.includes(\"/requests\")) return pm.collectionVariables.get(\"participationBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/events\") || path.startsWith(\"/admin/events\") || path.startsWith(\"/categories\") || path.startsWith(\"/admin/categories\") || (path.startsWith(\"/users/\") && path.includes(\"/events\"))) return pm.collectionVariables.get(\"eventBaseUrl\") || \"http://localhost:8080\";\n    return baseUrl;\n};",
                   "",
                   "const send = (method, path, body = undefined) => new Promise((resolve, reject) => {",
                   "    const request = {",
-                  "        url: baseUrl + path,",
+                  "        url: serviceBaseUrl(path) + path,",
                   "        method: method,",
                   "        header: {",
                   "            'Content-Type': 'application/json',",
@@ -3809,7 +3940,6 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{baseUrl}}/rating/{{missingRaterId}}/event/{{eventId}}",
             "body": {
               "mode": "raw",
               "raw": "{\"score\": 5, \"comment\": \"Несуществующий пользователь\"}",
@@ -3818,6 +3948,18 @@
                   "language": "json"
                 }
               }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/rating/{{missingRaterId}}/event/{{eventId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rating",
+                "{{missingRaterId}}",
+                "event",
+                "{{eventId}}"
+              ]
             }
           },
           "response": []
@@ -3830,11 +3972,11 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "const baseUrl = pm.collectionVariables.get('baseUrl') || 'http://localhost:8080';",
+                  "const baseUrl = pm.collectionVariables.get(\"baseUrl\") || \"http://localhost:8080\";\n\nconst serviceBaseUrl = (path) => {\n    if (path.startsWith(\"/admin/users\")) return pm.collectionVariables.get(\"userBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/users/\") && path.includes(\"/requests\")) return pm.collectionVariables.get(\"participationBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/events\") || path.startsWith(\"/admin/events\") || path.startsWith(\"/categories\") || path.startsWith(\"/admin/categories\") || (path.startsWith(\"/users/\") && path.includes(\"/events\"))) return pm.collectionVariables.get(\"eventBaseUrl\") || \"http://localhost:8080\";\n    return baseUrl;\n};",
                   "",
                   "const send = (method, path, body = undefined) => new Promise((resolve, reject) => {",
                   "    const request = {",
-                  "        url: baseUrl + path,",
+                  "        url: serviceBaseUrl(path) + path,",
                   "        method: method,",
                   "        header: {",
                   "            'Content-Type': 'application/json',",
@@ -4095,7 +4237,6 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{baseUrl}}/rating/{{raterId}}/event/{{missingEventId}}",
             "body": {
               "mode": "raw",
               "raw": "{\"score\": 5, \"comment\": \"Несуществующее событие\"}",
@@ -4104,6 +4245,18 @@
                   "language": "json"
                 }
               }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/rating/{{raterId}}/event/{{missingEventId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rating",
+                "{{raterId}}",
+                "event",
+                "{{missingEventId}}"
+              ]
             }
           },
           "response": []
@@ -4116,11 +4269,11 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "const baseUrl = pm.collectionVariables.get('baseUrl') || 'http://localhost:8080';",
+                  "const baseUrl = pm.collectionVariables.get(\"baseUrl\") || \"http://localhost:8080\";\n\nconst serviceBaseUrl = (path) => {\n    if (path.startsWith(\"/admin/users\")) return pm.collectionVariables.get(\"userBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/users/\") && path.includes(\"/requests\")) return pm.collectionVariables.get(\"participationBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/events\") || path.startsWith(\"/admin/events\") || path.startsWith(\"/categories\") || path.startsWith(\"/admin/categories\") || (path.startsWith(\"/users/\") && path.includes(\"/events\"))) return pm.collectionVariables.get(\"eventBaseUrl\") || \"http://localhost:8080\";\n    return baseUrl;\n};",
                   "",
                   "const send = (method, path, body = undefined) => new Promise((resolve, reject) => {",
                   "    const request = {",
-                  "        url: baseUrl + path,",
+                  "        url: serviceBaseUrl(path) + path,",
                   "        method: method,",
                   "        header: {",
                   "            'Content-Type': 'application/json',",
@@ -4382,7 +4535,16 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{baseUrl}}/events/{{eventId}}"
+            "url": {
+              "raw": "{{eventBaseUrl}}/events/{{eventId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "events",
+                "{{eventId}}"
+              ]
+            }
           },
           "response": []
         },
@@ -4394,11 +4556,11 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "const baseUrl = pm.collectionVariables.get('baseUrl') || 'http://localhost:8080';",
+                  "const baseUrl = pm.collectionVariables.get(\"baseUrl\") || \"http://localhost:8080\";\n\nconst serviceBaseUrl = (path) => {\n    if (path.startsWith(\"/admin/users\")) return pm.collectionVariables.get(\"userBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/users/\") && path.includes(\"/requests\")) return pm.collectionVariables.get(\"participationBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/events\") || path.startsWith(\"/admin/events\") || path.startsWith(\"/categories\") || path.startsWith(\"/admin/categories\") || (path.startsWith(\"/users/\") && path.includes(\"/events\"))) return pm.collectionVariables.get(\"eventBaseUrl\") || \"http://localhost:8080\";\n    return baseUrl;\n};",
                   "",
                   "const send = (method, path, body = undefined) => new Promise((resolve, reject) => {",
                   "    const request = {",
-                  "        url: baseUrl + path,",
+                  "        url: serviceBaseUrl(path) + path,",
                   "        method: method,",
                   "        header: {",
                   "            'Content-Type': 'application/json',",
@@ -4663,7 +4825,6 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{baseUrl}}/rating/{{raterId}}/event/{{eventId}}",
             "body": {
               "mode": "raw",
               "raw": "{\"score\": 4, \"comment\": \"Слишком рано\"}",
@@ -4672,6 +4833,18 @@
                   "language": "json"
                 }
               }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/rating/{{raterId}}/event/{{eventId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rating",
+                "{{raterId}}",
+                "event",
+                "{{eventId}}"
+              ]
             }
           },
           "response": []
@@ -4684,11 +4857,11 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "const baseUrl = pm.collectionVariables.get('baseUrl') || 'http://localhost:8080';",
+                  "const baseUrl = pm.collectionVariables.get(\"baseUrl\") || \"http://localhost:8080\";\n\nconst serviceBaseUrl = (path) => {\n    if (path.startsWith(\"/admin/users\")) return pm.collectionVariables.get(\"userBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/users/\") && path.includes(\"/requests\")) return pm.collectionVariables.get(\"participationBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/events\") || path.startsWith(\"/admin/events\") || path.startsWith(\"/categories\") || path.startsWith(\"/admin/categories\") || (path.startsWith(\"/users/\") && path.includes(\"/events\"))) return pm.collectionVariables.get(\"eventBaseUrl\") || \"http://localhost:8080\";\n    return baseUrl;\n};",
                   "",
                   "const send = (method, path, body = undefined) => new Promise((resolve, reject) => {",
                   "    const request = {",
-                  "        url: baseUrl + path,",
+                  "        url: serviceBaseUrl(path) + path,",
                   "        method: method,",
                   "        header: {",
                   "            'Content-Type': 'application/json',",
@@ -4959,7 +5132,6 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{baseUrl}}/rating/{{raterId}}/event/{{eventId}}",
             "body": {
               "mode": "raw",
               "raw": "{\"score\": 3, \"comment\": \"Повторная оценка\"}",
@@ -4968,6 +5140,18 @@
                   "language": "json"
                 }
               }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/rating/{{raterId}}/event/{{eventId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rating",
+                "{{raterId}}",
+                "event",
+                "{{eventId}}"
+              ]
             }
           },
           "response": []
@@ -4980,11 +5164,11 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "const baseUrl = pm.collectionVariables.get('baseUrl') || 'http://localhost:8080';",
+                  "const baseUrl = pm.collectionVariables.get(\"baseUrl\") || \"http://localhost:8080\";\n\nconst serviceBaseUrl = (path) => {\n    if (path.startsWith(\"/admin/users\")) return pm.collectionVariables.get(\"userBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/users/\") && path.includes(\"/requests\")) return pm.collectionVariables.get(\"participationBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/events\") || path.startsWith(\"/admin/events\") || path.startsWith(\"/categories\") || path.startsWith(\"/admin/categories\") || (path.startsWith(\"/users/\") && path.includes(\"/events\"))) return pm.collectionVariables.get(\"eventBaseUrl\") || \"http://localhost:8080\";\n    return baseUrl;\n};",
                   "",
                   "const send = (method, path, body = undefined) => new Promise((resolve, reject) => {",
                   "    const request = {",
-                  "        url: baseUrl + path,",
+                  "        url: serviceBaseUrl(path) + path,",
                   "        method: method,",
                   "        header: {",
                   "            'Content-Type': 'application/json',",
@@ -5272,7 +5456,6 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{baseUrl}}/rating/{{raterId}}/event/{{eventId2}}",
             "body": {
               "mode": "raw",
               "raw": "{\"score\": 4, \"comment\": \"Оценка второго события\"}",
@@ -5281,15 +5464,27 @@
                   "language": "json"
                 }
               }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/rating/{{raterId}}/event/{{eventId2}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rating",
+                "{{raterId}}",
+                "event",
+                "{{eventId2}}"
+              ]
             }
           },
           "response": []
         }
-      ]
+      ],
+      "description": "Тесты рейтинга событий: успешные сценарии, среднее значение, границы времени, статусы заявок, валидация, Not Found, дубликаты и работа с несколькими событиями."
     },
     {
       "name": "2. Оценка авторов событий",
-      "description": "Тесты рейтинга организаторов: успешные сценарии, средний рейтинг, принадлежность события автору, временной оффсет, участие, дубликаты, Not Found и независимость рейтинга автора от рейтинга события.",
       "item": [
         {
           "name": "A01. Успех: корректный средний рейтинг автора по двум событиям",
@@ -5299,11 +5494,11 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "const baseUrl = pm.collectionVariables.get('baseUrl') || 'http://localhost:8080';",
+                  "const baseUrl = pm.collectionVariables.get(\"baseUrl\") || \"http://localhost:8080\";\n\nconst serviceBaseUrl = (path) => {\n    if (path.startsWith(\"/admin/users\")) return pm.collectionVariables.get(\"userBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/users/\") && path.includes(\"/requests\")) return pm.collectionVariables.get(\"participationBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/events\") || path.startsWith(\"/admin/events\") || path.startsWith(\"/categories\") || path.startsWith(\"/admin/categories\") || (path.startsWith(\"/users/\") && path.includes(\"/events\"))) return pm.collectionVariables.get(\"eventBaseUrl\") || \"http://localhost:8080\";\n    return baseUrl;\n};",
                   "",
                   "const send = (method, path, body = undefined) => new Promise((resolve, reject) => {",
                   "    const request = {",
-                  "        url: baseUrl + path,",
+                  "        url: serviceBaseUrl(path) + path,",
                   "        method: method,",
                   "        header: {",
                   "            'Content-Type': 'application/json',",
@@ -5625,7 +5820,22 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{baseUrl}}/admin/users?ids={{authorId}}"
+            "url": {
+              "raw": "{{userBaseUrl}}/admin/users?ids={{authorId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "ids",
+                  "value": "{{authorId}}"
+                }
+              ]
+            }
           },
           "response": []
         },
@@ -5637,11 +5847,11 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "const baseUrl = pm.collectionVariables.get('baseUrl') || 'http://localhost:8080';",
+                  "const baseUrl = pm.collectionVariables.get(\"baseUrl\") || \"http://localhost:8080\";\n\nconst serviceBaseUrl = (path) => {\n    if (path.startsWith(\"/admin/users\")) return pm.collectionVariables.get(\"userBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/users/\") && path.includes(\"/requests\")) return pm.collectionVariables.get(\"participationBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/events\") || path.startsWith(\"/admin/events\") || path.startsWith(\"/categories\") || path.startsWith(\"/admin/categories\") || (path.startsWith(\"/users/\") && path.includes(\"/events\"))) return pm.collectionVariables.get(\"eventBaseUrl\") || \"http://localhost:8080\";\n    return baseUrl;\n};",
                   "",
                   "const send = (method, path, body = undefined) => new Promise((resolve, reject) => {",
                   "    const request = {",
-                  "        url: baseUrl + path,",
+                  "        url: serviceBaseUrl(path) + path,",
                   "        method: method,",
                   "        header: {",
                   "            'Content-Type': 'application/json',",
@@ -5943,7 +6153,6 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{baseUrl}}/rating/{{raterId}}/author/{{eventId2}}/{{authorId}}",
             "body": {
               "mode": "raw",
               "raw": "{\"score\": 4, \"comment\": \"Оценка автора за второе событие\"}",
@@ -5952,6 +6161,19 @@
                   "language": "json"
                 }
               }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/rating/{{raterId}}/author/{{eventId2}}/{{authorId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rating",
+                "{{raterId}}",
+                "author",
+                "{{eventId2}}",
+                "{{authorId}}"
+              ]
             }
           },
           "response": []
@@ -5964,11 +6186,11 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "const baseUrl = pm.collectionVariables.get('baseUrl') || 'http://localhost:8080';",
+                  "const baseUrl = pm.collectionVariables.get(\"baseUrl\") || \"http://localhost:8080\";\n\nconst serviceBaseUrl = (path) => {\n    if (path.startsWith(\"/admin/users\")) return pm.collectionVariables.get(\"userBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/users/\") && path.includes(\"/requests\")) return pm.collectionVariables.get(\"participationBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/events\") || path.startsWith(\"/admin/events\") || path.startsWith(\"/categories\") || path.startsWith(\"/admin/categories\") || (path.startsWith(\"/users/\") && path.includes(\"/events\"))) return pm.collectionVariables.get(\"eventBaseUrl\") || \"http://localhost:8080\";\n    return baseUrl;\n};",
                   "",
                   "const send = (method, path, body = undefined) => new Promise((resolve, reject) => {",
                   "    const request = {",
-                  "        url: baseUrl + path,",
+                  "        url: serviceBaseUrl(path) + path,",
                   "        method: method,",
                   "        header: {",
                   "            'Content-Type': 'application/json',",
@@ -6242,7 +6464,6 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{baseUrl}}/rating/{{raterId}}/author/{{eventId}}/{{authorId}}",
             "body": {
               "mode": "raw",
               "raw": "{\"score\": 4, \"comment\": \"Ровно на временной границе\"}",
@@ -6251,6 +6472,19 @@
                   "language": "json"
                 }
               }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/rating/{{raterId}}/author/{{eventId}}/{{authorId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rating",
+                "{{raterId}}",
+                "author",
+                "{{eventId}}",
+                "{{authorId}}"
+              ]
             }
           },
           "response": []
@@ -6263,11 +6497,11 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "const baseUrl = pm.collectionVariables.get('baseUrl') || 'http://localhost:8080';",
+                  "const baseUrl = pm.collectionVariables.get(\"baseUrl\") || \"http://localhost:8080\";\n\nconst serviceBaseUrl = (path) => {\n    if (path.startsWith(\"/admin/users\")) return pm.collectionVariables.get(\"userBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/users/\") && path.includes(\"/requests\")) return pm.collectionVariables.get(\"participationBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/events\") || path.startsWith(\"/admin/events\") || path.startsWith(\"/categories\") || path.startsWith(\"/admin/categories\") || (path.startsWith(\"/users/\") && path.includes(\"/events\"))) return pm.collectionVariables.get(\"eventBaseUrl\") || \"http://localhost:8080\";\n    return baseUrl;\n};",
                   "",
                   "const send = (method, path, body = undefined) => new Promise((resolve, reject) => {",
                   "    const request = {",
-                  "        url: baseUrl + path,",
+                  "        url: serviceBaseUrl(path) + path,",
                   "        method: method,",
                   "        header: {",
                   "            'Content-Type': 'application/json',",
@@ -6553,7 +6787,6 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{baseUrl}}/rating/{{raterId}}/author/{{eventId}}/{{wrongAuthorId}}",
             "body": {
               "mode": "raw",
               "raw": "{\"score\": 5, \"comment\": \"Неверный организатор\"}",
@@ -6562,6 +6795,19 @@
                   "language": "json"
                 }
               }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/rating/{{raterId}}/author/{{eventId}}/{{wrongAuthorId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rating",
+                "{{raterId}}",
+                "author",
+                "{{eventId}}",
+                "{{wrongAuthorId}}"
+              ]
             }
           },
           "response": []
@@ -6574,11 +6820,11 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "const baseUrl = pm.collectionVariables.get('baseUrl') || 'http://localhost:8080';",
+                  "const baseUrl = pm.collectionVariables.get(\"baseUrl\") || \"http://localhost:8080\";\n\nconst serviceBaseUrl = (path) => {\n    if (path.startsWith(\"/admin/users\")) return pm.collectionVariables.get(\"userBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/users/\") && path.includes(\"/requests\")) return pm.collectionVariables.get(\"participationBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/events\") || path.startsWith(\"/admin/events\") || path.startsWith(\"/categories\") || path.startsWith(\"/admin/categories\") || (path.startsWith(\"/users/\") && path.includes(\"/events\"))) return pm.collectionVariables.get(\"eventBaseUrl\") || \"http://localhost:8080\";\n    return baseUrl;\n};",
                   "",
                   "const send = (method, path, body = undefined) => new Promise((resolve, reject) => {",
                   "    const request = {",
-                  "        url: baseUrl + path,",
+                  "        url: serviceBaseUrl(path) + path,",
                   "        method: method,",
                   "        header: {",
                   "            'Content-Type': 'application/json',",
@@ -6861,7 +7107,6 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{baseUrl}}/rating/{{raterId}}/author/{{eventId}}/{{authorId}}",
             "body": {
               "mode": "raw",
               "raw": "{\"score\": 5, \"comment\": \"Не был участником\"}",
@@ -6870,6 +7115,19 @@
                   "language": "json"
                 }
               }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/rating/{{raterId}}/author/{{eventId}}/{{authorId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rating",
+                "{{raterId}}",
+                "author",
+                "{{eventId}}",
+                "{{authorId}}"
+              ]
             }
           },
           "response": []
@@ -6882,11 +7140,11 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "const baseUrl = pm.collectionVariables.get('baseUrl') || 'http://localhost:8080';",
+                  "const baseUrl = pm.collectionVariables.get(\"baseUrl\") || \"http://localhost:8080\";\n\nconst serviceBaseUrl = (path) => {\n    if (path.startsWith(\"/admin/users\")) return pm.collectionVariables.get(\"userBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/users/\") && path.includes(\"/requests\")) return pm.collectionVariables.get(\"participationBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/events\") || path.startsWith(\"/admin/events\") || path.startsWith(\"/categories\") || path.startsWith(\"/admin/categories\") || (path.startsWith(\"/users/\") && path.includes(\"/events\"))) return pm.collectionVariables.get(\"eventBaseUrl\") || \"http://localhost:8080\";\n    return baseUrl;\n};",
                   "",
                   "const send = (method, path, body = undefined) => new Promise((resolve, reject) => {",
                   "    const request = {",
-                  "        url: baseUrl + path,",
+                  "        url: serviceBaseUrl(path) + path,",
                   "        method: method,",
                   "        header: {",
                   "            'Content-Type': 'application/json',",
@@ -7164,7 +7422,6 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{baseUrl}}/rating/{{raterId}}/author/{{eventId}}/{{authorId}}",
             "body": {
               "mode": "raw",
               "raw": "{\"score\": 4, \"comment\": \"Слишком рано\"}",
@@ -7173,6 +7430,19 @@
                   "language": "json"
                 }
               }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/rating/{{raterId}}/author/{{eventId}}/{{authorId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rating",
+                "{{raterId}}",
+                "author",
+                "{{eventId}}",
+                "{{authorId}}"
+              ]
             }
           },
           "response": []
@@ -7185,11 +7455,11 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "const baseUrl = pm.collectionVariables.get('baseUrl') || 'http://localhost:8080';",
+                  "const baseUrl = pm.collectionVariables.get(\"baseUrl\") || \"http://localhost:8080\";\n\nconst serviceBaseUrl = (path) => {\n    if (path.startsWith(\"/admin/users\")) return pm.collectionVariables.get(\"userBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/users/\") && path.includes(\"/requests\")) return pm.collectionVariables.get(\"participationBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/events\") || path.startsWith(\"/admin/events\") || path.startsWith(\"/categories\") || path.startsWith(\"/admin/categories\") || (path.startsWith(\"/users/\") && path.includes(\"/events\"))) return pm.collectionVariables.get(\"eventBaseUrl\") || \"http://localhost:8080\";\n    return baseUrl;\n};",
                   "",
                   "const send = (method, path, body = undefined) => new Promise((resolve, reject) => {",
                   "    const request = {",
-                  "        url: baseUrl + path,",
+                  "        url: serviceBaseUrl(path) + path,",
                   "        method: method,",
                   "        header: {",
                   "            'Content-Type': 'application/json',",
@@ -7473,7 +7743,6 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{baseUrl}}/rating/{{raterId}}/author/{{eventId}}/{{authorId}}",
             "body": {
               "mode": "raw",
               "raw": "{\"score\": 4, \"comment\": \"Заявка ещё PENDING\"}",
@@ -7482,6 +7751,19 @@
                   "language": "json"
                 }
               }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/rating/{{raterId}}/author/{{eventId}}/{{authorId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rating",
+                "{{raterId}}",
+                "author",
+                "{{eventId}}",
+                "{{authorId}}"
+              ]
             }
           },
           "response": []
@@ -7494,11 +7776,11 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "const baseUrl = pm.collectionVariables.get('baseUrl') || 'http://localhost:8080';",
+                  "const baseUrl = pm.collectionVariables.get(\"baseUrl\") || \"http://localhost:8080\";\n\nconst serviceBaseUrl = (path) => {\n    if (path.startsWith(\"/admin/users\")) return pm.collectionVariables.get(\"userBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/users/\") && path.includes(\"/requests\")) return pm.collectionVariables.get(\"participationBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/events\") || path.startsWith(\"/admin/events\") || path.startsWith(\"/categories\") || path.startsWith(\"/admin/categories\") || (path.startsWith(\"/users/\") && path.includes(\"/events\"))) return pm.collectionVariables.get(\"eventBaseUrl\") || \"http://localhost:8080\";\n    return baseUrl;\n};",
                   "",
                   "const send = (method, path, body = undefined) => new Promise((resolve, reject) => {",
                   "    const request = {",
-                  "        url: baseUrl + path,",
+                  "        url: serviceBaseUrl(path) + path,",
                   "        method: method,",
                   "        header: {",
                   "            'Content-Type': 'application/json',",
@@ -7803,7 +8085,6 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{baseUrl}}/rating/{{raterId}}/author/{{eventId}}/{{authorId}}",
             "body": {
               "mode": "raw",
               "raw": "{\"score\": 4, \"comment\": \"Заявка отклонена\"}",
@@ -7812,6 +8093,19 @@
                   "language": "json"
                 }
               }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/rating/{{raterId}}/author/{{eventId}}/{{authorId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rating",
+                "{{raterId}}",
+                "author",
+                "{{eventId}}",
+                "{{authorId}}"
+              ]
             }
           },
           "response": []
@@ -7824,11 +8118,11 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "const baseUrl = pm.collectionVariables.get('baseUrl') || 'http://localhost:8080';",
+                  "const baseUrl = pm.collectionVariables.get(\"baseUrl\") || \"http://localhost:8080\";\n\nconst serviceBaseUrl = (path) => {\n    if (path.startsWith(\"/admin/users\")) return pm.collectionVariables.get(\"userBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/users/\") && path.includes(\"/requests\")) return pm.collectionVariables.get(\"participationBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/events\") || path.startsWith(\"/admin/events\") || path.startsWith(\"/categories\") || path.startsWith(\"/admin/categories\") || (path.startsWith(\"/users/\") && path.includes(\"/events\"))) return pm.collectionVariables.get(\"eventBaseUrl\") || \"http://localhost:8080\";\n    return baseUrl;\n};",
                   "",
                   "const send = (method, path, body = undefined) => new Promise((resolve, reject) => {",
                   "    const request = {",
-                  "        url: baseUrl + path,",
+                  "        url: serviceBaseUrl(path) + path,",
                   "        method: method,",
                   "        header: {",
                   "            'Content-Type': 'application/json',",
@@ -8114,7 +8408,6 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{baseUrl}}/rating/{{raterId}}/author/{{eventId}}/{{authorId}}",
             "body": {
               "mode": "raw",
               "raw": "{\"score\": 3, \"comment\": \"Повторная оценка автору\"}",
@@ -8123,6 +8416,19 @@
                   "language": "json"
                 }
               }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/rating/{{raterId}}/author/{{eventId}}/{{authorId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rating",
+                "{{raterId}}",
+                "author",
+                "{{eventId}}",
+                "{{authorId}}"
+              ]
             }
           },
           "response": []
@@ -8135,11 +8441,11 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "const baseUrl = pm.collectionVariables.get('baseUrl') || 'http://localhost:8080';",
+                  "const baseUrl = pm.collectionVariables.get(\"baseUrl\") || \"http://localhost:8080\";\n\nconst serviceBaseUrl = (path) => {\n    if (path.startsWith(\"/admin/users\")) return pm.collectionVariables.get(\"userBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/users/\") && path.includes(\"/requests\")) return pm.collectionVariables.get(\"participationBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/events\") || path.startsWith(\"/admin/events\") || path.startsWith(\"/categories\") || path.startsWith(\"/admin/categories\") || (path.startsWith(\"/users/\") && path.includes(\"/events\"))) return pm.collectionVariables.get(\"eventBaseUrl\") || \"http://localhost:8080\";\n    return baseUrl;\n};",
                   "",
                   "const send = (method, path, body = undefined) => new Promise((resolve, reject) => {",
                   "    const request = {",
-                  "        url: baseUrl + path,",
+                  "        url: serviceBaseUrl(path) + path,",
                   "        method: method,",
                   "        header: {",
                   "            'Content-Type': 'application/json',",
@@ -8420,7 +8726,6 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{baseUrl}}/rating/{{raterId}}/author/{{eventId}}/{{authorId}}",
             "body": {
               "mode": "raw",
               "raw": "{\"score\": 4, \"comment\": \"Оценка автора после оценки события\"}",
@@ -8429,6 +8734,19 @@
                   "language": "json"
                 }
               }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/rating/{{raterId}}/author/{{eventId}}/{{authorId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rating",
+                "{{raterId}}",
+                "author",
+                "{{eventId}}",
+                "{{authorId}}"
+              ]
             }
           },
           "response": []
@@ -8441,11 +8759,11 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "const baseUrl = pm.collectionVariables.get('baseUrl') || 'http://localhost:8080';",
+                  "const baseUrl = pm.collectionVariables.get(\"baseUrl\") || \"http://localhost:8080\";\n\nconst serviceBaseUrl = (path) => {\n    if (path.startsWith(\"/admin/users\")) return pm.collectionVariables.get(\"userBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/users/\") && path.includes(\"/requests\")) return pm.collectionVariables.get(\"participationBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/events\") || path.startsWith(\"/admin/events\") || path.startsWith(\"/categories\") || path.startsWith(\"/admin/categories\") || (path.startsWith(\"/users/\") && path.includes(\"/events\"))) return pm.collectionVariables.get(\"eventBaseUrl\") || \"http://localhost:8080\";\n    return baseUrl;\n};",
                   "",
                   "const send = (method, path, body = undefined) => new Promise((resolve, reject) => {",
                   "    const request = {",
-                  "        url: baseUrl + path,",
+                  "        url: serviceBaseUrl(path) + path,",
                   "        method: method,",
                   "        header: {",
                   "            'Content-Type': 'application/json',",
@@ -8741,7 +9059,22 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{baseUrl}}/admin/users?ids={{authorId}}"
+            "url": {
+              "raw": "{{userBaseUrl}}/admin/users?ids={{authorId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "ids",
+                  "value": "{{authorId}}"
+                }
+              ]
+            }
           },
           "response": []
         },
@@ -8753,11 +9086,11 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "const baseUrl = pm.collectionVariables.get('baseUrl') || 'http://localhost:8080';",
+                  "const baseUrl = pm.collectionVariables.get(\"baseUrl\") || \"http://localhost:8080\";\n\nconst serviceBaseUrl = (path) => {\n    if (path.startsWith(\"/admin/users\")) return pm.collectionVariables.get(\"userBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/users/\") && path.includes(\"/requests\")) return pm.collectionVariables.get(\"participationBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/events\") || path.startsWith(\"/admin/events\") || path.startsWith(\"/categories\") || path.startsWith(\"/admin/categories\") || (path.startsWith(\"/users/\") && path.includes(\"/events\"))) return pm.collectionVariables.get(\"eventBaseUrl\") || \"http://localhost:8080\";\n    return baseUrl;\n};",
                   "",
                   "const send = (method, path, body = undefined) => new Promise((resolve, reject) => {",
                   "    const request = {",
-                  "        url: baseUrl + path,",
+                  "        url: serviceBaseUrl(path) + path,",
                   "        method: method,",
                   "        header: {",
                   "            'Content-Type': 'application/json',",
@@ -9033,7 +9366,6 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{baseUrl}}/rating/{{raterId}}/author/{{eventId}}/{{missingAuthorId}}",
             "body": {
               "mode": "raw",
               "raw": "{\"score\": 5, \"comment\": \"Несуществующий автор\"}",
@@ -9042,6 +9374,19 @@
                   "language": "json"
                 }
               }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/rating/{{raterId}}/author/{{eventId}}/{{missingAuthorId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rating",
+                "{{raterId}}",
+                "author",
+                "{{eventId}}",
+                "{{missingAuthorId}}"
+              ]
             }
           },
           "response": []
@@ -9054,11 +9399,11 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "const baseUrl = pm.collectionVariables.get('baseUrl') || 'http://localhost:8080';",
+                  "const baseUrl = pm.collectionVariables.get(\"baseUrl\") || \"http://localhost:8080\";\n\nconst serviceBaseUrl = (path) => {\n    if (path.startsWith(\"/admin/users\")) return pm.collectionVariables.get(\"userBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/users/\") && path.includes(\"/requests\")) return pm.collectionVariables.get(\"participationBaseUrl\") || \"http://localhost:8080\";\n    if (path.startsWith(\"/events\") || path.startsWith(\"/admin/events\") || path.startsWith(\"/categories\") || path.startsWith(\"/admin/categories\") || (path.startsWith(\"/users/\") && path.includes(\"/events\"))) return pm.collectionVariables.get(\"eventBaseUrl\") || \"http://localhost:8080\";\n    return baseUrl;\n};",
                   "",
                   "const send = (method, path, body = undefined) => new Promise((resolve, reject) => {",
                   "    const request = {",
-                  "        url: baseUrl + path,",
+                  "        url: serviceBaseUrl(path) + path,",
                   "        method: method,",
                   "        header: {",
                   "            'Content-Type': 'application/json',",
@@ -9332,17 +9677,100 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{baseUrl}}/admin/users?ids={{authorId}}"
+            "url": {
+              "raw": "{{userBaseUrl}}/admin/users?ids={{authorId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "ids",
+                  "value": "{{authorId}}"
+                }
+              ]
+            }
           },
           "response": []
         }
-      ]
+      ],
+      "description": "Тесты рейтинга организаторов: успешные сценарии, средний рейтинг, принадлежность события автору, временной оффсет, участие, дубликаты, Not Found и независимость рейтинга автора от рейтинга события."
     }
   ],
   "variable": [
     {
       "key": "baseUrl",
-      "value": "http://localhost:8080"
+      "value": "http://localhost:8080",
+      "description": "Review service (Postman profile), default port 8081"
+    },
+    {
+      "key": "raterId",
+      "value": ""
+    },
+    {
+      "key": "eventId",
+      "value": ""
+    },
+    {
+      "key": "expectedRating",
+      "value": ""
+    },
+    {
+      "key": "requestId",
+      "value": ""
+    },
+    {
+      "key": "missingRaterId",
+      "value": ""
+    },
+    {
+      "key": "missingEventId",
+      "value": ""
+    },
+    {
+      "key": "eventId1",
+      "value": ""
+    },
+    {
+      "key": "eventId2",
+      "value": ""
+    },
+    {
+      "key": "authorId",
+      "value": ""
+    },
+    {
+      "key": "expectedAuthorRating",
+      "value": ""
+    },
+    {
+      "key": "wrongAuthorId",
+      "value": ""
+    },
+    {
+      "key": "missingAuthorId",
+      "value": ""
+    },
+    {
+      "key": "eventBaseUrl",
+      "value": "http://localhost:8080",
+      "type": "string",
+      "description": "Event service (Postman profile)"
+    },
+    {
+      "key": "userBaseUrl",
+      "value": "http://localhost:8080",
+      "type": "string",
+      "description": "User service (Postman profile)"
+    },
+    {
+      "key": "participationBaseUrl",
+      "value": "http://localhost:8080",
+      "type": "string",
+      "description": "Participation service (Postman profile)"
     }
   ]
 }
