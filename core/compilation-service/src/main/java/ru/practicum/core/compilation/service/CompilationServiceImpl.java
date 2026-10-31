@@ -16,6 +16,7 @@ import ru.practicum.core.compilation.model.Compilation;
 import ru.practicum.core.compilation.repository.CompilationRepository;
 import ru.practicum.core.event.dto.response.EventShortDto;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -39,7 +40,7 @@ public class CompilationServiceImpl implements CompilationService {
 
         List<EventShortDto> events = findEvents(compilationDto.getEvents());
         List<Long> eventIds = events.stream().map(EventShortDto::getId).toList();
-        Compilation compilation = mapper.toCompilation(compilationDto, eventIds);
+        Compilation compilation = mapper.toCompilation(compilationDto, new ArrayList<>(eventIds));
 
         return mapper.toDto(compilationRepository.save(compilation), events);
     }
@@ -64,7 +65,9 @@ public class CompilationServiceImpl implements CompilationService {
         }
         if (update.getEvents() != null) {
             List<EventShortDto> events = findEvents(update.getEvents());
-            compilation.setEvents(events.stream().map(EventShortDto::getId).toList());
+            List<Long> eventIds = events.stream().map(EventShortDto::getId).toList();
+            compilation.getEvents().clear();
+            compilation.getEvents().addAll(eventIds);
         }
         if (update.getPinned() != null) {
             compilation.setPinned(update.getPinned());
