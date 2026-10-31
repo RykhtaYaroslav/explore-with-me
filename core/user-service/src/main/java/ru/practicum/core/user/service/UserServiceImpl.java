@@ -39,7 +39,7 @@ public class UserServiceImpl implements UserService {
                 .map(User::getId)
                 .toList();
 
-        List<UserAverageScore> result = reviewInterservice.findAverageScoresByTargetIds(userIds);
+        List<UserAverageScore> result = reviewInterservice.findAverageUsersRatingByIds(userIds);
         Map<Long, Double> ratingMap = result.stream()
                 .collect(Collectors.toMap(
                         UserAverageScore::targetId,

@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import ru.practicum.core.common.dto.user.UserAverageScore;
 import ru.practicum.core.event.dto.EventRatingCount;
 import ru.practicum.core.review.service.ReviewInterservice;
 
@@ -22,6 +23,11 @@ public class InterserviceReviewController {
 
     @PostMapping("/ratings")
     public List<EventRatingCount> getEventsRatingsByIds(@RequestBody @NotEmpty List<@Positive Long> ids) {
-        return reviewInterservice.getEventsRatingsByIds(ids);
+        return reviewInterservice.getEventsRatingsByIds(ids); //TODO fix endpoint uri
+    }
+
+    @PostMapping("users")
+    public List<UserAverageScore> findAverageUsersRatingByIds(@RequestBody @NotEmpty List<@Positive Long> ids){
+        return reviewInterservice.findAverageUsersRatingByIds(ids);
     }
 }
