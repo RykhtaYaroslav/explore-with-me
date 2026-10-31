@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.core.common.dto.user.UserAverageScore;
 import ru.practicum.core.event.dto.EventRatingCount;
-import ru.practicum.core.review.service.ReviewInterservice;
+import ru.practicum.core.review.service.internalapi.ReviewInternalApiService;
 
 import java.util.List;
 
@@ -18,16 +18,16 @@ import java.util.List;
 @RequestMapping("/interservice/reviews")
 @RequiredArgsConstructor
 @Validated
-public class InterserviceReviewController {
-    private final ReviewInterservice reviewInterservice;
+public class ReviewInternalApiController {
+    private final ReviewInternalApiService reviewInternalApiService;
 
     @PostMapping("/ratings")
     public List<EventRatingCount> getEventsRatingsByIds(@RequestBody @NotEmpty List<@Positive Long> ids) {
-        return reviewInterservice.getEventsRatingsByIds(ids); //TODO fix endpoint uri
+        return reviewInternalApiService.getEventsRatingsByIds(ids); //TODO fix endpoint uri
     }
 
     @PostMapping("users")
-    public List<UserAverageScore> findAverageUsersRatingByIds(@RequestBody @NotEmpty List<@Positive Long> ids){
-        return reviewInterservice.findAverageUsersRatingByIds(ids);
+    public List<UserAverageScore> findAverageUsersRatingByIds(@RequestBody @NotEmpty List<@Positive Long> ids) {
+        return reviewInternalApiService.findAverageUsersRatingByIds(ids);
     }
 }

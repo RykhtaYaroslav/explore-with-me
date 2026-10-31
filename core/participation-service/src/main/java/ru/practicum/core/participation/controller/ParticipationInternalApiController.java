@@ -13,7 +13,7 @@ import ru.practicum.core.participation.service.RequestService;
 @RequestMapping("/interservice/requests")
 @RequiredArgsConstructor
 @Validated
-public class InterserviceRequestsController {
+public class ParticipationInternalApiController {
     private final RequestService requestService;
 
     @GetMapping("/users/{userId}/events/{eventId}/confirmed")

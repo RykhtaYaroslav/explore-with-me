@@ -1,4 +1,4 @@
-package ru.practicum.core.review.service;
+package ru.practicum.core.review.service.internalapi;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,10 +14,9 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class ReviewInterserviceImpl implements ReviewInterservice {
+public class ReviewInternalApiServiceImpl implements ReviewInternalApiService {
     private final EventReviewRepository eventReviewRepository;
     private final UserReviewRepository userReviewRepository;
-    // TODO rename interface + implementation
 
     @Override
     public List<EventRatingCount> getEventsRatingsByIds(List<Long> ids) {
