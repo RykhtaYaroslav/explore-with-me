@@ -15,7 +15,9 @@ import ru.practicum.core.event.dto.response.EventFullDto;
 import ru.practicum.core.event.dto.response.EventShortDto;
 import ru.practicum.core.event.model.Event;
 import ru.practicum.core.event.service.interservice.ReviewInterservice;
+import ru.practicum.core.event.service.interservice.UserInterservice;
 import ru.practicum.core.event.util.TestDataUtils;
+import ru.practicum.core.user.dto.UserShortDto;
 import ru.practicum.stats.client.StatsClient;
 import ru.practicum.stats.dto.ViewStatsDto;
 
@@ -39,19 +41,22 @@ class EventStatsCollectorImplTest {
     private StatsClient statsClient;
     @Mock
     private ReviewInterservice reviewInterservice;
+    @Mock
+    private UserInterservice userInterservice;
 
     private EventStatsCollectorImpl collector;
     private EasyRandom random;
 
     @BeforeEach
     void setUp() {
-        collector = new EventStatsCollectorImpl(statsClient, reviewInterservice, Mappers.getMapper(EventMapper.class));
+        collector = new EventStatsCollectorImpl(statsClient, reviewInterservice, userInterservice,
+                Mappers.getMapper(EventMapper.class));
         random = TestDataUtils.createEventEasyRandomizer();
     }
 
     @AfterEach
     void verifyNoMoreMockInteractions() {
-        verifyNoMoreInteractions(statsClient, reviewInterservice);
+        verifyNoMoreInteractions(statsClient, reviewInterservice, userInterservice);
     }
 
     @Test
@@ -73,7 +78,7 @@ class EventStatsCollectorImplTest {
                 org.mockito.ArgumentMatchers.any(LocalDateTime.class),
                 org.mockito.ArgumentMatchers.eq(List.of("/events/41", "/events/42")),
                 org.mockito.ArgumentMatchers.eq(true));
-        verifyNoInteractions(reviewInterservice);
+        verifyNoInteractions(reviewInterservice, userInterservice);
     }
 
     @Test
@@ -95,7 +100,7 @@ class EventStatsCollectorImplTest {
         assertThat(start.getValue()).isAfter(beforeCall.minusYears(10).minusSeconds(2))
                 .isBefore(beforeCall.minusYears(10).plusSeconds(2));
         assertThat(end.getValue()).isAfterOrEqualTo(beforeCall);
-        verifyNoInteractions(reviewInterservice);
+        verifyNoInteractions(reviewInterservice, userInterservice);
     }
 
     @Test
@@ -108,7 +113,7 @@ class EventStatsCollectorImplTest {
 
         assertThat(collector.getConReqByEventMap(List.of(first, second)))
                 .containsExactlyInAnyOrderEntriesOf(Map.of(1L, 8L, 2L, 3L));
-        verifyNoInteractions(statsClient, reviewInterservice);
+        verifyNoInteractions(statsClient, reviewInterservice, userInterservice);
     }
 
     @Test
@@ -121,6 +126,8 @@ class EventStatsCollectorImplTest {
                 org.mockito.ArgumentMatchers.eq(List.of("/events/12")), org.mockito.ArgumentMatchers.eq(true)))
                 .thenReturn(List.of(new ViewStatsDto("app", "/events/12", 33L)));
         when(reviewInterservice.getRatingByIds(List.of(12L))).thenReturn(List.of(new EventRatingCount(12L, 4.25)));
+        UserShortDto initiator = user(112L);
+        when(userInterservice.getShortByIds(List.of(112L))).thenReturn(List.of(initiator));
 
         List<EventShortDto> result = collector.getShortDtoListWithStats(List.of(first));
 
@@ -129,11 +136,13 @@ class EventStatsCollectorImplTest {
             assertThat(dto.getViews()).isEqualTo(33L);
             assertThat(dto.getConfirmedRequests()).isEqualTo(4L);
             assertThat(dto.getRating()).isEqualTo(4.25);
+            assertThat(dto.getInitiator()).isSameAs(initiator);
         });
         verify(statsClient, times(1)).getStats(org.mockito.ArgumentMatchers.eq(first.getCreatedOn()),
                 org.mockito.ArgumentMatchers.any(LocalDateTime.class),
                 org.mockito.ArgumentMatchers.eq(List.of("/events/12")), org.mockito.ArgumentMatchers.eq(true));
         verify(reviewInterservice, times(1)).getRatingByIds(List.of(12L));
+        verify(userInterservice, times(1)).getShortByIds(List.of(112L));
     }
 
     @Test
@@ -146,6 +155,8 @@ class EventStatsCollectorImplTest {
                 org.mockito.ArgumentMatchers.eq(List.of("/events/15")), org.mockito.ArgumentMatchers.eq(true)))
                 .thenReturn(List.of());
         when(reviewInterservice.getRatingByIds(List.of(15L))).thenReturn(List.of());
+        UserShortDto initiator = user(115L);
+        when(userInterservice.getShortByIds(List.of(115L))).thenReturn(List.of(initiator));
 
         List<EventFullDto> result = collector.getFullDtoListWithStats(List.of(event));
 
@@ -154,11 +165,13 @@ class EventStatsCollectorImplTest {
             assertThat(dto.getViews()).isZero();
             assertThat(dto.getConfirmedRequests()).isEqualTo(2L);
             assertThat(dto.getRating()).isEqualTo(5.0);
+            assertThat(dto.getInitiator()).isSameAs(initiator);
         });
         verify(statsClient, times(1)).getStats(org.mockito.ArgumentMatchers.eq(event.getCreatedOn()),
                 org.mockito.ArgumentMatchers.any(LocalDateTime.class),
                 org.mockito.ArgumentMatchers.eq(List.of("/events/15")), org.mockito.ArgumentMatchers.eq(true));
         verify(reviewInterservice, times(1)).getRatingByIds(List.of(15L));
+        verify(userInterservice, times(1)).getShortByIds(List.of(115L));
     }
 
     @Test
@@ -175,13 +188,20 @@ class EventStatsCollectorImplTest {
         verify(statsClient, times(1)).getStats(org.mockito.ArgumentMatchers.eq(event.getCreatedOn()),
                 org.mockito.ArgumentMatchers.any(LocalDateTime.class),
                 org.mockito.ArgumentMatchers.eq(List.of("/events/3")), org.mockito.ArgumentMatchers.eq(true));
-        verifyNoInteractions(reviewInterservice);
+        verifyNoInteractions(reviewInterservice, userInterservice);
     }
 
     private Event event(Long id, LocalDateTime createdOn) {
         Event event = random.nextObject(Event.class);
         event.setId(id);
+        event.setInitiatorId(id + 100L);
         event.setCreatedOn(createdOn);
         return event;
+    }
+
+    private UserShortDto user(Long id) {
+        UserShortDto user = random.nextObject(UserShortDto.class);
+        user.setId(id);
+        return user;
     }
 }

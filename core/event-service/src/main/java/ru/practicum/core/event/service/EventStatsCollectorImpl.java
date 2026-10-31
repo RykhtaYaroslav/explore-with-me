@@ -9,6 +9,8 @@ import ru.practicum.core.event.dto.response.EventFullDto;
 import ru.practicum.core.event.dto.response.EventShortDto;
 import ru.practicum.core.event.model.Event;
 import ru.practicum.core.event.service.interservice.ReviewInterservice;
+import ru.practicum.core.event.service.interservice.UserInterservice;
+import ru.practicum.core.user.dto.UserShortDto;
 import ru.practicum.stats.client.StatsClient;
 import ru.practicum.stats.dto.ViewStatsDto;
 
@@ -26,6 +28,7 @@ import static java.time.LocalDateTime.now;
 public class EventStatsCollectorImpl implements EventStatsCollector {
     private final StatsClient statsRepository;
     private final ReviewInterservice reviewInterservice;
+    private final UserInterservice userInterservice;
 
     private final EventMapper eventMapper;
 
@@ -34,11 +37,13 @@ public class EventStatsCollectorImpl implements EventStatsCollector {
         Map<Long, Long> viewsByEventMap = getViewsByEventMap(events);
         Map<Long, Long> confirmedRequestsByEventMap = getConReqByEventMap(events);
         Map<Long, Double> ratingByEventMap = getRatingMap(events);
+        Map<Long, UserShortDto> initiatorsById = getInitiatorsById(events);
 
         return events.stream()
                 .map(event -> {
                     Long id = event.getId();
                     return eventMapper.toShortDto(event,
+                            initiatorsById.get(event.getInitiatorId()),
                             viewsByEventMap.getOrDefault(id, 0L),
                             confirmedRequestsByEventMap.getOrDefault(id, 0L),
                             ratingByEventMap.getOrDefault(id, 5.0));
@@ -52,10 +57,12 @@ public class EventStatsCollectorImpl implements EventStatsCollector {
         Map<Long, Long> confirmedRequests = getConReqByEventMap(events);
 
         Map<Long, Double> ratings = getRatingMap(events);
+        Map<Long, UserShortDto> initiatorsById = getInitiatorsById(events);
 
         return events.stream()
                 .map(event -> eventMapper.toFullDto(
                         event,
+                        initiatorsById.get(event.getInitiatorId()),
                         views.getOrDefault(event.getId(), 0L),
                         confirmedRequests.getOrDefault(event.getId(), 0L),
                         ratings.getOrDefault(event.getId(), 5.0)
@@ -147,5 +154,17 @@ public class EventStatsCollectorImpl implements EventStatsCollector {
                         EventRatingCount::eventId,
                         EventRatingCount::rating
                 ));
+    }
+
+    private Map<Long, UserShortDto> getInitiatorsById(List<Event> events) {
+        List<Long> initiatorIds = events.stream()
+                .map(Event::getInitiatorId)
+                .distinct()
+                .toList();
+        if (initiatorIds.isEmpty()) {
+            return Map.of();
+        }
+        return userInterservice.getShortByIds(initiatorIds).stream()
+                .collect(Collectors.toMap(UserShortDto::getId, user -> user));
     }
 }

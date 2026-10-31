@@ -20,6 +20,7 @@ import ru.practicum.core.event.model.EventState;
 import ru.practicum.core.event.repository.EventRepository;
 import ru.practicum.core.event.service.EventStatsCollector;
 import ru.practicum.core.event.service.interservice.UserInterservice;
+import ru.practicum.core.user.dto.UserShortDto;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -41,7 +42,7 @@ public class EventServicePrivateImpl implements EventServicePrivate {
 
     @Override
     public EventFullDto create(Long userId, NewEventDto newEventDto) {
-        userInterservice.checkExistsByIdOrThrow(userId);
+        UserShortDto initiator = userInterservice.getShortById(userId);
 
         Long categoryId = newEventDto.getCategoryId();
         Category category = categoryRepository.findById(categoryId)
@@ -51,7 +52,7 @@ public class EventServicePrivateImpl implements EventServicePrivate {
 
         event = eventRepository.save(event);
 
-        return eventMapper.toFullDto(event, 0L, 0L, 5.0);
+        return eventMapper.toFullDto(event, initiator, 0L, 0L, 5.0);
     }
 
     @Override

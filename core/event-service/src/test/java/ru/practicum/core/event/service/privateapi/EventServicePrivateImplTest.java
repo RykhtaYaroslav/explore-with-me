@@ -56,7 +56,6 @@ class EventServicePrivateImplTest {
 
     @AfterEach
     void verifyNoMoreMockInteractions() {
-        verify(userInterservice, times(1)).checkExistsByIdOrThrow(21L);
         verifyNoMoreInteractions(eventRepository, userInterservice, categoryRepository, statsCollector);
     }
 
@@ -68,6 +67,9 @@ class EventServicePrivateImplTest {
         NewEventDto request = random.nextObject(NewEventDto.class);
         request.setCategoryId(category.getId());
         request.setEventDate(LocalDateTime.now().plusDays(5));
+        var initiator = random.nextObject(ru.practicum.core.user.dto.UserShortDto.class);
+        initiator.setId(userId);
+        when(userInterservice.getShortById(userId)).thenReturn(initiator);
         when(categoryRepository.findById(category.getId())).thenReturn(Optional.of(category));
         when(eventRepository.save(any(Event.class))).thenAnswer(invocation -> {
             Event event = invocation.getArgument(0);
@@ -80,13 +82,14 @@ class EventServicePrivateImplTest {
         assertThat(result.getId()).isEqualTo(99L);
         assertThat(result.getTitle()).isEqualTo(request.getTitle());
         assertThat(result.getState()).isEqualTo(EventState.PENDING);
-        assertThat(result.getInitiator().getId()).isEqualTo(userId);
+        assertThat(result.getInitiator()).isSameAs(initiator);
         assertThat(result.getCategory().getId()).isEqualTo(category.getId());
         assertThat(result.getConfirmedRequests()).isZero();
         assertThat(result.getViews()).isZero();
         assertThat(result.getRating()).isEqualTo(5.0);
         verify(categoryRepository, times(1)).findById(category.getId());
         verify(eventRepository, times(1)).save(any(Event.class));
+        verify(userInterservice, times(1)).getShortById(userId);
         verifyNoInteractions(statsCollector);
     }
 
@@ -95,19 +98,21 @@ class EventServicePrivateImplTest {
     void createMissingCategory() {
         NewEventDto request = random.nextObject(NewEventDto.class);
         request.setCategoryId(73L);
+        when(userInterservice.getShortById(21L)).thenReturn(user(21L));
         assertThatThrownBy(() -> service.create(21L, request)).isInstanceOf(NotFoundException.class);
         verify(categoryRepository, times(1)).findById(73L);
         verify(eventRepository, times(0)).save(any());
+        verify(userInterservice, times(1)).getShortById(21L);
         verifyNoInteractions(statsCollector);
     }
 
     @Test
     @DisplayName("Не создает событие, если инициатор не найден")
     void createMissingInitiator() {
-        doThrow(new NotFoundException("missing user")).when(userInterservice).checkExistsByIdOrThrow(21L);
+        doThrow(new NotFoundException("missing user")).when(userInterservice).getShortById(21L);
         assertThatThrownBy(() -> service.create(21L, random.nextObject(NewEventDto.class)))
                 .isInstanceOf(NotFoundException.class).hasMessage("missing user");
-        verify(userInterservice, times(1)).checkExistsByIdOrThrow(21L);
+        verify(userInterservice, times(1)).getShortById(21L);
         verifyNoInteractions(categoryRepository, eventRepository, statsCollector);
     }
 
@@ -130,6 +135,7 @@ class EventServicePrivateImplTest {
         verify(eventRepository, times(1)).findByIdAndInitiatorId(17L, 21L);
         verify(eventRepository, times(1)).save(event);
         verify(statsCollector, times(1)).getFullDtoListWithStats(List.of(event));
+        verify(userInterservice, times(1)).checkExistsByIdOrThrow(21L);
         verifyNoInteractions(categoryRepository);
     }
 
@@ -169,6 +175,7 @@ class EventServicePrivateImplTest {
         verify(eventRepository, times(1)).findByIdAndInitiatorId(17L, 21L);
         verify(eventRepository, times(1)).save(event);
         verify(statsCollector, times(1)).getFullDtoListWithStats(List.of(event));
+        verify(userInterservice, times(1)).checkExistsByIdOrThrow(21L);
     }
 
     @Test
@@ -186,6 +193,7 @@ class EventServicePrivateImplTest {
         verify(eventRepository, times(1)).findByIdAndInitiatorId(17L, 21L);
         verify(eventRepository, times(1)).save(event);
         verify(statsCollector, times(1)).getFullDtoListWithStats(List.of(event));
+        verify(userInterservice, times(1)).checkExistsByIdOrThrow(21L);
         verifyNoInteractions(categoryRepository);
     }
 
@@ -198,6 +206,7 @@ class EventServicePrivateImplTest {
                 .isInstanceOf(EventUpdateException.class);
         verify(eventRepository, times(1)).findByIdAndInitiatorId(17L, 21L);
         verify(eventRepository, times(0)).save(any());
+        verify(userInterservice, times(1)).checkExistsByIdOrThrow(21L);
         verifyNoInteractions(categoryRepository, statsCollector);
     }
 
@@ -217,6 +226,7 @@ class EventServicePrivateImplTest {
         verify(eventRepository, times(1)).findByIdAndInitiatorId(17L, 21L);
         verify(eventRepository, times(1)).save(event);
         verify(statsCollector, times(1)).getFullDtoListWithStats(List.of(event));
+        verify(userInterservice, times(1)).checkExistsByIdOrThrow(21L);
         verifyNoInteractions(categoryRepository);
     }
 
@@ -229,6 +239,7 @@ class EventServicePrivateImplTest {
                 .isInstanceOf(EventUpdateException.class);
         verify(eventRepository, times(1)).findByIdAndInitiatorId(17L, 21L);
         verify(eventRepository, times(0)).save(any());
+        verify(userInterservice, times(1)).checkExistsByIdOrThrow(21L);
         verifyNoInteractions(categoryRepository, statsCollector);
     }
 
@@ -246,6 +257,7 @@ class EventServicePrivateImplTest {
         verify(eventRepository, times(1)).findByIdAndInitiatorId(17L, 21L);
         verify(categoryRepository, times(1)).findById(404L);
         verify(eventRepository, times(0)).save(any());
+        verify(userInterservice, times(1)).checkExistsByIdOrThrow(21L);
         verifyNoInteractions(statsCollector);
     }
 
@@ -256,6 +268,7 @@ class EventServicePrivateImplTest {
         assertThatThrownBy(() -> service.findByInitiatorAndEventIds(21L, 17L))
                 .isInstanceOf(NotFoundException.class);
         verify(eventRepository, times(1)).findByIdAndInitiatorId(17L, 21L);
+        verify(userInterservice, times(1)).checkExistsByIdOrThrow(21L);
         verifyNoInteractions(statsCollector);
         verifyNoInteractions(categoryRepository);
     }
@@ -271,6 +284,7 @@ class EventServicePrivateImplTest {
         assertThat(service.findByInitiatorAndEventIds(21L, 17L)).isSameAs(output);
         verify(eventRepository, times(1)).findByIdAndInitiatorId(17L, 21L);
         verify(statsCollector, times(1)).getFullDtoListWithStats(List.of(event));
+        verify(userInterservice, times(1)).checkExistsByIdOrThrow(21L);
         verifyNoInteractions(categoryRepository);
     }
 
@@ -278,6 +292,12 @@ class EventServicePrivateImplTest {
         Category category = random.nextObject(Category.class);
         category.setId(id);
         return category;
+    }
+
+    private ru.practicum.core.user.dto.UserShortDto user(Long id) {
+        var user = random.nextObject(ru.practicum.core.user.dto.UserShortDto.class);
+        user.setId(id);
+        return user;
     }
 
     private Event event(Long id, Long userId, EventState state, LocalDateTime date) {

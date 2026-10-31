@@ -45,9 +45,8 @@ public class EventInternalApiServiceImpl implements EventInternalApiService {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException(
                         String.format("Event with id = %d was not found", eventId)));
-        EventShortDto eventDto = eventMapper.toShortDto(event, 0L, event.getConfirmedRequests(), null);
-        eventDto.setInitiator(userInterservice.getShortById(event.getInitiatorId()));
-        return eventDto;
+        UserShortDto initiator = userInterservice.getShortById(event.getInitiatorId());
+        return eventMapper.toShortDto(event, initiator, 0L, event.getConfirmedRequests(), null);
     }
 
     @Override
@@ -59,27 +58,21 @@ public class EventInternalApiServiceImpl implements EventInternalApiService {
         List<Event> events = eventRepository.findAllWithCategoryByIdIn(eventIds);
         Map<Long, Event> eventsById = events.stream()
                 .collect(Collectors.toMap(Event::getId, event -> event));
-        Map<Long, EventShortDto> eventDtosById = new LinkedHashMap<>();
-
-        for (Long eventId : eventIds.stream().distinct().toList()) {
-            Event event = eventsById.get(eventId);
-            if (event == null) {
-                throw new NotFoundException(String.format("Event with id = %d was not found", eventId));
-            }
-            eventDtosById.put(eventId, eventMapper.toShortDto(event, 0L, event.getConfirmedRequests(), null));
-        }
-
         List<Long> initiatorIds = events.stream()
                 .map(Event::getInitiatorId)
                 .distinct()
                 .toList();
         Map<Long, UserShortDto> usersById = userInterservice.getShortByIds(initiatorIds).stream()
                 .collect(Collectors.toMap(UserShortDto::getId, user -> user));
-
-        eventDtosById.forEach((eventId, eventDto) -> {
+        Map<Long, EventShortDto> eventDtosById = new LinkedHashMap<>();
+        for (Long eventId : eventIds.stream().distinct().toList()) {
             Event event = eventsById.get(eventId);
-            eventDto.setInitiator(usersById.get(event.getInitiatorId()));
-        });
+            if (event == null) {
+                throw new NotFoundException(String.format("Event with id = %d was not found", eventId));
+            }
+            eventDtosById.put(eventId, eventMapper.toShortDto(
+                    event, usersById.get(event.getInitiatorId()), 0L, event.getConfirmedRequests(), null));
+        }
 
         return eventIds.stream()
                 .distinct()
@@ -102,23 +95,10 @@ public class EventInternalApiServiceImpl implements EventInternalApiService {
         Map<Long, EventShortDto> eventDtosById = new LinkedHashMap<>();
         eventDtos.forEach(eventDto -> eventDtosById.put(eventDto.getId(), eventDto));
 
-        Map<Long, Long> initiatorIdsByEventId = new LinkedHashMap<>();
-        events.forEach(event -> initiatorIdsByEventId.put(event.getId(), event.getInitiatorId()));
-        List<Long> initiatorIds = events.stream()
-                .map(Event::getInitiatorId)
-                .distinct()
-                .toList();
-        Map<Long, UserShortDto> usersById = userInterservice.getShortByIds(initiatorIds).stream()
-                .collect(Collectors.toMap(UserShortDto::getId, user -> user));
-
         return eventIds.stream()
                 .distinct()
                 .filter(eventDtosById::containsKey)
-                .map(eventId -> {
-                    EventShortDto eventDto = eventDtosById.get(eventId);
-                    eventDto.setInitiator(usersById.get(initiatorIdsByEventId.get(eventId)));
-                    return eventDto;
-                })
+                .map(eventDtosById::get)
                 .toList();
     }
 
