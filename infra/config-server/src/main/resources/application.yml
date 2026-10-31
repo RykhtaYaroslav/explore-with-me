@@ -1,14 +1,6 @@
 server:
   port: 0
 
-management:
-  server:
-    port: 8888
-  endpoints:
-    web:
-      exposure:
-        include: health,info
-
 spring:
   application:
     name: config-server

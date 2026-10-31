@@ -18,15 +18,17 @@
 | --- | --- | ---: |
 | `gateway-server` | Единая точка входа и маршрутизация внешнего API | 8080 |
 | `discovery-server` | Регистрация и обнаружение сервисов (Eureka) | 8761 |
-| `config-server` | Централизованная конфигурация | 8888 |
-| `event-service` | События, категории и внутренняя выдача данных о событиях | Случайный порт (`server.port: 0`) |
-| `user-service` | Пользователи и внутренние краткие сведения о них | Случайный порт (`server.port: 0`) |
-| `review-service` | Оценки событий и авторов | Случайный порт (`server.port: 0`) |
-| `participation-service` | Заявки на участие и проверка подтверждённого участия | 8083 |
-| `compilation-service` | Подборки событий | Случайный порт (`server.port: 0`) |
-| `stats-server` | Приём просмотров и выдача статистики | Случайный порт (`server.port: 0`) |
+| `config-server` | Централизованная конфигурация | Случайный порт, регистрация в Eureka |
+| `event-service` | События, категории и внутренняя выдача данных о событиях | Случайный порт, регистрация в Eureka |
+| `user-service` | Пользователи и внутренние краткие сведения о них | Случайный порт, регистрация в Eureka |
+| `review-service` | Оценки событий и авторов | Случайный порт, регистрация в Eureka |
+| `participation-service` | Заявки на участие и проверка подтверждённого участия | Случайный порт, регистрация в Eureka |
+| `compilation-service` | Подборки событий | Случайный порт, регистрация в Eureka |
+| `stats-server` | Приём просмотров и выдача статистики | Случайный порт, регистрация в Eureka |
 
 Для каждого бизнес-сервиса и `stats-server` в Compose настроена своя база данных. Сервис событий отправляет просмотры и запрашивает статистику через библиотеку `stats-client`. Сервисы событий и подборок собирают данные из других сервисов, а сервис оценок проверяет участников и авторов через внутренние API. Внешние маршруты Gateway и discovery-based адресация заданы в `infra/config-repo/gateway-server/gateway-server.yaml`.
+
+У экземпляров сервисов нет закреплённых имён контейнеров: можно поднять несколько копий сервиса, например `docker compose up --build --scale event-service=2`. Eureka регистрирует каждую копию с её фактическим портом, а Gateway и Feign выбирают доступные экземпляры по имени приложения.
 
 ### Где менять конфигурацию
 
@@ -36,7 +38,7 @@
 - `infra/config-repo/<service>/<service>.yaml` — настройки конкретного сервиса; `*-test.yaml` — тестовый профиль.
 - `*/src/main/resources/application.yaml` — имя приложения, начальные настройки подключения к Config Server/Eureka и профиль, если он задан локально.
 
-Параметры подключения к базам можно переопределить переменными окружения, например `EVENT_DB_URL`, `EVENT_DB_USERNAME`, `EVENT_DB_PASSWORD` (аналогично для `USER`, `REVIEW`, `PARTICIPATION`, `COMPILATION`, `STATS`). Значения по умолчанию для локального Compose указаны в `docker-compose.yml` и конфигурации сервисов.
+Параметры подключения к базам можно переопределить переменными окружения, например `EVENT_DB_URL`, `EVENT_DB_USERNAME`, `EVENT_DB_PASSWORD` (аналогично для `USER`, `REVIEW`, `PARTICIPATION`, `COMPILATION`, `STATS`). Значения по умолчанию для локального Compose указаны в `docker-compose.yml` и конфигурации сервисов. Compose включает профиль `docker`, чтобы контейнеры не использовали H2 профиля `test`. Порты бизнес-сервисов и Config Server случайные (`server.port: 0`); Compose ждёт регистрации каждого приложения в Eureka перед запуском Gateway. Gateway и Eureka имеют фиксированные порты как внешние точки входа, а вызовы к бизнес-сервисам идут через Eureka.
 
 ## API
 
@@ -71,9 +73,9 @@
 docker compose up --build
 ```
 
-После готовности сервисов API доступен на `http://localhost:8080`, Eureka — на `http://localhost:8761`. Состояние сервисов можно проверить через Actuator, например `http://localhost:8080/actuator/health` для Gateway. Остановить контейнеры можно командой `docker compose down`; чтобы удалить локальные данные баз, используйте `docker compose down -v`.
+После готовности сервисов API доступен на `http://localhost:8080`, Eureka — на `http://localhost:8761`. Порты баз данных публикуются на случайные локальные порты, доступные только с этой машины; узнать назначенный порт можно командой `docker compose port event-db 5432` (замените `event-db` на имя нужной базы). Остановить контейнеры можно командой `docker compose down`; чтобы удалить локальные данные баз, используйте `docker compose down -v`.
 
-**Примечание по текущей конфигурации:** `review-service` загружает профиль `test-time` из `core/review-service/src/main/resources/application.yaml`; конфигурация этого профиля задаёт `server.port: 0` и H2. У `event-service`, `user-service`, `compilation-service` и `stats-server` также настроен случайный порт (`server.port: 0`), тогда как health checks в `docker-compose.yml` проверяют фиксированные порты. Исключение — `participation-service`, для которого Compose задаёт `SERVER_PORT=8083`. Перед локальным запуском через Compose динамические порты и health checks нужно согласовать, иначе зависимые сервисы, включая Gateway, могут не перейти в состояние `healthy`.
+Для ручных тестов оценок с подменой времени запустите `review-service` с дополнительным профилем `test-time`: например, в PowerShell выполните `$env:REVIEW_PROFILES_ACTIVE='docker,test-time'` перед `docker compose up --build`. Этот профиль переключает базу оценок на H2 и включает `/test/time`; обычный профиль Compose `docker` использует PostgreSQL.
 
 Собрать Maven-проект без запуска тестов:
 

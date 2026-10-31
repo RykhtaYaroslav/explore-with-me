@@ -1,0 +1,12 @@
+.git
+.idea
+.run
+.codex
+logs
+**/target
+*.iml
+README.md
+openapi
+postman
+scripts
+amplicode.xml
