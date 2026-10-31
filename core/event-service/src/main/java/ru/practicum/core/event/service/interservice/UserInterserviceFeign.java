@@ -14,7 +14,7 @@ public class UserInterserviceFeign implements UserInterservice {
     private final UserFeignClient userFeignClient;
 
     @Override
-    public void existsById(Long userId) {
+    public void checkExistsByIdOrThrow(Long userId) {
         if (!userFeignClient.existsById(userId)) {
             throw new NotFoundException(String.format("User with id = %d was not found", userId));
         }
@@ -22,7 +22,7 @@ public class UserInterserviceFeign implements UserInterservice {
 
     @Override
     public UserShortDto getShortById(Long userId) {
-        existsById(userId);
+        checkExistsByIdOrThrow(userId);
         return userFeignClient.getShortById(userId);
     }
 

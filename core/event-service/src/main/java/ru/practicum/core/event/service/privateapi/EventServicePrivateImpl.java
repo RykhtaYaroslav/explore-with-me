@@ -41,7 +41,7 @@ public class EventServicePrivateImpl implements EventServicePrivate {
 
     @Override
     public EventFullDto create(Long userId, NewEventDto newEventDto) {
-        userInterservice.existsById(userId);
+        userInterservice.checkExistsByIdOrThrow(userId);
 
         Long categoryId = newEventDto.getCategoryId();
         Category category = categoryRepository.findById(categoryId)
@@ -57,7 +57,7 @@ public class EventServicePrivateImpl implements EventServicePrivate {
     @Override
     @Transactional(readOnly = true)
     public List<EventShortDto> findAllByInitiatorId(Long userId, Integer from, Integer size) {
-        userInterservice.existsById(userId);
+        userInterservice.checkExistsByIdOrThrow(userId);
 
         Pageable pageable = PageRequest.of(from / size, size);
 
@@ -81,7 +81,7 @@ public class EventServicePrivateImpl implements EventServicePrivate {
     @Override
     @Transactional(readOnly = true)
     public EventFullDto findByInitiatorAndEventIds(Long userId, Long eventId) {
-        userInterservice.existsById(userId);
+        userInterservice.checkExistsByIdOrThrow(userId);
 
         Event event = getEventByIdAndInitiator(userId, eventId); // Validate eventId by user and throws exception if no access
 
@@ -149,7 +149,7 @@ public class EventServicePrivateImpl implements EventServicePrivate {
      * @throws EventUpdateException if the eventId is published or scheduled within 2 hours without a valid date postponement
      */
     private Event getEventIfValidToUpdate(UpdateEventUserRequest request, Long userId, Long eventId) {
-        userInterservice.existsById(userId);
+        userInterservice.checkExistsByIdOrThrow(userId);
 
         Event event = getEventByIdAndInitiator(userId, eventId); // Validate eventId by user and throws exception if no access
 

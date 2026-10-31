@@ -5,8 +5,7 @@ import ru.practicum.core.user.dto.UserShortDto;
 import java.util.List;
 
 public interface UserInterservice {
-    void existsById(Long userId);
-    //TODO rename: add OrThrow
+    void checkExistsByIdOrThrow(Long userId);
 
     UserShortDto getShortById(Long userId);
 
