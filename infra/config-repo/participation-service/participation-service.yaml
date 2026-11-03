@@ -1,0 +1,32 @@
+spring:
+  sql:
+    init:
+      mode: always
+  datasource:
+    url: ${PARTICIPATION_DB_URL:jdbc:postgresql://localhost:5437/participation}
+    username: ${PARTICIPATION_DB_USERNAME:participation}
+    password: ${PARTICIPATION_DB_PASSWORD:participation}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+
+server:
+  port: 0
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+
+logging:
+  level:
+    org.hibernate: WARN
+    org.hibernate.SQL: WARN
+    root: INFO
+    ru.practicum.core.participation: DEBUG

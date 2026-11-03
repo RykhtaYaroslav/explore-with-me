@@ -3,9 +3,9 @@ spring:
     init:
       mode: always
   datasource:
-    url: jdbc:postgresql://localhost:5433/stats
-    username: stats
-    password: stats
+    url: ${STATS_DB_URL:jdbc:postgresql://localhost:5433/stats}
+    username: ${STATS_DB_USERNAME:stats}
+    password: ${STATS_DB_PASSWORD:stats}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:

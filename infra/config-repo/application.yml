@@ -6,5 +6,6 @@ spring:
 logging:
   level:
     ru.yandex.practicum: WARN
+    org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG
     org:
       springframework: INFO

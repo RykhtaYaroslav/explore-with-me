@@ -39,7 +39,7 @@ public class StatController {
         LocalDateTime endDate = LocalDateTime.parse(end, dtf);
 
         if (startDate.isAfter(endDate)) {
-            throw new BadRequestException(String.format("Начальное время %s должно быть не позже конечного времени %s", start, end));
+            throw new BadRequestException(String.format("Start time %s must not be later than end time %s", start, end));
         }
 
         return statService.getStats(startDate, endDate, uris, unique);

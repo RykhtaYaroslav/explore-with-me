@@ -18,12 +18,12 @@ public class ErrorHandler {
     public ErrorResponse handleBadRequest(BadRequestException e) {
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .status(HttpStatus.BAD_REQUEST.name())
-                .reason("Некорректный запрос")
+                .reason("Invalid request")
                 .message(e.getMessage())
                 .timestamp(LocalDateTime.now())
                 .errors(getErrorsList(e))
                 .build();
-        log.error("Получена ошибка 400 Bad Request: {}", e.getMessage(), e);
+        log.error("Received 400 Bad Request: {}", e.getMessage(), e);
         return errorResponse;
     }
 

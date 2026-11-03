@@ -1,0 +1,32 @@
+spring:
+  sql:
+    init:
+      mode: always
+  datasource:
+    url: ${COMPILATION_DB_URL:jdbc:postgresql://localhost:5438/compilation}
+    username: ${COMPILATION_DB_USERNAME:compilation}
+    password: ${COMPILATION_DB_PASSWORD:compilation}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+
+server:
+  port: 0
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+
+logging:
+  level:
+    org.hibernate: WARN
+    org.hibernate.SQL: WARN
+    root: INFO
+    ru.practicum.core.compilation: DEBUG

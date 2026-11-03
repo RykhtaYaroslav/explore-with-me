@@ -1,40 +1,239 @@
+x-eureka-healthcheck: &eureka-healthcheck
+  test:
+    - CMD-SHELL
+    - "wget -qO- --header=Accept:application/json http://discovery-server:8761/eureka/apps/$${EUREKA_APP} | grep -q UP"
+  interval: 10s
+  timeout: 3s
+  retries: 12
+  start_period: 30s
+
 services:
   stats-db:
     image: postgres:16.1
-    container_name: ewm-stats-db
     ports:
-      - "5433:5432"
+      - "127.0.0.1::5432"
+    volumes:
+      - stats-db-data:/var/lib/postgresql/data
     environment:
-      POSTGRES_DB: stats
-      POSTGRES_USER: stats
-      POSTGRES_PASSWORD: stats
+      POSTGRES_DB: ${STATS_DB_NAME:-stats}
+      POSTGRES_USER: ${STATS_DB_USERNAME:-stats}
+      POSTGRES_PASSWORD: ${STATS_DB_PASSWORD:-stats}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U stats -d stats"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 5
 
+  review-db:
+    image: postgres:16.1
+    ports:
+      - "127.0.0.1::5432"
+    volumes:
+      - review-db-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${REVIEW_DB_NAME:-review}
+      POSTGRES_USER: ${REVIEW_DB_USERNAME:-review}
+      POSTGRES_PASSWORD: ${REVIEW_DB_PASSWORD:-review}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  event-db:
+    image: postgres:16.1
+    ports:
+      - "127.0.0.1::5432"
+    volumes:
+      - event-db-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${EVENT_DB_NAME:-eventId}
+      POSTGRES_USER: ${EVENT_DB_USERNAME:-eventId}
+      POSTGRES_PASSWORD: ${EVENT_DB_PASSWORD:-eventId}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  user-db:
+    image: postgres:16.1
+    ports:
+      - "127.0.0.1::5432"
+    volumes:
+      - user-db-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${USER_DB_NAME:-users}
+      POSTGRES_USER: ${USER_DB_USERNAME:-users}
+      POSTGRES_PASSWORD: ${USER_DB_PASSWORD:-users}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  participation-db:
+    image: postgres:16.1
+    ports:
+      - "127.0.0.1::5432"
+    volumes:
+      - participation-db-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${PARTICIPATION_DB_NAME:-participation}
+      POSTGRES_USER: ${PARTICIPATION_DB_USERNAME:-participation}
+      POSTGRES_PASSWORD: ${PARTICIPATION_DB_PASSWORD:-participation}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  compilation-db:
+    image: postgres:16.1
+    ports:
+      - "127.0.0.1::5432"
+    volumes:
+      - compilation-db-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${COMPILATION_DB_NAME:-compilation}
+      POSTGRES_USER: ${COMPILATION_DB_USERNAME:-compilation}
+      POSTGRES_PASSWORD: ${COMPILATION_DB_PASSWORD:-compilation}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  compilation-service:
+    build:
+      context: .
+      dockerfile: core/compilation-service/Dockerfile
+    healthcheck: *eureka-healthcheck
+    depends_on:
+      compilation-db:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://compilation-db:5432/${COMPILATION_DB_NAME:-compilation}
+      SPRING_DATASOURCE_USERNAME: ${COMPILATION_DB_USERNAME:-compilation}
+      SPRING_DATASOURCE_PASSWORD: ${COMPILATION_DB_PASSWORD:-compilation}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_SQL_INIT_MODE: always
+      SPRING_PROFILES_ACTIVE: docker
+      EUREKA_APP: COMPILATION-SERVICE
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-server:8761/eureka/
+
+  event-service:
+    build:
+      context: .
+      dockerfile: core/event-service/Dockerfile
+    healthcheck: *eureka-healthcheck
+    depends_on:
+      event-db:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      stats-server:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://event-db:5432/${EVENT_DB_NAME:-eventId}
+      SPRING_DATASOURCE_USERNAME: ${EVENT_DB_USERNAME:-eventId}
+      SPRING_DATASOURCE_PASSWORD: ${EVENT_DB_PASSWORD:-eventId}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_SQL_INIT_MODE: always
+      SPRING_PROFILES_ACTIVE: docker
+      EUREKA_APP: EVENT-SERVICE
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-server:8761/eureka/
+
+  user-service:
+    build:
+      context: .
+      dockerfile: core/user-service/Dockerfile
+    healthcheck: *eureka-healthcheck
+    depends_on:
+      user-db:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://user-db:5432/${USER_DB_NAME:-users}
+      SPRING_DATASOURCE_USERNAME: ${USER_DB_USERNAME:-users}
+      SPRING_DATASOURCE_PASSWORD: ${USER_DB_PASSWORD:-users}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_PROFILES_ACTIVE: docker
+      EUREKA_APP: USER-SERVICE
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-server:8761/eureka/
+
+  review-service:
+    build:
+      context: .
+      dockerfile: core/review-service/Dockerfile
+    healthcheck: *eureka-healthcheck
+    depends_on:
+      review-db:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://review-db:5432/${REVIEW_DB_NAME:-review}
+      SPRING_DATASOURCE_USERNAME: ${REVIEW_DB_USERNAME:-review}
+      SPRING_DATASOURCE_PASSWORD: ${REVIEW_DB_PASSWORD:-review}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_SQL_INIT_MODE: always
+      SPRING_PROFILES_ACTIVE: ${REVIEW_PROFILES_ACTIVE:-docker}
+      EUREKA_APP: REVIEW-SERVICE
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-server:8761/eureka/
+
+  participation-service:
+    build:
+      context: .
+      dockerfile: core/participation-service/Dockerfile
+    healthcheck: *eureka-healthcheck
+    depends_on:
+      participation-db:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://participation-db:5432/${PARTICIPATION_DB_NAME:-participation}
+      SPRING_DATASOURCE_USERNAME: ${PARTICIPATION_DB_USERNAME:-participation}
+      SPRING_DATASOURCE_PASSWORD: ${PARTICIPATION_DB_PASSWORD:-participation}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_SQL_INIT_MODE: always
+      SPRING_PROFILES_ACTIVE: docker
+      EUREKA_APP: PARTICIPATION-SERVICE
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-server:8761/eureka/
+
   config-server:
-    build: ./infra/config-server
-    container_name: ewm-config-server
+    build:
+      context: .
+      dockerfile: infra/config-server/Dockerfile
     volumes:
       - ./infra/config-repo:/config-repo:ro
-    environment:
-      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-server:8761/eureka/
-      SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH_LOCATIONS: "file:/config-repo,file:/config-repo/stats-service,file:/config-repo/main-service,file:/config-repo/gateway-server"
     depends_on:
       discovery-server:
         condition: service_healthy
-    healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:8888/actuator/health > /dev/null || exit 1"]
-      interval: 5s
-      timeout: 3s
-      retries: 12
-      start_period: 10s
+    healthcheck: *eureka-healthcheck
+    environment:
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-server:8761/eureka/
+      EUREKA_APP: CONFIG-SERVER
+      SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH_LOCATIONS: "file:/config-repo,file:/config-repo/stats-service,file:/config-repo/event-service,file:/config-repo/review-service,file:/config-repo/user-service,file:/config-repo/participation-service,file:/config-repo/compilation-service,file:/config-repo/gateway-server"
 
   discovery-server:
-    build: ./infra/discovery-server
-    container_name: ewm-discovery-server
+    build:
+      context: .
+      dockerfile: infra/discovery-server/Dockerfile
     ports:
       - "8761:8761"
     healthcheck:
@@ -45,8 +244,10 @@ services:
       start_period: 10s
 
   stats-server:
-    build: ./stats/stats-server
-    container_name: ewm-stats-server
+    build:
+      context: .
+      dockerfile: stats/stats-server/Dockerfile
+    healthcheck: *eureka-healthcheck
     depends_on:
       stats-db:
         condition: service_healthy
@@ -55,59 +256,51 @@ services:
       discovery-server:
         condition: service_healthy
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://stats-db:5432/stats
-      SPRING_DATASOURCE_USERNAME: stats
-      SPRING_DATASOURCE_PASSWORD: stats
+      SPRING_DATASOURCE_URL: jdbc:postgresql://stats-db:5432/${STATS_DB_NAME:-stats}
+      SPRING_DATASOURCE_USERNAME: ${STATS_DB_USERNAME:-stats}
+      SPRING_DATASOURCE_PASSWORD: ${STATS_DB_PASSWORD:-stats}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-server:8761/eureka/
-
-  ewm-db:
-    image: postgres:16.1
-    container_name: ewm-main-db
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_DB: ewm
-      POSTGRES_USER: main
-      POSTGRES_PASSWORD: main
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U main -d ewm"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
-  ewm-service:
-    build: ./core/main-service
-    container_name: ewm-main-service
-    depends_on:
-      ewm-db:
-        condition: service_healthy
-      stats-server:
-        condition: service_started
-      discovery-server:
-        condition: service_healthy
-      config-server:
-        condition: service_healthy
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://ewm-db:5432/ewm
-      SPRING_DATASOURCE_USERNAME: main
-      SPRING_DATASOURCE_PASSWORD: main
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_PROFILES_ACTIVE: docker
+      EUREKA_APP: STATS-SERVER
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-server:8761/eureka/
 
   gateway-server:
-    build: ./infra/gateway-server
-    container_name: ewm-gateway-server
+    build:
+      context: .
+      dockerfile: infra/gateway-server/Dockerfile
     ports:
       - "8080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health | grep -Eq '\"status\"[[:space:]]*:[[:space:]]*\"UP\"'"]
+      interval: 10s
+      timeout: 3s
+      retries: 12
+      start_period: 20s
     depends_on:
       config-server:
         condition: service_healthy
       discovery-server:
         condition: service_healthy
       stats-server:
-        condition: service_started
-      ewm-service:
-        condition: service_started
+        condition: service_healthy
+      compilation-service:
+        condition: service_healthy
+      event-service:
+        condition: service_healthy
+      user-service:
+        condition: service_healthy
+      review-service:
+        condition: service_healthy
+      participation-service:
+        condition: service_healthy
     environment:
+      SPRING_PROFILES_ACTIVE: docker
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-server:8761/eureka/
+
+volumes:
+  stats-db-data:
+  review-db-data:
+  event-db-data:
+  user-db-data:
+  participation-db-data:
+  compilation-db-data:

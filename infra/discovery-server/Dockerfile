@@ -1,3 +1,8 @@
+FROM maven:3.9.9-eclipse-temurin-21 AS build
+WORKDIR /workspace
+COPY . .
+RUN mvn -pl infra/discovery-server -am -DskipTests package
+
 FROM amazoncorretto:21-alpine
-COPY target/*.jar app.jar
+COPY --from=build /workspace/infra/discovery-server/target/discovery-server-*.jar /app.jar
 ENTRYPOINT ["java", "-jar", "/app.jar"]
