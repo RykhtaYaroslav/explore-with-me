@@ -11,8 +11,13 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>protobuf-schemas</artifactId>
-    <packaging>jar</packaging>
-    <name>protobuf-schemas</name>
-    <description>Shared Protobuf messages and gRPC service contracts</description>
+    <artifactId>schemas</artifactId>
+    <packaging>pom</packaging>
+    <name>schemas</name>
+    <description>Shared recommendation system schema modules</description>
+
+    <modules>
+        <module>avro-schemas</module>
+        <module>protobuf-schemas</module>
+    </modules>
 </project>

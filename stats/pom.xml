@@ -16,8 +16,7 @@
     <name>stats</name>
 
     <modules>
-        <module>avro-schemas</module>
-        <module>protobuf-schemas</module>
+        <module>schemas</module>
         <module>collector</module>
         <module>aggregator</module>
         <module>analyzer</module>
