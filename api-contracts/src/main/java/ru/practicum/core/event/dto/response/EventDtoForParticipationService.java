@@ -6,6 +6,7 @@ import ru.practicum.core.event.model.EventState;
 import java.time.LocalDateTime;
 
 import static ru.practicum.core.common.util.EwmConstants.DATE_TIME_FORMAT;
+
 public record EventDtoForParticipationService(
         Long id,
         EventState state,

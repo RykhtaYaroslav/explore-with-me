@@ -37,9 +37,12 @@ import static org.mockito.Mockito.when;
 class RequestValidatorImplTest {
     private static final long USER_ID = 7L;
     private static final long EVENT_ID = 15L;
-    @Mock private UserInterservice users;
-    @Mock private EventInterservice events;
-    @Mock private RequestRepository requests;
+    @Mock
+    private UserInterservice users;
+    @Mock
+    private EventInterservice events;
+    @Mock
+    private RequestRepository requests;
     private RequestValidatorImpl validator;
 
     @BeforeEach

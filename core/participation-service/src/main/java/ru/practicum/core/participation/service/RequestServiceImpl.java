@@ -56,7 +56,7 @@ public class RequestServiceImpl implements RequestService {
     /**
      * Creates a participation request and updates the event's confirmed count when moderation is not required.
      *
-     * @param userId identifier of the requester
+     * @param userId  identifier of the requester
      * @param eventId identifier of the event
      * @return the created request
      */
@@ -87,7 +87,7 @@ public class RequestServiceImpl implements RequestService {
     /**
      * Cancels a user's participation request and decrements the event's confirmed count when necessary.
      *
-     * @param userId identifier of the requester
+     * @param userId    identifier of the requester
      * @param requestId identifier of the request to cancel
      * @return the cancelled request
      */
@@ -113,7 +113,7 @@ public class RequestServiceImpl implements RequestService {
     /**
      * Returns all participation requests for an event owned by the specified user.
      *
-     * @param userId identifier of the event initiator
+     * @param userId  identifier of the event initiator
      * @param eventId identifier of the event
      * @return all participation requests submitted for the event
      */
@@ -132,9 +132,9 @@ public class RequestServiceImpl implements RequestService {
      * and rejects the rest.
      * An empty request ID list means that all pending requests for the event are processed.
      *
-     * @param userId identifier of the event organizer
+     * @param userId  identifier of the event organizer
      * @param eventId identifier of the event
-     * @param update requested status and optional request identifiers
+     * @param update  requested status and optional request identifiers
      * @return the confirmed and rejected requests
      */
     @Override
@@ -164,7 +164,7 @@ public class RequestServiceImpl implements RequestService {
     /**
      * Checks whether a user has a confirmed request for an event.
      *
-     * @param userId identifier of the requester
+     * @param userId  identifier of the requester
      * @param eventId identifier of the event
      * @return {@code true} if the request is confirmed; otherwise {@code false}
      */
@@ -238,7 +238,7 @@ public class RequestServiceImpl implements RequestService {
     /**
      * Rejects pending requests for the event that were not explicitly selected in the status update.
      *
-     * @param eventId identifier of the event
+     * @param eventId          identifier of the event
      * @param selectedRequests requests explicitly selected for the status update
      * @return the other pending requests that were rejected
      */
@@ -250,8 +250,8 @@ public class RequestServiceImpl implements RequestService {
         List<ParticipationRequest> rejectedRequests = selectedIds.isEmpty()
                 ? requestRepository.findAllByEventIdAndStatus(eventId, RequestStatus.PENDING)
                 : requestRepository.findAllByEventIdAndStatusAndIdNotIn(
-                        eventId, RequestStatus.PENDING, selectedIds
-                );
+                eventId, RequestStatus.PENDING, selectedIds
+        );
         rejectedRequests.forEach(request -> request.setStatus(RequestStatus.REJECTED));
         return rejectedRequests;
     }
@@ -271,7 +271,7 @@ public class RequestServiceImpl implements RequestService {
     /**
      * Maps updated request entities into the API response.
      *
-     * @param rejectedRequests rejected requests
+     * @param rejectedRequests  rejected requests
      * @param confirmedRequests confirmed requests
      * @return the status update result
      */

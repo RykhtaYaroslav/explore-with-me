@@ -14,17 +14,17 @@ import java.util.List;
  * and passed from the controller to the eventId service. Empty filter lists are
  * normalized to {@code null} so they can be treated as absent filters.
  *
- * @param categories category IDs to include, or {@code null} for all categories
- * @param paid whether to include paid or free events, or {@code null} for either
- * @param rangeStart earliest eventId date to include, or {@code null} for no lower bound
- * @param rangeEnd latest eventId date to include, or {@code null} for no upper bound
- * @param from zero-based offset of the first result
- * @param size maximum number of results to return
- * @param text text to match against eventId titles and annotations, or {@code null} for no text filter
+ * @param categories    category IDs to include, or {@code null} for all categories
+ * @param paid          whether to include paid or free events, or {@code null} for either
+ * @param rangeStart    earliest eventId date to include, or {@code null} for no lower bound
+ * @param rangeEnd      latest eventId date to include, or {@code null} for no upper bound
+ * @param from          zero-based offset of the first result
+ * @param size          maximum number of results to return
+ * @param text          text to match against eventId titles and annotations, or {@code null} for no text filter
  * @param onlyAvailable whether to include only events with available places, or {@code null} when not specified
- * @param sort public search ordering, or {@code null} when sorting is not requested
- * @param users initiator IDs to include in an administrator search, or {@code null} for all initiators
- * @param states eventId states to include in an administrator search, or {@code null} for all states
+ * @param sort          public search ordering, or {@code null} when sorting is not requested
+ * @param users         initiator IDs to include in an administrator search, or {@code null} for all initiators
+ * @param states        eventId states to include in an administrator search, or {@code null} for all states
  */
 @Builder(toBuilder = true)
 public record EventQueryParams(

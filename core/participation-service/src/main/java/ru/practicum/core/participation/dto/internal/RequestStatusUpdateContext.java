@@ -8,10 +8,10 @@ import java.util.List;
 /**
  * Carries validated request data from the validator to the request service.
  *
- * @param status requested target status
- * @param requests pending requests selected for the update
+ * @param status                requested target status
+ * @param requests              pending requests selected for the update
  * @param confirmedRequestCount number of requests already confirmed for the event
- * @param participantLimit maximum number of confirmed participants, or zero when unlimited
+ * @param participantLimit      maximum number of confirmed participants, or zero when unlimited
  */
 public record RequestStatusUpdateContext(
         RequestStatus status,

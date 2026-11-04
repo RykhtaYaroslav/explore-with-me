@@ -5,7 +5,7 @@ package ru.practicum.core.event.dto;
  * Despite the class name, {@code rating} is an average value, not a review count.
  *
  * @param eventId ID of the eventId whose reviews were aggregated
- * @param rating average score of the eventId's reviews
+ * @param rating  average score of the eventId's reviews
  */
 public record EventRatingCount(Long eventId, Double rating) {
 }

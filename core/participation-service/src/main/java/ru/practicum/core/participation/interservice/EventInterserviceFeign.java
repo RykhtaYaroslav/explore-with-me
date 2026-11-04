@@ -32,9 +32,10 @@ public class EventInterserviceFeign implements EventInterservice {
         try {
             return eventFeignClient.findByIdOrThrow(eventId);
         } catch (FeignException e) {
-            switch (e.status())  {
+            switch (e.status()) {
                 case 404 -> throw new NotFoundException(String.format("Event with id = %d was not found", eventId));
-                case 409 -> throw new ConflictException(String.format("Conflict with business rules for event with id = %d", eventId));
+                case 409 ->
+                        throw new ConflictException(String.format("Conflict with business rules for event with id = %d", eventId));
                 default -> throw e;
             }
         }

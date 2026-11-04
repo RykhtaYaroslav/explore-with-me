@@ -74,7 +74,7 @@ public class ReviewServiceImpl implements ReviewService {
         Map<Long, UserShortDto> usersById = raterIds.isEmpty()
                 ? Map.of()
                 : userInterservice.getShortByIds(raterIds).stream()
-                        .collect(Collectors.toMap(UserShortDto::getId, user -> user));
+                .collect(Collectors.toMap(UserShortDto::getId, user -> user));
 
         return reviews.stream()
                 .map(review -> reviewMapper.toEventReviewOutDto(
@@ -109,7 +109,7 @@ public class ReviewServiceImpl implements ReviewService {
         Map<Long, EventShortDto> eventsById = eventIds.isEmpty()
                 ? Map.of()
                 : eventInterservice.getReviewInfoByIds(eventIds).stream()
-                        .collect(Collectors.toMap(EventShortDto::getId, event -> event));
+                .collect(Collectors.toMap(EventShortDto::getId, event -> event));
 
         return reviews.stream()
                 .map(review -> reviewMapper.toUserReviewOutDto(

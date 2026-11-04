@@ -1,8 +1,8 @@
 package ru.practicum.core.review.service;
 
 import org.jeasy.random.EasyRandom;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,17 +25,27 @@ import ru.practicum.core.user.dto.UserShortDto;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ReviewServiceImplTest {
-    @Mock private ReviewValidator validator;
-    @Mock private EventInterservice events;
-    @Mock private UserInterservice users;
-    @Mock private UserReviewRepository userReviews;
-    @Mock private EventReviewRepository eventReviews;
-    @Mock private ReviewMapper mapper;
+    @Mock
+    private ReviewValidator validator;
+    @Mock
+    private EventInterservice events;
+    @Mock
+    private UserInterservice users;
+    @Mock
+    private UserReviewRepository userReviews;
+    @Mock
+    private EventReviewRepository eventReviews;
+    @Mock
+    private ReviewMapper mapper;
     private ReviewServiceImpl service;
     private EasyRandom random;
 

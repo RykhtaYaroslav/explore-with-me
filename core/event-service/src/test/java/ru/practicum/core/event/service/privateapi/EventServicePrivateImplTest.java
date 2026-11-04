@@ -43,11 +43,16 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class EventServicePrivateImplTest {
-    @Mock private EventRepository eventRepository;
-    @Mock private UserInterservice userInterservice;
-    @Mock private CategoryRepository categoryRepository;
-    @Mock private EventStatsCollector statsCollector;
-    @InjectMocks private EventServicePrivateImpl service;
+    @Mock
+    private EventRepository eventRepository;
+    @Mock
+    private UserInterservice userInterservice;
+    @Mock
+    private CategoryRepository categoryRepository;
+    @Mock
+    private EventStatsCollector statsCollector;
+    @InjectMocks
+    private EventServicePrivateImpl service;
     private EventMapper mapper;
     private EasyRandom random;
 
