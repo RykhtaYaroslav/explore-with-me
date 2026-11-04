@@ -19,6 +19,9 @@ spring:
             - file:./infra/config-repo/participation-service
             - file:./infra/config-repo/compilation-service
             - file:./infra/config-repo/gateway-server
+            - file:./infra/config-repo/collector
+            - file:./infra/config-repo/aggregator
+            - file:./infra/config-repo/analyzer
 
 eureka:
   client:

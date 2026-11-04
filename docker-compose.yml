@@ -341,7 +341,7 @@ services:
     environment:
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-server:8761/eureka/
       EUREKA_APP: CONFIG-SERVER
-      SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH_LOCATIONS: "file:/config-repo,file:/config-repo/stats-service,file:/config-repo/event-service,file:/config-repo/review-service,file:/config-repo/user-service,file:/config-repo/participation-service,file:/config-repo/compilation-service,file:/config-repo/gateway-server"
+      SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH_LOCATIONS: "file:/config-repo,file:/config-repo/stats-service,file:/config-repo/event-service,file:/config-repo/review-service,file:/config-repo/user-service,file:/config-repo/participation-service,file:/config-repo/compilation-service,file:/config-repo/gateway-server,file:/config-repo/collector,file:/config-repo/aggregator,file:/config-repo/analyzer"
 
   discovery-server:
     build:
