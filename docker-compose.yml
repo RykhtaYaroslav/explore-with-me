@@ -62,6 +62,81 @@ services:
       timeout: 5s
       retries: 5
 
+  analyzer-db:
+    image: postgres:16.1
+    ports:
+      - "127.0.0.1::5432"
+    volumes:
+      - analyzer-db-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${ANALYZER_DB_NAME:-analyzer}
+      POSTGRES_USER: ${ANALYZER_DB_USERNAME:-analyzer}
+      POSTGRES_PASSWORD: ${ANALYZER_DB_PASSWORD:-analyzer}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  collector:
+    build:
+      context: .
+      dockerfile: stats/collector/Dockerfile
+    healthcheck: *eureka-healthcheck
+    depends_on:
+      kafka-init:
+        condition: service_completed_successfully
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      EUREKA_APP: COLLECTOR
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-server:8761/eureka/
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+
+  aggregator:
+    build:
+      context: .
+      dockerfile: stats/aggregator/Dockerfile
+    healthcheck: *eureka-healthcheck
+    depends_on:
+      kafka-init:
+        condition: service_completed_successfully
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      EUREKA_APP: AGGREGATOR
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-server:8761/eureka/
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+
+  analyzer:
+    build:
+      context: .
+      dockerfile: stats/analyzer/Dockerfile
+    healthcheck: *eureka-healthcheck
+    depends_on:
+      analyzer-db:
+        condition: service_healthy
+      kafka-init:
+        condition: service_completed_successfully
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://analyzer-db:5432/${ANALYZER_DB_NAME:-analyzer}
+      SPRING_DATASOURCE_USERNAME: ${ANALYZER_DB_USERNAME:-analyzer}
+      SPRING_DATASOURCE_PASSWORD: ${ANALYZER_DB_PASSWORD:-analyzer}
+      SPRING_PROFILES_ACTIVE: docker
+      EUREKA_APP: ANALYZER
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-server:8761/eureka/
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+
   review-db:
     image: postgres:16.1
     ports:
@@ -337,6 +412,7 @@ services:
 
 volumes:
   kafka-data:
+  analyzer-db-data:
   stats-db-data:
   review-db-data:
   event-db-data:
