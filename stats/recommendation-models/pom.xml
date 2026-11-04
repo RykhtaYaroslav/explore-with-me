@@ -15,4 +15,12 @@
     <packaging>jar</packaging>
     <name>recommendation-models</name>
     <description>Plain Java models shared by the recommendation services</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+    </dependencies>
 </project>

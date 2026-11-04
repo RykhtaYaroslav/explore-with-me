@@ -1,7 +1,7 @@
 package ru.practicum.ewm.stats.mapper;
 
 import ru.practicum.ewm.stats.avro.EventSimilarityAvro;
-import ru.practicum.ewm.stats.model.EventSimilarity;
+import ru.practicum.ewm.stats.model.similarity.EventSimilarity;
 
 import java.util.Objects;
 

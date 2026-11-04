@@ -2,8 +2,8 @@ package ru.practicum.ewm.stats.mapper;
 
 import ru.practicum.ewm.stats.avro.ActionTypeAvro;
 import ru.practicum.ewm.stats.avro.UserActionAvro;
-import ru.practicum.ewm.stats.model.ActionType;
-import ru.practicum.ewm.stats.model.UserAction;
+import ru.practicum.ewm.stats.model.action.ActionType;
+import ru.practicum.ewm.stats.model.action.UserAction;
 import ru.practicum.ewm.stats.proto.ActionTypeProto;
 import ru.practicum.ewm.stats.proto.UserActionProto;
 
