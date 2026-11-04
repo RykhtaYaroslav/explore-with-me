@@ -1,7 +1,7 @@
 package ru.practicum.core.participation.validation;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,7 +24,14 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyLong;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class RequestValidatorImplTest {
@@ -155,6 +162,44 @@ class RequestValidatorImplTest {
         verify(events, times(1)).findByIdForOrganizerOrThrow(EVENT_ID, USER_ID);
         verify(requests, times(1)).countByEventIdAndStatus(EVENT_ID, RequestStatus.CONFIRMED);
         verify(requests, times(1)).findAllById(Set.of(1L));
+    }
+
+    @Test
+    @DisplayName("Не проверяет событие и заявки, если пользователь не найден при чтении заявок события")
+    void rejectsEventRequestLookupWhenUserIsMissing() {
+        doThrow(new NotFoundException("missing user")).when(users).existsByIdOrThrow(USER_ID);
+
+        assertThatThrownBy(() -> validator.validateEventRequestsAccess(USER_ID, EVENT_ID))
+                .isInstanceOf(NotFoundException.class).hasMessage("missing user");
+
+        verify(users).existsByIdOrThrow(USER_ID);
+        verifyNoInteractions(events, requests);
+    }
+
+    @Test
+    @DisplayName("Не читает заявки, если событие не принадлежит инициатору")
+    void rejectsEventRequestLookupWhenEventIsMissingForInitiator() {
+        doThrow(new NotFoundException("missing event")).when(events).ensureOrganizerOrThrow(EVENT_ID, USER_ID);
+
+        assertThatThrownBy(() -> validator.validateEventRequestsAccess(USER_ID, EVENT_ID))
+                .isInstanceOf(NotFoundException.class).hasMessage("missing event");
+
+        verify(users).existsByIdOrThrow(USER_ID);
+        verify(events).ensureOrganizerOrThrow(EVENT_ID, USER_ID);
+        verifyNoInteractions(requests);
+    }
+
+    @Test
+    @DisplayName("Отклоняет изменение статуса при нулевом лимите")
+    void rejectsStatusChangeWhenParticipantLimitIsZero() {
+        when(events.findByIdForOrganizerOrThrow(EVENT_ID, USER_ID)).thenReturn(event(100L, 0, true, 0L));
+        EventRequestStatusUpdateRequest update = new EventRequestStatusUpdateRequest(List.of(1L), RequestStatus.CONFIRMED);
+
+        assertThatThrownBy(() -> validator.validateChangeRequestsStatus(USER_ID, EVENT_ID, update))
+                .isInstanceOf(ConflictException.class).hasMessageContaining("Confirmation is not required");
+
+        verify(events).findByIdForOrganizerOrThrow(EVENT_ID, USER_ID);
+        verifyNoInteractions(requests);
     }
 
     @Test
