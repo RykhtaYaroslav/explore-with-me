@@ -20,12 +20,7 @@
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>protobuf-schemas</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>recommendation-models</artifactId>
+            <artifactId>recommendation-contracts</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

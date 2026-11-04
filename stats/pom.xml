@@ -25,9 +25,7 @@
     </properties>
 
     <modules>
-        <module>schemas</module>
-        <module>recommendation-models</module>
-        <module>recommendation-mappers</module>
+        <module>recommendation-contracts</module>
         <module>collector</module>
         <module>aggregator</module>
         <module>analyzer</module>

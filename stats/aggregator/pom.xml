@@ -19,12 +19,7 @@
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>avro-schemas</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>recommendation-models</artifactId>
+            <artifactId>recommendation-contracts</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>
