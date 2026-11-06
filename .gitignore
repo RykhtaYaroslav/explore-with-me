@@ -16,6 +16,11 @@ target/
 !**/src/test/**/target/
 logs/
 
+# TODO tracking files
+**/TODO.md
+**/TODO_DONE.md
+****/TODO-ORDER.md
+
 ### IntelliJ IDEA ###
 .idea
 *.iws
