@@ -1,10 +1,54 @@
 spring:
   kafka:
     bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:kafka:9092}
+    producer:
+      # Критерий подтверждения записи: all — после подтверждения всеми in-sync репликами.
+      acks: all
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: ru.practicum.ewm.stats.kafka.avro.AvroSpecificSerializer
+      # Максимальное число повторных попыток отправки при временных ошибках.
+      retries: 10
+      client-id: stats-aggregator
+      properties:
+        # Защищает от дубликатов при повторной отправке одного сообщения этим producer.
+        enable.idempotence: true
+        max.request.size: 1048576
+        # Максимальное время от первой попытки отправки до окончательной ошибки.
+        delivery.timeout.ms: 120000
+        # Максимальное время ожидания ответа брокера на один запрос.
+        request.timeout.ms: 30000
+        # Максимальное время ожидания дополнительных сообщений для формирования batch.
+        linger.ms: 5
+        # Максимальный размер одного batch сообщений в байтах.
+        batch.size: 16384
+        # Общий объём памяти producer для буферизации сообщений перед отправкой.
+        buffer.memory: 33554432
+    template:
+      default-topic: ${stats.kafka.topics.event-similarity}
     consumer:
+      # Идентификатор группы потребителей агрегатора для распределения партиций.
       group-id: stats-aggregator
+      # Идентификатор этого потребителя в Kafka.
+      client-id: stats-aggregator-consumer
+      # При отсутствии сохранённой позиции начинает чтение с самого раннего сообщения.
       auto-offset-reset: earliest
+      # Offset-ы фиксирует Spring listener container после обработки записей.
       enable-auto-commit: false
+      # Максимум записей, обрабатываемых за один вызов poll.
+      max-poll-records: 500
+      # Максимальное время между вызовами poll до исключения потребителя из группы, в миллисекундах.
+      max-poll-interval-ms: 300000
+      # Время ожидания heartbeat до признания потребителя недоступным, в миллисекундах.
+      session-timeout-ms: 45000
+      # Интервал отправки heartbeat от потребителя координатору группы, в миллисекундах.
+      heartbeat-interval-ms: 3000
+      # Минимальный объём данных для ответа fetch-запроса, в байтах.
+      fetch-min-bytes: 1
+      # Максимальное время ожидания данных для fetch-запроса, в миллисекундах.
+      fetch-max-wait-ms: 500
+    listener:
+      # Максимальное время ожидания новых записей при опросе Kafka.
+      poll-timeout: 100ms
 
 stats:
   kafka:

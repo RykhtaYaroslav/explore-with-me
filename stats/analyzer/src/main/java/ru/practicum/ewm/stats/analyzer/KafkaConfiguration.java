@@ -22,10 +22,12 @@ public class KafkaConfiguration {
     @Bean
     public ConsumerFactory<String, UserActionAvro> userActionConsumerFactory(
             @Value("${spring.kafka.bootstrap-servers}") String bootstrapServers,
-            @Value("${stats.kafka.consumer.user-actions-group-id}") String groupId
+            @Value("${stats.kafka.consumer.user-actions-group-id}") String groupId,
+            @Value("${spring.kafka.consumer.auto-offset-reset}") String autoOffsetReset,
+            @Value("${spring.kafka.consumer.enable-auto-commit}") boolean enableAutoCommit
     ) {
         return new DefaultKafkaConsumerFactory<>(
-                consumerProperties(bootstrapServers, groupId),
+                consumerProperties(bootstrapServers, groupId, autoOffsetReset, enableAutoCommit),
                 new StringDeserializer(),
                 new AvroSpecificDeserializer<>(UserActionAvro.class)
         );
@@ -43,10 +45,12 @@ public class KafkaConfiguration {
     @Bean
     public ConsumerFactory<String, EventSimilarityAvro> eventSimilarityConsumerFactory(
             @Value("${spring.kafka.bootstrap-servers}") String bootstrapServers,
-            @Value("${stats.kafka.consumer.event-similarity-group-id}") String groupId
+            @Value("${stats.kafka.consumer.event-similarity-group-id}") String groupId,
+            @Value("${spring.kafka.consumer.auto-offset-reset}") String autoOffsetReset,
+            @Value("${spring.kafka.consumer.enable-auto-commit}") boolean enableAutoCommit
     ) {
         return new DefaultKafkaConsumerFactory<>(
-                consumerProperties(bootstrapServers, groupId),
+                consumerProperties(bootstrapServers, groupId, autoOffsetReset, enableAutoCommit),
                 new StringDeserializer(),
                 new AvroSpecificDeserializer<>(EventSimilarityAvro.class)
         );
@@ -63,12 +67,17 @@ public class KafkaConfiguration {
         return factory;
     }
 
-    private Map<String, Object> consumerProperties(String bootstrapServers, String groupId) {
+    private Map<String, Object> consumerProperties(
+            String bootstrapServers,
+            String groupId,
+            String autoOffsetReset,
+            boolean enableAutoCommit
+    ) {
         Map<String, Object> properties = new HashMap<>();
         properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         properties.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
-        properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-        properties.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
+        properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, autoOffsetReset);
+        properties.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, enableAutoCommit);
         return properties;
     }
 }
