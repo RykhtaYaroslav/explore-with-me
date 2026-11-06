@@ -92,9 +92,26 @@ services:
         condition: service_healthy
     environment:
       SPRING_PROFILES_ACTIVE: docker
+      SPRING_CLOUD_CONFIG_URI: ${SPRING_CLOUD_CONFIG_URI:-}
       EUREKA_APP: COLLECTOR
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-server:8761/eureka/
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+
+  aggregator-db:
+    image: postgres:16.1
+    ports:
+      - "127.0.0.1::5432"
+    volumes:
+      - aggregator-db-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${AGGREGATOR_DB_NAME:-aggregator}
+      POSTGRES_USER: ${AGGREGATOR_DB_USERNAME:-aggregator}
+      POSTGRES_PASSWORD: ${AGGREGATOR_DB_PASSWORD:-aggregator}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   aggregator:
     build:
@@ -102,6 +119,8 @@ services:
       dockerfile: stats/aggregator/Dockerfile
     healthcheck: *eureka-healthcheck
     depends_on:
+      aggregator-db:
+        condition: service_healthy
       kafka-init:
         condition: service_completed_successfully
       config-server:
@@ -109,7 +128,11 @@ services:
       discovery-server:
         condition: service_healthy
     environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://aggregator-db:5432/${AGGREGATOR_DB_NAME:-aggregator}
+      SPRING_DATASOURCE_USERNAME: ${AGGREGATOR_DB_USERNAME:-aggregator}
+      SPRING_DATASOURCE_PASSWORD: ${AGGREGATOR_DB_PASSWORD:-aggregator}
       SPRING_PROFILES_ACTIVE: docker
+      SPRING_CLOUD_CONFIG_URI: ${SPRING_CLOUD_CONFIG_URI:-}
       EUREKA_APP: AGGREGATOR
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-server:8761/eureka/
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
@@ -133,6 +156,7 @@ services:
       SPRING_DATASOURCE_USERNAME: ${ANALYZER_DB_USERNAME:-analyzer}
       SPRING_DATASOURCE_PASSWORD: ${ANALYZER_DB_PASSWORD:-analyzer}
       SPRING_PROFILES_ACTIVE: docker
+      SPRING_CLOUD_CONFIG_URI: ${SPRING_CLOUD_CONFIG_URI:-}
       EUREKA_APP: ANALYZER
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-server:8761/eureka/
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
@@ -412,6 +436,7 @@ services:
 
 volumes:
   kafka-data:
+  aggregator-db-data:
   analyzer-db-data:
   stats-db-data:
   review-db-data:

@@ -7,8 +7,11 @@ import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
+import org.springframework.kafka.listener.DefaultErrorHandler;
+import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
+import org.springframework.util.backoff.FixedBackOff;
 import ru.practicum.ewm.stats.avro.EventSimilarityAvro;
 import ru.practicum.ewm.stats.avro.UserActionAvro;
 import ru.practicum.ewm.stats.kafka.avro.AvroSpecificDeserializer;
@@ -28,17 +31,19 @@ public class KafkaConfiguration {
     ) {
         return new DefaultKafkaConsumerFactory<>(
                 consumerProperties(bootstrapServers, groupId, autoOffsetReset, enableAutoCommit),
-                new StringDeserializer(),
-                new AvroSpecificDeserializer<>(UserActionAvro.class)
+                new ErrorHandlingDeserializer<>(new StringDeserializer()),
+                new ErrorHandlingDeserializer<>(new AvroSpecificDeserializer<>(UserActionAvro.class))
         );
     }
 
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, UserActionAvro>
-    userActionKafkaListenerContainerFactory(ConsumerFactory<String, UserActionAvro> userActionConsumerFactory) {
+    userActionKafkaListenerContainerFactory(
+            ConsumerFactory<String, UserActionAvro> userActionConsumerFactory) {
         ConcurrentKafkaListenerContainerFactory<String, UserActionAvro> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(userActionConsumerFactory);
+        factory.setCommonErrorHandler(new DefaultErrorHandler(new FixedBackOff(1_000L, Long.MAX_VALUE)));
         return factory;
     }
 
@@ -51,19 +56,19 @@ public class KafkaConfiguration {
     ) {
         return new DefaultKafkaConsumerFactory<>(
                 consumerProperties(bootstrapServers, groupId, autoOffsetReset, enableAutoCommit),
-                new StringDeserializer(),
-                new AvroSpecificDeserializer<>(EventSimilarityAvro.class)
+                new ErrorHandlingDeserializer<>(new StringDeserializer()),
+                new ErrorHandlingDeserializer<>(new AvroSpecificDeserializer<>(EventSimilarityAvro.class))
         );
     }
 
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, EventSimilarityAvro>
     eventSimilarityKafkaListenerContainerFactory(
-            ConsumerFactory<String, EventSimilarityAvro> eventSimilarityConsumerFactory
-    ) {
+            ConsumerFactory<String, EventSimilarityAvro> eventSimilarityConsumerFactory) {
         ConcurrentKafkaListenerContainerFactory<String, EventSimilarityAvro> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(eventSimilarityConsumerFactory);
+        factory.setCommonErrorHandler(new DefaultErrorHandler(new FixedBackOff(1_000L, Long.MAX_VALUE)));
         return factory;
     }
 
