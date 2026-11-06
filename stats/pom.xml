@@ -30,6 +30,14 @@
         <os.maven.plugin.version>1.7.1</os.maven.plugin.version>
     </properties>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+    </dependencies>
+
     <modules>
         <module>recommendation-contracts</module>
         <module>collector</module>

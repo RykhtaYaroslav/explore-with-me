@@ -14,7 +14,7 @@
     <artifactId>analyzer</artifactId>
     <packaging>jar</packaging>
     <name>analyzer</name>
-    <description>Store interactions and event similarities and serve gRPC recommendations</description>
+    <description>Store interactions and partial recommendation aggregates for gRPC recommendations</description>
 
     <dependencies>
         <dependency>
