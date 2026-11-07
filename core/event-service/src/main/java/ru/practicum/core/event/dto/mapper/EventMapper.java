@@ -34,13 +34,15 @@ public interface EventMapper {
     @Mapping(target = "initiator", source = "initiator")
     @Mapping(target = "confirmedRequests", source = "confirmedRequests")
     @Mapping(target = "rating", source = "rating")
-    EventFullDto toFullDto(Event event, UserShortDto initiator, Long views, Long confirmedRequests, Double rating);
+    EventFullDto toFullDto(Event event, UserShortDto initiator, Long views, Long confirmedRequests, Double rating,
+                           double totalInteractionWeight);
 
     @Mapping(target = "id", source = "event.id")
     @Mapping(target = "initiator", source = "initiator")
     @Mapping(target = "confirmedRequests", source = "confirmedRequests")
     @Mapping(target = "rating", source = "rating")
-    EventShortDto toShortDto(Event event, UserShortDto initiator, Long views, Long confirmedRequests, Double rating);
+    EventShortDto toShortDto(Event event, UserShortDto initiator, Long views, Long confirmedRequests, Double rating,
+                             double totalInteractionWeight);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "id", ignore = true)
