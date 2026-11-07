@@ -5,6 +5,7 @@ import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.errors.SerializationException;
+import org.springframework.kafka.core.KafkaProducerException;
 import org.springframework.stereotype.Component;
 import ru.practicum.ewm.stats.avro.UserActionAvro;
 
@@ -30,7 +31,7 @@ public class UserActionErrorHandlerImpl implements UserActionErrorHandler {
 
     /**
      * Logs a Kafka publishing failure and reports it to the gRPC client.
-     * Completion exceptions are unwrapped before the failure is classified.
+     * Completion and Kafka producer exceptions are unwrapped before the failure is classified.
      *
      * @param action action that could not be published
      * @param failure failure raised while publishing the action
@@ -56,12 +57,13 @@ public class UserActionErrorHandlerImpl implements UserActionErrorHandler {
      * Unwraps nested completion exceptions to expose the underlying failure.
      *
      * @param failure failure to inspect
-     * @return the deepest cause reachable through {@link CompletionException} wrappers,
-     *         or the original failure if it is not wrapped
+     * @return the underlying cause after removing {@link CompletionException} and
+     *         {@link KafkaProducerException} wrappers
      */
     private Throwable unwrap(Throwable failure) {
         Throwable cause = failure;
-        while (cause instanceof CompletionException && cause.getCause() != null) {
+        while ((cause instanceof CompletionException || cause instanceof KafkaProducerException)
+                && cause.getCause() != null) {
             cause = cause.getCause();
         }
         return cause;

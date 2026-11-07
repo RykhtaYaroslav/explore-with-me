@@ -41,7 +41,7 @@ public final class UserActionMapper {
         return UserAction.builder()
                 .userId(source.getUserId())
                 .eventId(source.getEventId())
-                .actionType(toModel(source.getActionType()))
+                .actionType(toModelActionType(source))
                 .timestamp(MapperTimestamps.toInstant(source.getTimestamp()))
                 .build();
     }
@@ -73,13 +73,13 @@ public final class UserActionMapper {
         };
     }
 
-    private static ActionType toModel(ActionTypeProto source) {
-        return switch (source) {
+    private static ActionType toModelActionType(UserActionProto source) {
+        return switch (source.getActionType()) {
             case ACTION_VIEW -> ActionType.VIEW;
             case ACTION_REGISTER -> ActionType.REGISTER;
             case ACTION_LIKE -> ActionType.LIKE;
             case UNRECOGNIZED -> throw new IllegalArgumentException(
-                    MapperErrorMessages.UNRECOGNIZED_PROTOBUF_ACTION_TYPE.formatted(source.getNumber())
+                    MapperErrorMessages.UNRECOGNIZED_PROTOBUF_ACTION_TYPE.formatted(source.getActionTypeValue())
             );
         };
     }
