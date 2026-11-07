@@ -18,6 +18,14 @@ spring:
 server:
   port: 0
 
+grpc:
+  client:
+    collector:
+      address: discovery:///collector
+      negotiation-type: plaintext
+      enable-keep-alive: true
+      keep-alive-time: 60s
+
 management:
   endpoints:
     web:
