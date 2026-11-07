@@ -10,7 +10,9 @@ import ru.practicum.ewm.stats.aggregator.model.EventWeightEntity;
 @SuppressWarnings("all")
 public interface EventWeightRepository extends JpaRepository<EventWeightEntity, Long> {
 
-    /** Backfills only events that have no aggregate row yet, preserving later incremental totals. */
+    /**
+     * Backfills only events that have no aggregate row yet, preserving later incremental totals.
+     */
     @Modifying
     @Transactional
     @Query(value = """
@@ -22,7 +24,9 @@ public interface EventWeightRepository extends JpaRepository<EventWeightEntity, 
             """, nativeQuery = true)
     void backfillMissingWeights();
 
-    /** Atomically adds a positive interaction delta, creating the event row when necessary. */
+    /**
+     * Atomically adds a positive interaction delta, creating the event row when necessary.
+     */
     @Modifying(flushAutomatically = true)
     @Query(value = """
             INSERT INTO aggregator_event_weights (event_id, total_weight)

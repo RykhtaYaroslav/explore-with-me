@@ -48,8 +48,8 @@ public class UserActionSimilarityProcessorImpl implements UserActionSimilarityPr
      *
      * @param action действие пользователя с положительными идентификаторами, типом и временем
      * @throws IllegalArgumentException если сообщение не прошло валидацию
-     * @throws RuntimeException если сохранение или публикация завершились ошибкой;
-     *                          изменения БД откатываются
+     * @throws RuntimeException         если сохранение или публикация завершились ошибкой;
+     *                                  изменения БД откатываются
      */
     @Override
     @Transactional

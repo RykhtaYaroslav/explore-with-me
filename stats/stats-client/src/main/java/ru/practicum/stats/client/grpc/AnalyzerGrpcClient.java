@@ -38,19 +38,25 @@ public class AnalyzerGrpcClient {
         this.deadlineMillis = deadlineMillis;
     }
 
-    /** Returns events scored by their predicted interaction weight for the user. */
+    /**
+     * Returns events scored by their predicted interaction weight for the user.
+     */
     public List<RecommendedEvent> getRecommendationsForUser(UserPredictionsRequest request) {
         return read("GetRecommendationsForUser", () -> stub.withDeadlineAfter(deadlineMillis, TimeUnit.MILLISECONDS)
                 .getRecommendationsForUser(RecommendationMapper.toProto(request)));
     }
 
-    /** Returns events scored by their similarity to the requested event. */
+    /**
+     * Returns events scored by their similarity to the requested event.
+     */
     public List<RecommendedEvent> getSimilarEvents(SimilarEventsRequest request) {
         return read("GetSimilarEvents", () -> stub.withDeadlineAfter(deadlineMillis, TimeUnit.MILLISECONDS)
                 .getSimilarEvents(RecommendationMapper.toProto(request)));
     }
 
-    /** Returns the sum of users' maximum action weights for each requested event. */
+    /**
+     * Returns the sum of users' maximum action weights for each requested event.
+     */
     public List<RecommendedEvent> getInteractionsCount(InteractionsCountRequest request) {
         return read("GetInteractionsCount", () -> stub.withDeadlineAfter(deadlineMillis, TimeUnit.MILLISECONDS)
                 .getInteractionsCount(RecommendationMapper.toProto(request)));

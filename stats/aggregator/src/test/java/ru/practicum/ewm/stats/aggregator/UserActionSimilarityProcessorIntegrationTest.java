@@ -47,7 +47,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verifyNoInteractions;
 
-/** Проверяет алгоритм вместе с реальными PostgreSQL-запросами, подменяя только публикацию в Kafka. */
+/**
+ * Проверяет алгоритм вместе с реальными PostgreSQL-запросами, подменяя только публикацию в Kafka.
+ */
 @DataJpaTest(showSql = false, properties = {
         "spring.cloud.config.enabled=false",
         "spring.cloud.discovery.enabled=false",
@@ -192,7 +194,9 @@ class UserActionSimilarityProcessorIntegrationTest {
         }
     }
 
-    /** Эталон заново строится из истории, не используя инкрементальные дельты и SQL агрегатора. */
+    /**
+     * Эталон заново строится из истории, не используя инкрементальные дельты и SQL агрегатора.
+     */
     private void assertMatchesFullCalculation(List<UserActionAvro> history) {
         Map<Long, Map<Long, Double>> byEvent = new HashMap<>();
         for (UserActionAvro action : history) {

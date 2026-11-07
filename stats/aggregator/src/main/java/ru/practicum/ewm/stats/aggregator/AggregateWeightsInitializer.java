@@ -8,7 +8,9 @@ import org.springframework.stereotype.Component;
 import ru.practicum.ewm.stats.aggregator.repository.EventPairWeightRepository;
 import ru.practicum.ewm.stats.aggregator.repository.EventWeightRepository;
 
-/** Backfills aggregate rows from existing interactions before starting Kafka consumption. */
+/**
+ * Backfills aggregate rows from existing interactions before starting Kafka consumption.
+ */
 @Component
 @RequiredArgsConstructor
 public class AggregateWeightsInitializer implements ApplicationRunner {

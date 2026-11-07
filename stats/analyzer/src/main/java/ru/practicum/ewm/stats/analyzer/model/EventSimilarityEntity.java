@@ -11,7 +11,9 @@ import lombok.Setter;
 
 import java.time.Instant;
 
-/** Latest calculated similarity score for a canonical pair of events. */
+/**
+ * Latest calculated similarity score for a canonical pair of events.
+ */
 @Entity
 @Table(name = "event_similarities")
 @Getter

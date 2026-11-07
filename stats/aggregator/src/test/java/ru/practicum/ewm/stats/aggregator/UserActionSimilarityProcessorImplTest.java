@@ -111,6 +111,7 @@ class UserActionSimilarityProcessorImplTest {
         corrupt.accept(action);
         return action;
     }
+
     @ParameterizedTest
     @DisplayName("Первое действие без пар сохраняет вес без публикации сходства")
     @CsvSource({"VIEW, 0.4", "REGISTER, 0.8", "LIKE, 1.0"})

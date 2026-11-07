@@ -15,7 +15,7 @@ public interface UserEventInteractionRepository
      * <p>Spring Data строит запрос по вложенным полям составного ключа:
      * {@code id.userId = userId} и {@code id.eventId != eventId}.
      *
-     * @param userId идентификатор пользователя
+     * @param userId  идентификатор пользователя
      * @param eventId идентификатор мероприятия, исключаемого из результата
      * @return взаимодействия с другими мероприятиями или пустой список, если их нет
      */

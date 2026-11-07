@@ -11,7 +11,9 @@ import lombok.Setter;
 
 import java.io.Serializable;
 
-/** Canonically ordered event ids; eventA must be less than eventB. */
+/**
+ * Canonically ordered event ids; eventA must be less than eventB.
+ */
 @Embeddable
 @Getter
 @Setter

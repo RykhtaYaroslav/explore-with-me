@@ -3,8 +3,8 @@ package ru.practicum.ewm.stats.analyzer;
 import com.netflix.appinfo.ApplicationInfoManager;
 import lombok.RequiredArgsConstructor;
 import net.devh.boot.grpc.server.event.GrpcServerStartedEvent;
-import org.springframework.context.event.EventListener;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -15,7 +15,9 @@ import java.util.Map;
 public class GrpcPortRegistration {
     private final ApplicationInfoManager applicationInfoManager;
 
-    /** Publishes the bound port in the Eureka metadata consumed by gRPC discovery. */
+    /**
+     * Publishes the bound port in the Eureka metadata consumed by gRPC discovery.
+     */
     @EventListener
     public void registerGrpcPort(GrpcServerStartedEvent event) {
         applicationInfoManager.registerAppMetadata(Map.of("gRPC_port", Integer.toString(event.getPort())));

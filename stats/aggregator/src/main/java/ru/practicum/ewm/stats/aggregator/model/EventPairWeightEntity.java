@@ -9,7 +9,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-/** Sum of per-user minimum weights shared by a pair of events. */
+/**
+ * Sum of per-user minimum weights shared by a pair of events.
+ */
 @Entity
 @Table(name = "aggregator_event_pair_weights")
 @Getter

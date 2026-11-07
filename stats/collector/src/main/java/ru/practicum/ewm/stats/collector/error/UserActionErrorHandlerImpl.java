@@ -18,7 +18,7 @@ public class UserActionErrorHandlerImpl implements UserActionErrorHandler {
     /**
      * Reports invalid user action input to the gRPC client.
      *
-     * @param exception validation failure describing why the request is invalid
+     * @param exception        validation failure describing why the request is invalid
      * @param responseObserver observer used to return the gRPC error
      */
     @Override
@@ -33,8 +33,8 @@ public class UserActionErrorHandlerImpl implements UserActionErrorHandler {
      * Logs a Kafka publishing failure and reports it to the gRPC client.
      * Completion and Kafka producer exceptions are unwrapped before the failure is classified.
      *
-     * @param action action that could not be published
-     * @param failure failure raised while publishing the action
+     * @param action           action that could not be published
+     * @param failure          failure raised while publishing the action
      * @param responseObserver observer used to return the gRPC error
      */
     @Override
@@ -58,7 +58,7 @@ public class UserActionErrorHandlerImpl implements UserActionErrorHandler {
      *
      * @param failure failure to inspect
      * @return the underlying cause after removing {@link CompletionException} and
-     *         {@link KafkaProducerException} wrappers
+     * {@link KafkaProducerException} wrappers
      */
     private Throwable unwrap(Throwable failure) {
         Throwable cause = failure;

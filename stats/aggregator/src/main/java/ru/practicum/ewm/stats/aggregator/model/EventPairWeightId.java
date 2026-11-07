@@ -11,7 +11,9 @@ import lombok.Setter;
 
 import java.io.Serializable;
 
-/** Canonically ordered event identifiers for a pair of distinct events. */
+/**
+ * Canonically ordered event identifiers for a pair of distinct events.
+ */
 @Embeddable
 @Getter
 @Setter

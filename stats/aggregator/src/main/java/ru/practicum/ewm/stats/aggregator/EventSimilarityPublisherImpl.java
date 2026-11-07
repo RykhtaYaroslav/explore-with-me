@@ -8,7 +8,9 @@ import ru.practicum.ewm.stats.avro.EventSimilarityAvro;
 
 import java.util.concurrent.CompletableFuture;
 
-/** Kafka implementation that partitions similarity scores by their canonical event pair. */
+/**
+ * Kafka implementation that partitions similarity scores by their canonical event pair.
+ */
 @Component
 @RequiredArgsConstructor
 public class EventSimilarityPublisherImpl implements EventSimilarityPublisher {

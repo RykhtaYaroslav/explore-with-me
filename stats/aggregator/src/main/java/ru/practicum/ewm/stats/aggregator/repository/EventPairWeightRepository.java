@@ -12,7 +12,9 @@ import java.util.List;
 
 public interface EventPairWeightRepository extends JpaRepository<EventPairWeightEntity, EventPairWeightId> {
 
-    /** Returns every pair involving the updated event and both event totals needed for scoring. */
+    /**
+     * Returns every pair involving the updated event and both event totals needed for scoring.
+     */
     @Query(value = """
             SELECT pair.event_a AS "eventA",
                    pair.event_b AS "eventB",
@@ -38,7 +40,9 @@ public interface EventPairWeightRepository extends JpaRepository<EventPairWeight
         Double getEventBWeight();
     }
 
-    /** Backfills only missing event pairs from the existing user interaction rows. */
+    /**
+     * Backfills only missing event pairs from the existing user interaction rows.
+     */
     @Modifying
     @Transactional
     @Query(value = """
@@ -54,7 +58,9 @@ public interface EventPairWeightRepository extends JpaRepository<EventPairWeight
             """, nativeQuery = true)
     void backfillMissingPairs();
 
-    /** Одним запросом добавляет положительные дельты всем парам мероприятия пользователя; newWeight > oldWeight. */
+    /**
+     * Одним запросом добавляет положительные дельты всем парам мероприятия пользователя; newWeight > oldWeight.
+     */
     @Modifying(flushAutomatically = true)
     @Query(value = """
             INSERT INTO aggregator_event_pair_weights (event_a, event_b, shared_weight)

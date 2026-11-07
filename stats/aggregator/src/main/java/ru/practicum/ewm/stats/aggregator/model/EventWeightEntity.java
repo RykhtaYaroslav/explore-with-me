@@ -10,7 +10,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-/** Sum of maximum user interaction weights for one event. */
+/**
+ * Sum of maximum user interaction weights for one event.
+ */
 @Entity
 @Table(name = "aggregator_event_weights")
 @Getter

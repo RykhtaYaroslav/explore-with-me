@@ -28,7 +28,7 @@ public class UserActionGrpcService extends UserActionControllerGrpc.UserActionCo
      * On success, sends an empty response; validation and publishing failures are
      * delegated to the configured error handler.
      *
-     * @param request user action received from the gRPC client
+     * @param request          user action received from the gRPC client
      * @param responseObserver observer used to return completion or an error
      */
     @Override

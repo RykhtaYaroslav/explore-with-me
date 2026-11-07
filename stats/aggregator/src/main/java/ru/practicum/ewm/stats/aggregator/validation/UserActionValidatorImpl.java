@@ -3,7 +3,9 @@ package ru.practicum.ewm.stats.aggregator.validation;
 import org.springframework.stereotype.Component;
 import ru.practicum.ewm.stats.avro.UserActionAvro;
 
-/** Проверяет контракт действия без обращений к БД и другим сервисам. */
+/**
+ * Проверяет контракт действия без обращений к БД и другим сервисам.
+ */
 @Component
 public class UserActionValidatorImpl implements UserActionValidator {
     @Override

@@ -16,7 +16,9 @@ import ru.practicum.ewm.stats.mapper.UserActionMapper;
 import ru.practicum.ewm.stats.model.action.UserAction;
 import ru.practicum.ewm.stats.model.similarity.EventSimilarity;
 
-/** Stores maximum user-event weights and the latest calculated event-pair scores. */
+/**
+ * Stores maximum user-event weights and the latest calculated event-pair scores.
+ */
 @Service
 @RequiredArgsConstructor
 public class AnalyzerIngestionServiceImpl implements AnalyzerIngestionService {
