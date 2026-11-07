@@ -18,7 +18,7 @@ tags:
   - name: События
     description: Публичный поиск и просмотр событий
   - name: События пользователя
-    description: Создание и управление собственными событиями
+    description: Персональные рекомендации и управление собственными событиями
   - name: События администратора
     description: Поиск, публикация и отклонение событий
   - name: Категории
@@ -45,7 +45,7 @@ paths:
       tags: [События]
       operationId: searchEvents
       summary: Поиск опубликованных событий
-      description: Возвращает события, подходящие под фильтры. По умолчанию нижняя граница даты — текущее время.
+      description: Возвращает события, подходящие под фильтры. По умолчанию нижняя граница даты — текущее время. Поиск не регистрирует просмотры.
       parameters:
         - name: text
           in: query
@@ -101,6 +101,32 @@ paths:
                 items: { $ref: '#/components/schemas/EventShort' }
         '400': { $ref: '#/components/responses/BadRequest' }
         '500': { $ref: '#/components/responses/ServerError' }
+  /events/recommendations:
+    get:
+      tags: [События пользователя]
+      operationId: getEventRecommendations
+      summary: Получить персональные рекомендации
+      description: Для зарегистрированного пользователя возвращает опубликованные события в порядке Analyzer. Если рекомендаций нет, возвращает пустой массив.
+      parameters:
+        - name: X-EWM-USER-ID
+          in: header
+          required: true
+          schema: { type: integer, format: int64, minimum: 1 }
+        - name: size
+          in: query
+          description: Максимальное число событий в ответе.
+          schema: { type: integer, minimum: 1, default: 10 }
+      responses:
+        '200':
+          description: Список рекомендованных событий.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/EventShort' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/ServerError' }
   /events/{id}:
     get:
       tags: [События]
@@ -111,6 +137,10 @@ paths:
           in: path
           required: true
           description: Идентификатор события.
+          schema: { type: integer, format: int64, minimum: 1 }
+        - name: X-EWM-USER-ID
+          in: header
+          description: Идентификатор пользователя для регистрации VIEW в системе рекомендаций.
           schema: { type: integer, format: int64, minimum: 1 }
       responses:
         '200':
@@ -531,7 +561,7 @@ paths:
       tags: [Оценки]
       operationId: createEventReview
       summary: Оценить событие
-      description: Для события можно оставить одну оценку; оценка доступна после наступления события.
+      description: Подтверждённый участник может оценить событие один раз, не ранее чем через два часа после начала. После сохранения оценки 4 или 5 отправляется LIKE.
       parameters:
         - $ref: '#/components/parameters/RaterId'
         - $ref: '#/components/parameters/PositiveEventId'
@@ -999,8 +1029,13 @@ components:
         eventDate: { type: string, pattern: '^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$', example: '2026-12-10 18:30:00' }
         initiator: { $ref: '#/components/schemas/UserShort' }
         paid: { type: boolean, example: false }
-        views: { type: integer, format: int64, example: 240 }
-        rating: { type: number, format: double, example: 4.7 }
+        views: { type: integer, format: int64, example: 240, description: Число просмотров }
+        rating: { type: number, format: double, example: 4.7, description: Средний балл отзывов }
+        totalInteractionWeight:
+          type: number
+          format: double
+          example: 12.6
+          description: Сумма максимальных весов взаимодействий каждого пользователя с событием.
     EventFull:
       allOf:
         - $ref: '#/components/schemas/EventShort'
