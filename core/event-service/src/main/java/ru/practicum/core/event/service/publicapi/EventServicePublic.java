@@ -9,7 +9,6 @@ import java.util.List;
 public interface EventServicePublic {
     List<EventShortDto> getAllWithParams(EventQueryParams params);
 
-    EventFullDto getEventFullInformation(Long id);
-
-    void hitStat(String uri, String ip);
+    /** Returns a published event and records the view. A null user ID represents an anonymous viewer. */
+    EventFullDto getEventFullInformation(Long id, Long userId, String ip);
 }

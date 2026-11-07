@@ -19,12 +19,16 @@ import ru.practicum.core.event.model.Event;
 import ru.practicum.core.event.model.EventState;
 import ru.practicum.core.event.repository.EventRepository;
 import ru.practicum.core.event.service.EventStatsCollector;
+import ru.practicum.core.event.service.interservice.RecommendationInterservice;
 import ru.practicum.core.event.service.interservice.UserInterservice;
 import ru.practicum.core.user.dto.UserShortDto;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static java.time.LocalDateTime.now;
 import static ru.practicum.core.common.util.EwmConstants.DATE_TIME_FORMATTER;
@@ -39,6 +43,25 @@ public class EventServicePrivateImpl implements EventServicePrivate {
 
     private final EventMapper eventMapper;
     private final EventStatsCollector eventStatsCollector;
+    private final RecommendationInterservice recommendations;
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<EventShortDto> getRecommendations(long userId, int size) {
+        userInterservice.checkExistsByIdOrThrow(userId);
+        List<Long> recommendedIds = recommendations.getRecommendedEventIds(userId, size);
+        if (recommendedIds.isEmpty()) {
+            return List.of();
+        }
+        Map<Long, Event> publishedEvents = eventRepository.findAllWithCategoryByIdIn(recommendedIds).stream()
+                .filter(event -> event.getState() == EventState.PUBLISHED)
+                .collect(Collectors.toMap(Event::getId, event -> event));
+        List<Event> orderedEvents = recommendedIds.stream()
+                .map(publishedEvents::get)
+                .filter(Objects::nonNull)
+                .toList();
+        return eventStatsCollector.getShortDtoListWithStats(orderedEvents);
+    }
 
     @Override
     public EventFullDto create(Long userId, NewEventDto newEventDto) {
@@ -52,7 +75,7 @@ public class EventServicePrivateImpl implements EventServicePrivate {
 
         event = eventRepository.save(event);
 
-        return eventMapper.toFullDto(event, initiator, 0L, 0L, 5.0);
+        return eventMapper.toFullDto(event, initiator, 0L, 0L, 5.0, 0.0);
     }
 
     @Override
