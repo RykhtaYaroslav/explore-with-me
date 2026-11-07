@@ -92,6 +92,7 @@ class CompilationServiceImplTest {
     void getCompilationById() {
         Compilation compilation = compilation(7L, false, List.of(31L));
         EventShortDto event = event(31L);
+        event.setTotalInteractionWeight(2.8);
         when(repository.findById(7L)).thenReturn(Optional.of(compilation));
         when(eventInterservice.findByIds(List.of(31L))).thenReturn(List.of(event));
 
@@ -99,6 +100,9 @@ class CompilationServiceImplTest {
 
         assertThat(result.getId()).isEqualTo(7L);
         assertThat(result.getEvents()).containsExactly(event);
+        assertThat(result.getEvents()).extracting(EventShortDto::getTotalInteractionWeight).containsExactly(2.8);
+        verify(repository, times(1)).findById(7L);
+        verify(eventInterservice, times(1)).findByIds(List.of(31L));
     }
 
     @Test

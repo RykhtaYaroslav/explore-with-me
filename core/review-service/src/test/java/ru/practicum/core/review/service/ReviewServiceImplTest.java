@@ -9,6 +9,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import ru.practicum.core.event.dto.response.EventShortDto;
 import ru.practicum.core.review.dto.NewEventReviewDto;
 import ru.practicum.core.review.dto.OutputEventReviewDto;
@@ -21,10 +22,13 @@ import ru.practicum.core.review.repository.UserReviewRepository;
 import ru.practicum.core.review.util.TestDataUtils;
 import ru.practicum.core.review.validation.ReviewValidator;
 import ru.practicum.core.user.dto.UserShortDto;
+import ru.practicum.ewm.stats.model.action.ActionType;
+import ru.practicum.ewm.stats.model.action.UserAction;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -46,18 +50,20 @@ class ReviewServiceImplTest {
     private EventReviewRepository eventReviews;
     @Mock
     private ReviewMapper mapper;
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
     private ReviewServiceImpl service;
     private EasyRandom random;
 
     @BeforeEach
     void setUp() {
-        service = new ReviewServiceImpl(validator, events, users, userReviews, eventReviews, mapper);
+        service = new ReviewServiceImpl(validator, events, users, userReviews, eventReviews, mapper, eventPublisher);
         random = TestDataUtils.createEasyRandomizer();
     }
 
     @AfterEach
     void verifyNoMoreMockInteractions() {
-        verifyNoMoreInteractions(validator, events, users, userReviews, eventReviews, mapper);
+        verifyNoMoreInteractions(validator, events, users, userReviews, eventReviews, mapper, eventPublisher);
     }
 
     @Test
@@ -78,6 +84,8 @@ class ReviewServiceImplTest {
         assertThat(service.createEventReview(7L, 15L, request)).isSameAs(output);
         verify(validator, times(1)).validateEventReview(7L, event);
         verify(eventReviews, times(1)).save(entity);
+        verify(eventPublisher, times(1)).publishEvent(argThat((UserAction action) ->
+                action.userId() == 7L && action.eventId() == 15L && action.actionType() == ActionType.LIKE));
     }
 
     @Test
