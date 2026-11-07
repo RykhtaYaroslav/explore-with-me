@@ -7,6 +7,9 @@ CREATE TABLE IF NOT EXISTS user_event_interactions (
 );
 COMMENT ON TABLE user_event_interactions IS
     'Stores each user’s maximum interaction weight and latest interaction time for each event.';
+CREATE INDEX IF NOT EXISTS idx_user_event_interactions_event ON user_event_interactions (event_id);
+CREATE INDEX IF NOT EXISTS idx_user_event_interactions_recent
+    ON user_event_interactions (user_id, last_interaction_time DESC, event_id);
 
 CREATE TABLE IF NOT EXISTS event_similarities (
     event_a BIGINT NOT NULL,
@@ -19,3 +22,4 @@ CREATE TABLE IF NOT EXISTS event_similarities (
 );
 COMMENT ON TABLE event_similarities IS
     'Stores the latest similarity score calculated for each canonical pair of events.';
+CREATE INDEX IF NOT EXISTS idx_event_similarities_event_b ON event_similarities (event_b);
