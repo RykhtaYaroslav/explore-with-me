@@ -24,6 +24,7 @@ import ru.practicum.core.event.model.Event;
 import ru.practicum.core.event.model.EventState;
 import ru.practicum.core.event.repository.EventRepository;
 import ru.practicum.core.event.service.EventStatsCollector;
+import ru.practicum.core.event.service.interservice.RecommendationInterservice;
 import ru.practicum.core.event.service.interservice.UserInterservice;
 import ru.practicum.core.event.util.TestDataUtils;
 
@@ -51,6 +52,8 @@ class EventServicePrivateImplTest {
     private CategoryRepository categoryRepository;
     @Mock
     private EventStatsCollector statsCollector;
+    @Mock
+    private RecommendationInterservice recommendations;
     @InjectMocks
     private EventServicePrivateImpl service;
     private EventMapper mapper;
@@ -59,13 +62,14 @@ class EventServicePrivateImplTest {
     @BeforeEach
     void setUp() {
         mapper = Mappers.getMapper(EventMapper.class);
-        service = new EventServicePrivateImpl(eventRepository, userInterservice, categoryRepository, mapper, statsCollector);
+        service = new EventServicePrivateImpl(eventRepository, userInterservice, categoryRepository, mapper,
+                statsCollector, recommendations);
         random = TestDataUtils.createEventEasyRandomizer();
     }
 
     @AfterEach
     void verifyNoMoreMockInteractions() {
-        verifyNoMoreInteractions(eventRepository, userInterservice, categoryRepository, statsCollector);
+        verifyNoMoreInteractions(eventRepository, userInterservice, categoryRepository, statsCollector, recommendations);
     }
 
     @Test
