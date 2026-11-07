@@ -46,7 +46,8 @@ public class EventInternalApiServiceImpl implements EventInternalApiService {
                 .orElseThrow(() -> new NotFoundException(
                         String.format("Event with id = %d was not found", eventId)));
         UserShortDto initiator = userInterservice.getShortById(event.getInitiatorId());
-        return eventMapper.toShortDto(event, initiator, 0L, event.getConfirmedRequests(), null);
+        double weight = eventStatsCollector.getInteractionWeights(List.of(eventId)).getOrDefault(eventId, 0.0);
+        return eventMapper.toShortDto(event, initiator, 0L, event.getConfirmedRequests(), null, weight);
     }
 
     @Override
@@ -65,13 +66,15 @@ public class EventInternalApiServiceImpl implements EventInternalApiService {
         Map<Long, UserShortDto> usersById = userInterservice.getShortByIds(initiatorIds).stream()
                 .collect(Collectors.toMap(UserShortDto::getId, user -> user));
         Map<Long, EventShortDto> eventDtosById = new LinkedHashMap<>();
+        Map<Long, Double> weights = eventStatsCollector.getInteractionWeights(events.stream().map(Event::getId).toList());
         for (Long eventId : eventIds.stream().distinct().toList()) {
             Event event = eventsById.get(eventId);
             if (event == null) {
                 throw new NotFoundException(String.format("Event with id = %d was not found", eventId));
             }
             eventDtosById.put(eventId, eventMapper.toShortDto(
-                    event, usersById.get(event.getInitiatorId()), 0L, event.getConfirmedRequests(), null));
+                    event, usersById.get(event.getInitiatorId()), 0L, event.getConfirmedRequests(), null,
+                    weights.getOrDefault(eventId, 0.0)));
         }
 
         return eventIds.stream()

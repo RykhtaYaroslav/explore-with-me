@@ -5,9 +5,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import ru.practicum.core.common.dto.ErrorResponse;
 
 import java.time.LocalDateTime;
@@ -50,6 +52,11 @@ public class CommonErrorHandler {
     public ResponseEntity<ErrorResponse> handleMissingParams(MissingServletRequestParameterException e) {
         String message = String.format("Required request parameter '%s' is not present", e.getParameterName());
         return buildValidationResponse(message);
+    }
+
+    @ExceptionHandler({MissingRequestHeaderException.class, MethodArgumentTypeMismatchException.class})
+    public ResponseEntity<ErrorResponse> handleRequestBindingFailure(Exception e) {
+        return buildValidationResponse(e.getMessage());
     }
 
     @ExceptionHandler(Exception.class)
