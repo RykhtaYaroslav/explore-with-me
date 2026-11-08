@@ -27,4 +27,18 @@ public interface UserEventInteractionRepository
             group by interaction.id.eventId
             """)
     List<RecommendedEvent> sumWeightsByEventIds(List<Long> eventIds);
+
+    @Query("""
+            select interaction.id.eventId as eventId, count(interaction) as views
+            from UserEventInteractionEntity interaction
+            where interaction.id.eventId in :eventIds and interaction.viewed = true
+            group by interaction.id.eventId
+            """)
+    List<EventViewCount> countViewsByEventIds(List<Long> eventIds);
+
+    interface EventViewCount {
+        long getEventId();
+
+        long getViews();
+    }
 }

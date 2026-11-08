@@ -25,4 +25,6 @@ public class UserEventInteractionEntity {
 
     private Instant lastInteractionTime;
 
+    private boolean viewed;
+
 }

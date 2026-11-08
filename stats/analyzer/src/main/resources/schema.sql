@@ -3,10 +3,11 @@ CREATE TABLE IF NOT EXISTS user_event_interactions (
     event_id BIGINT NOT NULL,
     weight DOUBLE PRECISION NOT NULL,
     last_interaction_time TIMESTAMP WITH TIME ZONE NOT NULL,
+    viewed BOOLEAN NOT NULL,
     CONSTRAINT pk_user_event_interactions PRIMARY KEY (user_id, event_id)
 );
 COMMENT ON TABLE user_event_interactions IS
-    'Stores each user’s maximum interaction weight and latest interaction time for each event.';
+    'Stores the maximum weight, latest interaction time and whether the user viewed the event.';
 CREATE INDEX IF NOT EXISTS idx_user_event_interactions_event ON user_event_interactions (event_id);
 CREATE INDEX IF NOT EXISTS idx_user_event_interactions_recent
     ON user_event_interactions (user_id, last_interaction_time DESC, event_id);
