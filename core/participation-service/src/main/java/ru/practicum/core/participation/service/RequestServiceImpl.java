@@ -2,6 +2,7 @@ package ru.practicum.core.participation.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.core.common.enums.RequestStatus;
@@ -15,7 +16,10 @@ import ru.practicum.core.participation.dto.mapper.RequestMapper;
 import ru.practicum.core.participation.model.ParticipationRequest;
 import ru.practicum.core.participation.repository.RequestRepository;
 import ru.practicum.core.participation.validation.RequestValidator;
+import ru.practicum.ewm.stats.model.action.ActionType;
+import ru.practicum.ewm.stats.model.action.UserAction;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -37,6 +41,7 @@ public class RequestServiceImpl implements RequestService {
     private final RequestValidator requestValidator;
     private final RequestMapper requestMapper;
     private final EventFeignClient eventFeignClient;
+    private final ApplicationEventPublisher eventPublisher;
 
     /**
      * Returns all participation requests submitted by a user.
@@ -55,6 +60,7 @@ public class RequestServiceImpl implements RequestService {
 
     /**
      * Creates a participation request and updates the event's confirmed count when moderation is not required.
+     * Schedules a REGISTER interaction for delivery after the request commits.
      *
      * @param userId  identifier of the requester
      * @param eventId identifier of the event
@@ -80,7 +86,9 @@ public class RequestServiceImpl implements RequestService {
                     eventId, savedRequest.getId());
             eventFeignClient.adjustConfirmedRequestCount(eventId, 1);
         }
-        return requestMapper.toDtoOut(savedRequest);
+        ParticipationRequestDto response = requestMapper.toDtoOut(savedRequest);
+        eventPublisher.publishEvent(new UserAction(userId, eventId, ActionType.REGISTER, Instant.now()));
+        return response;
     }
 
 
