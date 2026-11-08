@@ -35,6 +35,7 @@ import ru.practicum.ewm.stats.proto.RecommendedEventProto;
 import ru.practicum.ewm.stats.proto.SimilarEventsRequestProto;
 import ru.practicum.ewm.stats.proto.UserActionProto;
 import ru.practicum.ewm.stats.proto.UserPredictionsRequestProto;
+import ru.practicum.ewm.stats.proto.ViewCountsProto;
 import ru.practicum.ewm.stats.proto.collector.UserActionControllerGrpc.UserActionControllerImplBase;
 import ru.practicum.ewm.stats.proto.dashboard.RecommendationsControllerGrpc.RecommendationsControllerImplBase;
 
@@ -42,6 +43,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -155,6 +157,14 @@ class StatsGrpcClientsIntegrationTest {
     }
 
     @Test
+    @DisplayName("Analyzer returns 64-bit viewer counts for a batch of event IDs")
+    void getsViewCounts() {
+        assertThat(analyzer.getViewCounts(new InteractionsCountRequest(List.of(30L, 40L))))
+                .containsExactlyInAnyOrderEntriesOf(Map.of(30L, 3_000_000_000L));
+        assertThat(ANALYZER.viewCounts.get().getEventIdList()).containsExactly(30L, 40L);
+    }
+
+    @Test
     @DisplayName("Collector preserves the gRPC error status and cause")
     void handlesCollectorError() {
         UserAction action = new UserAction(REJECTED_USER_ID, 19L, ActionType.LIKE, ACTION_TIME);
@@ -217,6 +227,7 @@ class StatsGrpcClientsIntegrationTest {
         private final AtomicReference<UserPredictionsRequestProto> predictions = new AtomicReference<>();
         private final AtomicReference<SimilarEventsRequestProto> similarEvents = new AtomicReference<>();
         private final AtomicReference<InteractionsCountRequestProto> counts = new AtomicReference<>();
+        private final AtomicReference<InteractionsCountRequestProto> viewCounts = new AtomicReference<>();
 
         @Override
         public void getRecommendationsForUser(UserPredictionsRequestProto request,
@@ -246,6 +257,13 @@ class StatsGrpcClientsIntegrationTest {
                 observer.onNext(event(30L, 2.4));
                 observer.onNext(event(40L, 0.0));
             }
+            observer.onCompleted();
+        }
+
+        @Override
+        public void getViewCounts(InteractionsCountRequestProto request, StreamObserver<ViewCountsProto> observer) {
+            viewCounts.set(request);
+            observer.onNext(ViewCountsProto.newBuilder().putViewsByEvent(30L, 3_000_000_000L).build());
             observer.onCompleted();
         }
 
