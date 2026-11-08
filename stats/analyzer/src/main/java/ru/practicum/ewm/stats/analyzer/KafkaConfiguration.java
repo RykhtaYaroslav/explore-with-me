@@ -43,7 +43,7 @@ public class KafkaConfiguration {
         ConcurrentKafkaListenerContainerFactory<String, UserActionAvro> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(userActionConsumerFactory);
-        factory.setCommonErrorHandler(new DefaultErrorHandler(new FixedBackOff(1_000L, Long.MAX_VALUE)));
+        factory.setCommonErrorHandler(invalidMessageErrorHandler());
         return factory;
     }
 
@@ -68,8 +68,18 @@ public class KafkaConfiguration {
         ConcurrentKafkaListenerContainerFactory<String, EventSimilarityAvro> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(eventSimilarityConsumerFactory);
-        factory.setCommonErrorHandler(new DefaultErrorHandler(new FixedBackOff(1_000L, Long.MAX_VALUE)));
+        factory.setCommonErrorHandler(invalidMessageErrorHandler());
         return factory;
+    }
+
+    /**
+     * Повторяет сбои с паузой, но не повторяет сообщения, не прошедшие валидацию:
+     * они пропускаются с записью в лог и не блокируют партицию.
+     */
+    private static DefaultErrorHandler invalidMessageErrorHandler() {
+        DefaultErrorHandler errorHandler = new DefaultErrorHandler(new FixedBackOff(1_000L, Long.MAX_VALUE));
+        errorHandler.addNotRetryableExceptions(IllegalArgumentException.class);
+        return errorHandler;
     }
 
     private Map<String, Object> consumerProperties(

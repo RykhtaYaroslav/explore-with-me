@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.within;
 
 @DataJpaTest(showSql = false, properties = {
@@ -235,6 +236,18 @@ class RecommendationsControllerIntegrationTest {
                 .containsExactlyInAnyOrderEntriesOf(Map.of(10L, 2L, 30L, 1L));
         assertThat(stub.getViewCounts(InteractionsCountRequestProto.getDefaultInstance()).getViewsByEventMap())
                 .isEmpty();
+    }
+
+    @Test
+    @DisplayName("Actions with non-positive ids are rejected and not stored")
+    void rejectsNonPositiveIdsWithoutStoringInteraction() {
+        assertThatThrownBy(() -> recordAction(USER_ID, 0L, ActionTypeAvro.VIEW, 1))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> recordAction(0L, 10L, ActionTypeAvro.VIEW, 1))
+                .isInstanceOf(IllegalArgumentException.class);
+
+        assertThat(stub.getViewCounts(InteractionsCountRequestProto.newBuilder().addEventId(10L).build())
+                .getViewsByEventMap()).isEmpty();
     }
 
     private void recordAction(long userId, long eventId, ActionTypeAvro type, long seconds) {

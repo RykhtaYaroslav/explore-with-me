@@ -30,10 +30,14 @@ public class AnalyzerIngestionServiceImpl implements AnalyzerIngestionService {
      * Stores the maximum action weight, latest interaction time and whether the user viewed the event.
      *
      * @param message action received from Collector's Kafka topic
+     * @throws IllegalArgumentException if user or event id is not positive
      */
     @Transactional
     @Override
     public void recordUserAction(UserActionAvro message) {
+        if (message.getUserId() <= 0 || message.getEventId() <= 0) {
+            throw new IllegalArgumentException("user_id and event_id must be positive");
+        }
         UserAction action = UserActionMapper.toModel(message);
         UserEventInteractionId id = new UserEventInteractionId(action.userId(), action.eventId());
         UserEventInteractionEntity interaction = interactionRepository.findById(id)
