@@ -8,21 +8,142 @@ x-eureka-healthcheck: &eureka-healthcheck
   start_period: 30s
 
 services:
-  stats-db:
+  kafka:
+    image: apache/kafka:3.9.1
+    ports:
+      - "127.0.0.1:9094:9094"
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093,PLAINTEXT_HOST://:9094
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:9094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_NUM_PARTITIONS: 1
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 20s
+
+  kafka-init:
+    image: apache/kafka:3.9.1
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - >-
+        /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists --topic stats.user-actions.v1 --partitions 1 --replication-factor 1 &&
+        /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists --topic stats.events-similarity.v1 --partitions 1 --replication-factor 1
+    depends_on:
+      kafka:
+        condition: service_healthy
+
+  analyzer-db:
     image: postgres:16.1
     ports:
       - "127.0.0.1::5432"
     volumes:
-      - stats-db-data:/var/lib/postgresql/data
+      - analyzer-db-data:/var/lib/postgresql/data
     environment:
-      POSTGRES_DB: ${STATS_DB_NAME:-stats}
-      POSTGRES_USER: ${STATS_DB_USERNAME:-stats}
-      POSTGRES_PASSWORD: ${STATS_DB_PASSWORD:-stats}
+      POSTGRES_DB: ${ANALYZER_DB_NAME:-analyzer}
+      POSTGRES_USER: ${ANALYZER_DB_USERNAME:-analyzer}
+      POSTGRES_PASSWORD: ${ANALYZER_DB_PASSWORD:-analyzer}
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 5
+
+  collector:
+    build:
+      context: .
+      dockerfile: stats/collector/Dockerfile
+    healthcheck: *eureka-healthcheck
+    depends_on:
+      kafka-init:
+        condition: service_completed_successfully
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_CLOUD_CONFIG_URI: ${SPRING_CLOUD_CONFIG_URI:-}
+      EUREKA_APP: COLLECTOR
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-server:8761/eureka/
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+
+  aggregator-db:
+    image: postgres:16.1
+    ports:
+      - "127.0.0.1::5432"
+    volumes:
+      - aggregator-db-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${AGGREGATOR_DB_NAME:-aggregator}
+      POSTGRES_USER: ${AGGREGATOR_DB_USERNAME:-aggregator}
+      POSTGRES_PASSWORD: ${AGGREGATOR_DB_PASSWORD:-aggregator}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  aggregator:
+    build:
+      context: .
+      dockerfile: stats/aggregator/Dockerfile
+    healthcheck: *eureka-healthcheck
+    depends_on:
+      aggregator-db:
+        condition: service_healthy
+      kafka-init:
+        condition: service_completed_successfully
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://aggregator-db:5432/${AGGREGATOR_DB_NAME:-aggregator}
+      SPRING_DATASOURCE_USERNAME: ${AGGREGATOR_DB_USERNAME:-aggregator}
+      SPRING_DATASOURCE_PASSWORD: ${AGGREGATOR_DB_PASSWORD:-aggregator}
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_CLOUD_CONFIG_URI: ${SPRING_CLOUD_CONFIG_URI:-}
+      EUREKA_APP: AGGREGATOR
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-server:8761/eureka/
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+
+  analyzer:
+    build:
+      context: .
+      dockerfile: stats/analyzer/Dockerfile
+    healthcheck: *eureka-healthcheck
+    depends_on:
+      analyzer-db:
+        condition: service_healthy
+      kafka-init:
+        condition: service_completed_successfully
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://analyzer-db:5432/${ANALYZER_DB_NAME:-analyzer}
+      SPRING_DATASOURCE_USERNAME: ${ANALYZER_DB_USERNAME:-analyzer}
+      SPRING_DATASOURCE_PASSWORD: ${ANALYZER_DB_PASSWORD:-analyzer}
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_CLOUD_CONFIG_URI: ${SPRING_CLOUD_CONFIG_URI:-}
+      EUREKA_APP: ANALYZER
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-server:8761/eureka/
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
 
   review-db:
     image: postgres:16.1
@@ -138,7 +259,9 @@ services:
         condition: service_healthy
       discovery-server:
         condition: service_healthy
-      stats-server:
+      collector:
+        condition: service_healthy
+      analyzer:
         condition: service_healthy
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://event-db:5432/${EVENT_DB_NAME:-eventId}
@@ -183,12 +306,12 @@ services:
         condition: service_healthy
       discovery-server:
         condition: service_healthy
+      collector:
+        condition: service_healthy
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://review-db:5432/${REVIEW_DB_NAME:-review}
-      SPRING_DATASOURCE_USERNAME: ${REVIEW_DB_USERNAME:-review}
-      SPRING_DATASOURCE_PASSWORD: ${REVIEW_DB_PASSWORD:-review}
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      SPRING_SQL_INIT_MODE: always
+      REVIEW_DB_URL: jdbc:postgresql://review-db:5432/${REVIEW_DB_NAME:-review}
+      REVIEW_DB_USERNAME: ${REVIEW_DB_USERNAME:-review}
+      REVIEW_DB_PASSWORD: ${REVIEW_DB_PASSWORD:-review}
       SPRING_PROFILES_ACTIVE: ${REVIEW_PROFILES_ACTIVE:-docker}
       EUREKA_APP: REVIEW-SERVICE
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-server:8761/eureka/
@@ -204,6 +327,8 @@ services:
       config-server:
         condition: service_healthy
       discovery-server:
+        condition: service_healthy
+      collector:
         condition: service_healthy
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://participation-db:5432/${PARTICIPATION_DB_NAME:-participation}
@@ -228,7 +353,7 @@ services:
     environment:
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-server:8761/eureka/
       EUREKA_APP: CONFIG-SERVER
-      SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH_LOCATIONS: "file:/config-repo,file:/config-repo/stats-service,file:/config-repo/event-service,file:/config-repo/review-service,file:/config-repo/user-service,file:/config-repo/participation-service,file:/config-repo/compilation-service,file:/config-repo/gateway-server"
+      SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH_LOCATIONS: "file:/config-repo,file:/config-repo/event-service,file:/config-repo/review-service,file:/config-repo/user-service,file:/config-repo/participation-service,file:/config-repo/compilation-service,file:/config-repo/gateway-server,file:/config-repo/collector,file:/config-repo/aggregator,file:/config-repo/analyzer"
 
   discovery-server:
     build:
@@ -242,27 +367,6 @@ services:
       timeout: 3s
       retries: 12
       start_period: 10s
-
-  stats-server:
-    build:
-      context: .
-      dockerfile: stats/stats-server/Dockerfile
-    healthcheck: *eureka-healthcheck
-    depends_on:
-      stats-db:
-        condition: service_healthy
-      config-server:
-        condition: service_healthy
-      discovery-server:
-        condition: service_healthy
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://stats-db:5432/${STATS_DB_NAME:-stats}
-      SPRING_DATASOURCE_USERNAME: ${STATS_DB_USERNAME:-stats}
-      SPRING_DATASOURCE_PASSWORD: ${STATS_DB_PASSWORD:-stats}
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      SPRING_PROFILES_ACTIVE: docker
-      EUREKA_APP: STATS-SERVER
-      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-server:8761/eureka/
 
   gateway-server:
     build:
@@ -281,8 +385,6 @@ services:
         condition: service_healthy
       discovery-server:
         condition: service_healthy
-      stats-server:
-        condition: service_healthy
       compilation-service:
         condition: service_healthy
       event-service:
@@ -298,7 +400,9 @@ services:
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-server:8761/eureka/
 
 volumes:
-  stats-db-data:
+  kafka-data:
+  aggregator-db-data:
+  analyzer-db-data:
   review-db-data:
   event-db-data:
   user-db-data:

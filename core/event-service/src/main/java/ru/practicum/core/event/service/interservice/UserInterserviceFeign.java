@@ -14,8 +14,13 @@ public class UserInterserviceFeign implements UserInterservice {
     private final UserFeignClient userFeignClient;
 
     @Override
+    public boolean existsById(Long userId) {
+        return userFeignClient.existsById(userId);
+    }
+
+    @Override
     public void checkExistsByIdOrThrow(Long userId) {
-        if (!userFeignClient.existsById(userId)) {
+        if (!existsById(userId)) {
             throw new NotFoundException(String.format("User with id = %d was not found", userId));
         }
     }

@@ -1,0 +1,51 @@
+grpc:
+  server:
+    port: 0
+
+spring:
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:kafka:9092}
+    producer:
+      # Критерий подтверждения записи: all — после подтверждения всеми in-sync репликами.
+      acks: all
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: ru.practicum.ewm.stats.kafka.avro.AvroSpecificSerializer
+      # Максимальное число повторных попыток отправки при временных ошибках.
+      retries: 10
+      client-id: stats-collector
+      properties:
+        # Защищает от дубликатов при повторной отправке одного сообщения этим producer.
+        enable.idempotence: true
+        max.request.size: 1048576
+        # Максимальное время от первой попытки отправки до окончательной ошибки.
+        delivery.timeout.ms: 120000
+        # Максимальное время ожидания ответа брокера на один запрос.
+        request.timeout.ms: 30000
+        # Максимальное время ожидания дополнительных сообщений для формирования batch.
+        linger.ms: 5
+        # Максимальный размер одного batch сообщений в байтах.
+        batch.size: 16384
+        # Общий объём памяти producer для буферизации сообщений перед отправкой.
+        buffer.memory: 33554432
+    template:
+      default-topic: ${stats.kafka.topics.user-actions}
+
+stats:
+  kafka:
+    topics:
+      user-actions: stats.user-actions.v1
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+
+logging:
+  level:
+    root: INFO

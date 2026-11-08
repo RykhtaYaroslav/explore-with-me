@@ -1,6 +1,5 @@
 package ru.practicum.core.event.controller;
 
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
@@ -8,6 +7,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,6 +28,7 @@ import static ru.practicum.core.common.util.EwmConstants.DATE_TIME_FORMAT;
 @RequiredArgsConstructor
 @Validated
 public class PublicEventController {
+    private static final String USER_ID_HEADER = "X-EWM-USER-ID";
     private final EventServicePublic eventServicePublic;
 
     @GetMapping
@@ -40,8 +41,7 @@ public class PublicEventController {
             @RequestParam(defaultValue = "false") Boolean onlyAvailable,
             @RequestParam(required = false) EventSort sort,
             @RequestParam(defaultValue = "0") @PositiveOrZero(message = "Query parameter \"from\" must be positive or zero") Integer from,
-            @RequestParam(defaultValue = "10") @Positive(message = "Query parameter \"size\" must be positive") Integer size,
-            HttpServletRequest request) {
+            @RequestParam(defaultValue = "10") @Positive(message = "Query parameter \"size\" must be positive") Integer size) {
         if (rangeStart == null) {
             rangeStart = LocalDateTime.now();
         }
@@ -62,17 +62,13 @@ public class PublicEventController {
                 size
         );
 
-        List<EventShortDto> result = eventServicePublic.getAllWithParams(params);
-
-        eventServicePublic.hitStat(request.getRequestURI(), request.getRemoteAddr());
-        return result;
+        return eventServicePublic.getAllWithParams(params);
     }
 
     @GetMapping("/{id}")
-    public EventFullDto getEventFullInformation(@PathVariable @Positive Long id, HttpServletRequest request) {
-        EventFullDto result = eventServicePublic.getEventFullInformation(id);
-
-        eventServicePublic.hitStat(request.getRequestURI(), request.getRemoteAddr());
-        return result;
+    public EventFullDto getEventFullInformation(
+            @PathVariable @Positive Long id,
+            @RequestHeader(value = USER_ID_HEADER, required = false) @Positive Long userId) {
+        return eventServicePublic.getEventFullInformation(id, userId);
     }
 }

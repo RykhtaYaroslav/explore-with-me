@@ -18,9 +18,18 @@ spring:
 server:
   port: 0
 
-stats:
+grpc:
   client:
-    type: feign
+    collector:
+      address: discovery:///collector
+      negotiation-type: plaintext
+      enable-keep-alive: true
+      keep-alive-time: 60s
+    analyzer:
+      address: discovery:///analyzer
+      negotiation-type: plaintext
+      enable-keep-alive: true
+      keep-alive-time: 60s
 
 management:
   endpoints:

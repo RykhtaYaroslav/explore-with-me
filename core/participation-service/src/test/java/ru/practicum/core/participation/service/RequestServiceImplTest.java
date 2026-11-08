@@ -1,41 +1,56 @@
 package ru.practicum.core.participation.service;
 
 import org.jeasy.random.EasyRandom;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import ru.practicum.core.common.enums.RequestStatus;
 import ru.practicum.core.common.exception.ConflictException;
 import ru.practicum.core.participation.client.EventFeignClient;
-import ru.practicum.core.participation.dto.ParticipationRequestDto;
 import ru.practicum.core.participation.dto.EventRequestStatusUpdateRequest;
+import ru.practicum.core.participation.dto.ParticipationRequestDto;
 import ru.practicum.core.participation.dto.internal.RequestStatusUpdateContext;
 import ru.practicum.core.participation.dto.mapper.RequestMapper;
 import ru.practicum.core.participation.model.ParticipationRequest;
 import ru.practicum.core.participation.repository.RequestRepository;
 import ru.practicum.core.participation.util.TestDataUtils;
 import ru.practicum.core.participation.validation.RequestValidator;
+import ru.practicum.ewm.stats.model.action.ActionType;
+import ru.practicum.ewm.stats.model.action.UserAction;
 
-import java.util.Optional;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.argThat;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class RequestServiceImplTest {
-    @Mock private RequestRepository repository;
-    @Mock private RequestValidator validator;
-    @Mock private RequestMapper mapper;
-    @Mock private EventFeignClient eventClient;
-    @InjectMocks private RequestServiceImpl service;
+    @Mock
+    private RequestRepository repository;
+    @Mock
+    private RequestValidator validator;
+    @Mock
+    private RequestMapper mapper;
+    @Mock
+    private EventFeignClient eventClient;
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
+    @InjectMocks
+    private RequestServiceImpl service;
     private EasyRandom random;
 
     @BeforeEach
@@ -45,7 +60,7 @@ class RequestServiceImplTest {
 
     @AfterEach
     void verifyNoMoreMockInteractions() {
-        verifyNoMoreInteractions(repository, validator, mapper, eventClient);
+        verifyNoMoreInteractions(repository, validator, mapper, eventClient, eventPublisher);
     }
 
     @Test
@@ -71,6 +86,8 @@ class RequestServiceImplTest {
                 && request.getEventId().equals(eventId) && request.getStatus() == RequestStatus.CONFIRMED));
         verify(mapper, times(1)).toDtoOut(saved);
         verify(eventClient, times(1)).adjustConfirmedRequestCount(eventId, 1);
+        verify(eventPublisher, times(1)).publishEvent(argThat((UserAction action) ->
+                action.userId() == userId && action.eventId() == eventId && action.actionType() == ActionType.REGISTER));
     }
 
     @Test
@@ -84,7 +101,7 @@ class RequestServiceImplTest {
         assertThatThrownBy(() -> service.createRequest(userId, eventId))
                 .isInstanceOf(ConflictException.class).hasMessage("initiator");
         verify(validator, times(1)).validateCreateRequestAndGetStatus(userId, eventId);
-        verifyNoInteractions(repository, eventClient, mapper);
+        verifyNoInteractions(repository, eventClient, mapper, eventPublisher);
     }
 
     @Test
@@ -96,7 +113,7 @@ class RequestServiceImplTest {
         assertThatThrownBy(() -> service.createRequest(34L, 56L))
                 .isInstanceOf(ConflictException.class).hasMessage("limit");
         verify(validator, times(1)).validateCreateRequestAndGetStatus(34L, 56L);
-        verifyNoInteractions(repository, eventClient, mapper);
+        verifyNoInteractions(repository, eventClient, mapper, eventPublisher);
     }
 
     @Test

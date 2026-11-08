@@ -1,6 +1,7 @@
 package ru.practicum.core.review.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.core.event.dto.response.EventShortDto;
@@ -17,11 +18,16 @@ import ru.practicum.core.review.repository.EventReviewRepository;
 import ru.practicum.core.review.repository.UserReviewRepository;
 import ru.practicum.core.review.validation.ReviewValidator;
 import ru.practicum.core.user.dto.UserShortDto;
+import ru.practicum.ewm.stats.model.action.ActionType;
+import ru.practicum.ewm.stats.model.action.UserAction;
 
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static ru.practicum.core.common.util.EwmConstants.MIN_LIKE_SCORE;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +41,7 @@ public class ReviewServiceImpl implements ReviewService {
     private final EventReviewRepository eventReviewRepository;
 
     private final ReviewMapper reviewMapper;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public OutputUserReviewDto createAuthorReview(Long raterId, Long eventId, Long authorId,
@@ -50,6 +57,7 @@ public class ReviewServiceImpl implements ReviewService {
         return reviewMapper.toUserReviewOutDto(review, rater, author, event);
     }
 
+    /** Stores a validated event review and schedules a LIKE for a score of 4 or 5. */
     @Override
     public OutputEventReviewDto createEventReview(Long raterId, Long eventId, NewEventReviewDto request) {
         UserShortDto rater = reviewValidator.findUserOrThrow(raterId);
@@ -58,6 +66,9 @@ public class ReviewServiceImpl implements ReviewService {
 
         EventReview review = reviewMapper.toEventReview(request, raterId, eventId);
         review = eventReviewRepository.save(review);
+        if (review.getScore() >= MIN_LIKE_SCORE) {
+            eventPublisher.publishEvent(new UserAction(raterId, eventId, ActionType.LIKE, Instant.now()));
+        }
 
         return reviewMapper.toEventReviewOutDto(review, rater, event);
     }
@@ -74,7 +85,7 @@ public class ReviewServiceImpl implements ReviewService {
         Map<Long, UserShortDto> usersById = raterIds.isEmpty()
                 ? Map.of()
                 : userInterservice.getShortByIds(raterIds).stream()
-                        .collect(Collectors.toMap(UserShortDto::getId, user -> user));
+                .collect(Collectors.toMap(UserShortDto::getId, user -> user));
 
         return reviews.stream()
                 .map(review -> reviewMapper.toEventReviewOutDto(
@@ -109,7 +120,7 @@ public class ReviewServiceImpl implements ReviewService {
         Map<Long, EventShortDto> eventsById = eventIds.isEmpty()
                 ? Map.of()
                 : eventInterservice.getReviewInfoByIds(eventIds).stream()
-                        .collect(Collectors.toMap(EventShortDto::getId, event -> event));
+                .collect(Collectors.toMap(EventShortDto::getId, event -> event));
 
         return reviews.stream()
                 .map(review -> reviewMapper.toUserReviewOutDto(

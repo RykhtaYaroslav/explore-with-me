@@ -1,8 +1,8 @@
 package ru.practicum.core.event.service.privateapi;
 
 import org.jeasy.random.EasyRandom;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,16 +14,17 @@ import ru.practicum.core.category.model.Category;
 import ru.practicum.core.category.repository.CategoryRepository;
 import ru.practicum.core.common.exception.EventUpdateException;
 import ru.practicum.core.common.exception.NotFoundException;
+import ru.practicum.core.event.dto.LocationDto;
 import ru.practicum.core.event.dto.mapper.EventMapper;
 import ru.practicum.core.event.dto.request.NewEventDto;
 import ru.practicum.core.event.dto.request.StateActionUser;
 import ru.practicum.core.event.dto.request.UpdateEventUserRequest;
-import ru.practicum.core.event.dto.LocationDto;
 import ru.practicum.core.event.dto.response.EventFullDto;
 import ru.practicum.core.event.model.Event;
 import ru.practicum.core.event.model.EventState;
 import ru.practicum.core.event.repository.EventRepository;
 import ru.practicum.core.event.service.EventStatsCollector;
+import ru.practicum.core.event.service.interservice.RecommendationInterservice;
 import ru.practicum.core.event.service.interservice.UserInterservice;
 import ru.practicum.core.event.util.TestDataUtils;
 
@@ -34,29 +35,41 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class EventServicePrivateImplTest {
-    @Mock private EventRepository eventRepository;
-    @Mock private UserInterservice userInterservice;
-    @Mock private CategoryRepository categoryRepository;
-    @Mock private EventStatsCollector statsCollector;
-    @InjectMocks private EventServicePrivateImpl service;
+    @Mock
+    private EventRepository eventRepository;
+    @Mock
+    private UserInterservice userInterservice;
+    @Mock
+    private CategoryRepository categoryRepository;
+    @Mock
+    private EventStatsCollector statsCollector;
+    @Mock
+    private RecommendationInterservice recommendations;
+    @InjectMocks
+    private EventServicePrivateImpl service;
     private EventMapper mapper;
     private EasyRandom random;
 
     @BeforeEach
     void setUp() {
         mapper = Mappers.getMapper(EventMapper.class);
-        service = new EventServicePrivateImpl(eventRepository, userInterservice, categoryRepository, mapper, statsCollector);
+        service = new EventServicePrivateImpl(eventRepository, userInterservice, categoryRepository, mapper,
+                statsCollector, recommendations);
         random = TestDataUtils.createEventEasyRandomizer();
     }
 
     @AfterEach
     void verifyNoMoreMockInteractions() {
-        verifyNoMoreInteractions(eventRepository, userInterservice, categoryRepository, statsCollector);
+        verifyNoMoreInteractions(eventRepository, userInterservice, categoryRepository, statsCollector, recommendations);
     }
 
     @Test
@@ -286,6 +299,34 @@ class EventServicePrivateImplTest {
         verify(statsCollector, times(1)).getFullDtoListWithStats(List.of(event));
         verify(userInterservice, times(1)).checkExistsByIdOrThrow(21L);
         verifyNoInteractions(categoryRepository);
+    }
+
+    @Test
+    @DisplayName("Возвращает полное событие с нулевой статистикой")
+    void getsFullEventWithZeroStats() {
+        Event event = event(17L, 21L, EventState.PUBLISHED, LocalDateTime.now().plusDays(3));
+        when(eventRepository.findByIdAndInitiatorId(17L, 21L)).thenReturn(Optional.of(event));
+        EventFullDto output = random.nextObject(EventFullDto.class);
+        when(statsCollector.getFullDtoListWithStats(List.of(event))).thenReturn(List.of(output));
+
+        assertThat(service.findByInitiatorAndEventIds(21L, 17L)).isSameAs(output);
+
+        verify(userInterservice).checkExistsByIdOrThrow(21L);
+        verify(eventRepository).findByIdAndInitiatorId(17L, 21L);
+        verify(statsCollector).getFullDtoListWithStats(List.of(event));
+        verifyNoInteractions(categoryRepository);
+    }
+
+    @Test
+    @DisplayName("Не ищет событие, если инициатор не найден")
+    void missingInitiatorForEventLookup() {
+        doThrow(new NotFoundException("missing user")).when(userInterservice).checkExistsByIdOrThrow(21L);
+
+        assertThatThrownBy(() -> service.findByInitiatorAndEventIds(21L, 17L))
+                .isInstanceOf(NotFoundException.class).hasMessage("missing user");
+
+        verify(userInterservice).checkExistsByIdOrThrow(21L);
+        verifyNoInteractions(eventRepository, statsCollector, categoryRepository);
     }
 
     private Category category(Long id) {

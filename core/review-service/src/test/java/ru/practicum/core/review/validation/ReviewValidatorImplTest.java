@@ -1,8 +1,8 @@
 package ru.practicum.core.review.validation;
 
 import org.jeasy.random.EasyRandom;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,13 +21,18 @@ import ru.practicum.core.review.util.TestDataUtils;
 import ru.practicum.core.user.dto.UserShortDto;
 
 import java.time.Clock;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyLong;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ReviewValidatorImplTest {
@@ -35,11 +40,16 @@ class ReviewValidatorImplTest {
     private static final long EVENT_ID = 15L;
     private static final long AUTHOR_ID = 21L;
     private static final LocalDateTime NOW = LocalDateTime.of(2026, 1, 1, 12, 0);
-    @Mock private UserInterservice users;
-    @Mock private EventInterservice events;
-    @Mock private ParticipationInterservice participation;
-    @Mock private UserReviewRepository userReviews;
-    @Mock private EventReviewRepository eventReviews;
+    @Mock
+    private UserInterservice users;
+    @Mock
+    private EventInterservice events;
+    @Mock
+    private ParticipationInterservice participation;
+    @Mock
+    private UserReviewRepository userReviews;
+    @Mock
+    private EventReviewRepository eventReviews;
     private ReviewValidatorImpl validator;
     private EasyRandom random;
 

@@ -1,8 +1,8 @@
 package ru.practicum.core.compilation.service;
 
 import org.jeasy.random.EasyRandom;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,14 +28,11 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.times;
 
 @ExtendWith(MockitoExtension.class)
 class CompilationServiceImplTest {
@@ -95,6 +92,7 @@ class CompilationServiceImplTest {
     void getCompilationById() {
         Compilation compilation = compilation(7L, false, List.of(31L));
         EventShortDto event = event(31L);
+        event.setTotalInteractionWeight(2.8);
         when(repository.findById(7L)).thenReturn(Optional.of(compilation));
         when(eventInterservice.findByIds(List.of(31L))).thenReturn(List.of(event));
 
@@ -102,6 +100,9 @@ class CompilationServiceImplTest {
 
         assertThat(result.getId()).isEqualTo(7L);
         assertThat(result.getEvents()).containsExactly(event);
+        assertThat(result.getEvents()).extracting(EventShortDto::getTotalInteractionWeight).containsExactly(2.8);
+        verify(repository, times(1)).findById(7L);
+        verify(eventInterservice, times(1)).findByIds(List.of(31L));
     }
 
     @Test

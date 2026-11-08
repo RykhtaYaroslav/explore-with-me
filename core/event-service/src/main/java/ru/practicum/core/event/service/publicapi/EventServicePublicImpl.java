@@ -14,22 +14,20 @@ import ru.practicum.core.event.model.Event;
 import ru.practicum.core.event.model.EventState;
 import ru.practicum.core.event.repository.EventRepository;
 import ru.practicum.core.event.service.EventStatsCollector;
-import ru.practicum.stats.client.StatsClient;
-import ru.practicum.stats.dto.EndpointHitDto;
+import ru.practicum.core.event.service.interservice.RecommendationInterservice;
+import ru.practicum.core.event.service.interservice.UserInterservice;
 
 import java.util.Comparator;
 import java.util.List;
-
-import static java.time.LocalDateTime.now;
 
 @RequiredArgsConstructor
 @Service
 @Transactional(readOnly = true)
 public class EventServicePublicImpl implements EventServicePublic {
     private final EventRepository eventRepository;
-    private final StatsClient statsRepository;
-
+    private final RecommendationInterservice recommendations;
     private final EventStatsCollector eventStatsCollector;
+    private final UserInterservice users;
 
 
     @Override
@@ -63,23 +61,15 @@ public class EventServicePublicImpl implements EventServicePublic {
     }
 
     @Override
-    public EventFullDto getEventFullInformation(Long id) {
+    public EventFullDto getEventFullInformation(Long id, Long userId) {
         Event event = eventRepository.findByIdAndState(id, EventState.PUBLISHED)
                 .orElseThrow(() -> new NotFoundException(String.format("Event with id = %d was not found", id)));
 
-        List<Event> events = List.of(event);
-
-        return eventStatsCollector.getFullDtoListWithStats(events).getFirst();
-    }
-
-    @Override
-    public void hitStat(String uri, String ip) {
-        statsRepository.hit(EndpointHitDto.builder()
-                .app("event-service")
-                .ip(ip)
-                .uri(uri)
-                .timestamp(now())
-                .build());
+        EventFullDto result = eventStatsCollector.getFullDtoListWithStats(List.of(event)).getFirst();
+        if (userId != null && users.existsById(userId)) {
+            recommendations.recordView(userId, id);
+        }
+        return result;
     }
 
     /**
