@@ -10,6 +10,7 @@ import ru.practicum.ewm.stats.proto.InteractionsCountRequestProto;
 import ru.practicum.ewm.stats.proto.RecommendedEventProto;
 import ru.practicum.ewm.stats.proto.SimilarEventsRequestProto;
 import ru.practicum.ewm.stats.proto.UserPredictionsRequestProto;
+import ru.practicum.ewm.stats.proto.ViewCountsProto;
 import ru.practicum.ewm.stats.proto.dashboard.RecommendationsControllerGrpc;
 
 import java.util.List;
@@ -34,6 +35,14 @@ public class RecommendationsController extends RecommendationsControllerGrpc.Rec
     public void getInteractionsCount(InteractionsCountRequestProto request,
                                      StreamObserver<RecommendedEventProto> observer) {
         send(recommendationService.getInteractionsCount(RecommendationMapper.toModel(request)), observer);
+    }
+
+    @Override
+    public void getViewCounts(InteractionsCountRequestProto request, StreamObserver<ViewCountsProto> observer) {
+        observer.onNext(ViewCountsProto.newBuilder()
+                .putAllViewsByEvent(recommendationService.getViewCounts(request.getEventIdList()))
+                .build());
+        observer.onCompleted();
     }
 
     private void send(List<RecommendedEvent> events, StreamObserver<RecommendedEventProto> observer) {

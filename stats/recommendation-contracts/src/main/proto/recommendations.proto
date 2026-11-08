@@ -25,3 +25,8 @@ message RecommendedEventProto {
   int64 event_id = 1;
   double score = 2;
 }
+
+message ViewCountsProto {
+  // Event ID to distinct viewer count. Absent events have zero views.
+  map<int64, int64> views_by_event = 1;
+}

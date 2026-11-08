@@ -9,6 +9,7 @@ import ru.practicum.ewm.stats.analyzer.RecommendationProperties;
 import ru.practicum.ewm.stats.analyzer.repository.EventSimilarityRepository;
 import ru.practicum.ewm.stats.analyzer.repository.EventSimilarityRepository.EventScore;
 import ru.practicum.ewm.stats.analyzer.repository.UserEventInteractionRepository;
+import ru.practicum.ewm.stats.analyzer.repository.UserEventInteractionRepository.EventViewCount;
 import ru.practicum.ewm.stats.model.request.InteractionsCountRequest;
 import ru.practicum.ewm.stats.model.request.SimilarEventsRequest;
 import ru.practicum.ewm.stats.model.request.UserPredictionsRequest;
@@ -65,6 +66,15 @@ public class RecommendationService {
         return request.eventIds().stream()
                 .map(eventId -> new RecommendedEvent(eventId, totals.getOrDefault(eventId, 0.0)))
                 .toList();
+    }
+
+    /** Returns unique viewer counts for the requested events with at least one recorded VIEW. */
+    public Map<Long, Long> getViewCounts(List<Long> eventIds) {
+        if (eventIds.isEmpty()) {
+            return Map.of();
+        }
+        return interactionRepository.countViewsByEventIds(eventIds).stream()
+                .collect(Collectors.toMap(EventViewCount::getEventId, EventViewCount::getViews));
     }
 
     private List<RecommendedEvent> toRecommendedEvents(List<EventScore> scores) {

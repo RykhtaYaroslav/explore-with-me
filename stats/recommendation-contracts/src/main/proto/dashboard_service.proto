@@ -15,4 +15,6 @@ service RecommendationsController {
       returns (stream stats.message.RecommendedEventProto);
   rpc GetInteractionsCount(stats.message.InteractionsCountRequestProto)
       returns (stream stats.message.RecommendedEventProto);
+  rpc GetViewCounts(stats.message.InteractionsCountRequestProto)
+      returns (stats.message.ViewCountsProto);
 }

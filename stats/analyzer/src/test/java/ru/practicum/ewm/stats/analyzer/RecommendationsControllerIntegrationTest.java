@@ -43,6 +43,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
@@ -211,6 +212,29 @@ class RecommendationsControllerIntegrationTest {
         assertThat(results).extracting(RecommendedEventProto::getEventId).containsExactly(30L, 10L, 20L, 10L);
         assertThat(results).extracting(RecommendedEventProto::getScore).containsExactly(0.4, 1.8, 0.0, 1.8);
         assertThat(collect(stub.getInteractionsCount(InteractionsCountRequestProto.getDefaultInstance()))).isEmpty();
+    }
+
+    @Test
+    @DisplayName("VIEW counts distinct users independently of registrations and likes")
+    void countsUniqueViewers() {
+        recordAction(USER_ID, 10L, ActionTypeAvro.REGISTER, 1);
+        recordAction(USER_ID, 10L, ActionTypeAvro.VIEW, 2);
+        recordAction(USER_ID, 10L, ActionTypeAvro.VIEW, 2);
+        recordAction(USER_ID, 10L, ActionTypeAvro.LIKE, 3);
+        recordAction(2L, 10L, ActionTypeAvro.VIEW, 1);
+        recordAction(3L, 10L, ActionTypeAvro.REGISTER, 1);
+        recordAction(2L, 20L, ActionTypeAvro.LIKE, 1);
+        recordAction(2L, 30L, ActionTypeAvro.VIEW, 1);
+        recordAction(2L, 40L, ActionTypeAvro.VIEW, 1);
+
+        var request = InteractionsCountRequestProto.newBuilder()
+                .addAllEventId(List.of(10L, 10L, 20L, 30L, 50L))
+                .build();
+
+        assertThat(stub.getViewCounts(request).getViewsByEventMap())
+                .containsExactlyInAnyOrderEntriesOf(Map.of(10L, 2L, 30L, 1L));
+        assertThat(stub.getViewCounts(InteractionsCountRequestProto.getDefaultInstance()).getViewsByEventMap())
+                .isEmpty();
     }
 
     private void recordAction(long userId, long eventId, ActionTypeAvro type, long seconds) {
