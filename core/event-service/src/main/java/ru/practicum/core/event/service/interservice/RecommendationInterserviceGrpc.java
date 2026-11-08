@@ -50,4 +50,9 @@ public class RecommendationInterserviceGrpc implements RecommendationInterservic
                 .stream()
                 .collect(Collectors.toMap(RecommendedEvent::eventId, RecommendedEvent::score));
     }
+
+    @Override
+    public Map<Long, Long> getViewCounts(List<Long> eventIds) {
+        return analyzer.getViewCounts(new InteractionsCountRequest(eventIds.stream().distinct().toList()));
+    }
 }

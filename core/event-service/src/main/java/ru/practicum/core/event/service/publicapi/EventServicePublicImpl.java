@@ -15,6 +15,7 @@ import ru.practicum.core.event.model.EventState;
 import ru.practicum.core.event.repository.EventRepository;
 import ru.practicum.core.event.service.EventStatsCollector;
 import ru.practicum.core.event.service.interservice.RecommendationInterservice;
+import ru.practicum.core.event.service.interservice.UserInterservice;
 
 import java.util.Comparator;
 import java.util.List;
@@ -26,6 +27,7 @@ public class EventServicePublicImpl implements EventServicePublic {
     private final EventRepository eventRepository;
     private final RecommendationInterservice recommendations;
     private final EventStatsCollector eventStatsCollector;
+    private final UserInterservice users;
 
 
     @Override
@@ -59,13 +61,12 @@ public class EventServicePublicImpl implements EventServicePublic {
     }
 
     @Override
-    public EventFullDto getEventFullInformation(Long id, Long userId, String ip) {
+    public EventFullDto getEventFullInformation(Long id, Long userId) {
         Event event = eventRepository.findByIdAndState(id, EventState.PUBLISHED)
                 .orElseThrow(() -> new NotFoundException(String.format("Event with id = %d was not found", id)));
 
         EventFullDto result = eventStatsCollector.getFullDtoListWithStats(List.of(event)).getFirst();
-        eventStatsCollector.recordView(id, ip);
-        if (userId != null) {
+        if (userId != null && users.existsById(userId)) {
             recommendations.recordView(userId, id);
         }
         return result;

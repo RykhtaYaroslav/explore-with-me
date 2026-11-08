@@ -5,7 +5,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -106,17 +106,18 @@ class EventControllersTest {
         verifyNoInteractions(collector, analyzer);
     }
 
-    @ParameterizedTest
-    @ValueSource(booleans = {true, false})
-    @DisplayName("Event details count the view and send a Collector action for identified viewers")
-    void recordsViewForPublishedEvent(boolean identified) throws Exception {
+    @ParameterizedTest(name = "{0}")
+    @CsvSource({"Registered viewer, 67, true", "Unknown viewer, 68, false", "Anonymous viewer, , false"})
+    @DisplayName("Event details record views only for registered users")
+    void recordsViewForRegisteredUser(String scenario, Long userId, boolean registered) throws Exception {
         Event event = event(21L, EventState.PUBLISHED);
         when(events.findByIdAndState(21L, EventState.PUBLISHED)).thenReturn(Optional.of(event));
         when(eventStats.getFullDtoListWithStats(List.of(event))).thenReturn(List.of(
                 EventFullDto.builder().id(21L).views(14L).rating(4.5).totalInteractionWeight(2.8).build()));
         var request = get("/events/21");
-        if (identified) {
-            request.header(USER_HEADER, "67");
+        if (userId != null) {
+            request.header(USER_HEADER, userId);
+            when(users.existsById(userId)).thenReturn(registered);
         }
 
         var response = response(request);
@@ -128,10 +129,14 @@ class EventControllersTest {
 
         verify(events, times(1)).findByIdAndState(21L, EventState.PUBLISHED);
         verify(eventStats, times(1)).getFullDtoListWithStats(List.of(event));
-        verify(eventStats, times(1)).recordView(21L, "127.0.0.1");
-        if (identified) {
+        if (userId != null) {
+            verify(users, times(1)).existsById(userId);
+        } else {
+            verifyNoInteractions(users);
+        }
+        if (registered) {
             verify(collector, times(1)).collectUserAction(argThat((UserAction action) ->
-                    action.userId() == 67L && action.eventId() == 21L
+                    action.userId() == userId && action.eventId() == 21L
                             && action.actionType() == ActionType.VIEW && action.timestamp() != null));
         } else {
             verifyNoInteractions(collector);
@@ -147,7 +152,7 @@ class EventControllersTest {
         assertThat(response(get("/events/21").header(USER_HEADER, "67")).getStatus()).isEqualTo(404);
 
         verify(events, times(1)).findByIdAndState(21L, EventState.PUBLISHED);
-        verifyNoInteractions(collector, analyzer, eventStats);
+        verifyNoInteractions(users, collector, analyzer, eventStats);
     }
 
     @Test

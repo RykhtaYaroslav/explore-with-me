@@ -12,4 +12,7 @@ public interface RecommendationInterservice {
 
     /** Returns total interaction weights keyed by event ID. */
     Map<Long, Double> getInteractionWeights(List<Long> eventIds);
+
+    /** Returns unique viewer counts keyed by event ID. */
+    Map<Long, Long> getViewCounts(List<Long> eventIds);
 }
