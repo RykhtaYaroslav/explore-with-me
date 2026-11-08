@@ -1,6 +1,5 @@
 package ru.practicum.core.event.controller;
 
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
@@ -69,8 +68,7 @@ public class PublicEventController {
     @GetMapping("/{id}")
     public EventFullDto getEventFullInformation(
             @PathVariable @Positive Long id,
-            @RequestHeader(value = USER_ID_HEADER, required = false) @Positive Long userId,
-            HttpServletRequest request) {
-        return eventServicePublic.getEventFullInformation(id, userId, request.getRemoteAddr());
+            @RequestHeader(value = USER_ID_HEADER, required = false) @Positive Long userId) {
+        return eventServicePublic.getEventFullInformation(id, userId);
     }
 }

@@ -12,7 +12,6 @@ spring:
         native:
           search-locations:
             - file:./infra/config-repo
-            - file:./infra/config-repo/stats-service
             - file:./infra/config-repo/event-service
             - file:./infra/config-repo/review-service
             - file:./infra/config-repo/user-service

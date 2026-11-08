@@ -6,10 +6,12 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Import;
 import ru.practicum.core.common.exception.CommonErrorHandler;
 import ru.practicum.core.common.logging.RequestLoggingConfiguration;
+import ru.practicum.stats.client.grpc.AnalyzerGrpcClient;
+import ru.practicum.stats.client.grpc.CollectorGrpcClient;
 
-@SpringBootApplication(scanBasePackages = {"ru.practicum.core", "ru.practicum.stats.client"})
-@Import({CommonErrorHandler.class, RequestLoggingConfiguration.class})
-@EnableFeignClients(basePackages = {"ru.practicum.core", "ru.practicum.stats.client"})
+@SpringBootApplication
+@Import({CommonErrorHandler.class, RequestLoggingConfiguration.class, CollectorGrpcClient.class, AnalyzerGrpcClient.class})
+@EnableFeignClients
 public class EventService {
     public static void main(String[] args) {
         SpringApplication.run(EventService.class, args);

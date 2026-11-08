@@ -14,11 +14,6 @@ public interface EventStatsCollector {
 
     Map<Long, Long> getConReqByEventMap(List<Event> events);
 
-    Map<Long, Long> getViewsByEventMap(List<Event> events);
-
-    /** Records a view in the existing event view counter. */
-    void recordView(long eventId, String ip);
-
     /** Returns interaction weights keyed by event ID. */
     Map<Long, Double> getInteractionWeights(List<Long> eventIds);
 }

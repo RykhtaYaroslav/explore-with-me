@@ -2,11 +2,6 @@ spring:
   cloud:
     gateway:
       routes:
-        - id: stats
-          uri: lb://stats-server
-          predicates:
-            - Path=/hit,/stats,/stats/**
-
         - id: compilation
           uri: lb://compilation-service
           predicates:

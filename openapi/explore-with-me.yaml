@@ -35,8 +35,6 @@ tags:
     description: Публичный просмотр подборок событий
   - name: Подборки администратора
     description: Создание и изменение подборок
-  - name: Статистика
-    description: Регистрация просмотров и получение статистики
   - name: Тестирование
     description: Вспомогательные методы, доступные с профилем `test-time`
 paths:
@@ -132,6 +130,7 @@ paths:
       tags: [События]
       operationId: getEvent
       summary: Получить событие
+      description: Возвращает число уникальных пользователей с просмотром по данным Analyzer. Если X-EWM-USER-ID содержит ID существующего пользователя, отправляет VIEW в Collector. Счётчик обновляется асинхронно.
       parameters:
         - name: id
           in: path
@@ -140,7 +139,7 @@ paths:
           schema: { type: integer, format: int64, minimum: 1 }
         - name: X-EWM-USER-ID
           in: header
-          description: Идентификатор пользователя для регистрации VIEW в системе рекомендаций.
+          description: Идентификатор существующего пользователя для учёта просмотра.
           schema: { type: integer, format: int64, minimum: 1 }
       responses:
         '200':
@@ -431,6 +430,7 @@ paths:
       tags: [Заявки]
       operationId: createParticipationRequest
       summary: Подать заявку на участие
+      description: После фиксации заявки сервис отправляет REGISTER в Collector для обновления рекомендаций.
       parameters:
         - $ref: '#/components/parameters/UserId'
         - name: eventId
@@ -759,63 +759,6 @@ paths:
       responses:
         '204': { description: Подборка удалена. }
         '404': { $ref: '#/components/responses/NotFound' }
-  /hit:
-    post:
-      tags: [Статистика]
-      operationId: saveHit
-      summary: Зарегистрировать просмотр
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: { $ref: '#/components/schemas/EndpointHit' }
-            example:
-              app: ewm-main-service
-              uri: /events/42
-              ip: 192.0.2.10
-              timestamp: '2026-11-01 18:30:00'
-      responses:
-        '201': { description: Просмотр зарегистрирован. }
-        '400': { $ref: '#/components/responses/BadRequest' }
-  /stats:
-    get:
-      tags: [Статистика]
-      operationId: getStats
-      summary: Получить статистику просмотров
-      parameters:
-        - name: start
-          in: query
-          required: true
-          description: Начало периода, формат `yyyy-MM-dd HH:mm:ss`.
-          schema: { type: string, pattern: '^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$' }
-          example: '2026-11-01 00:00:00'
-        - name: end
-          in: query
-          required: true
-          description: Конец периода, формат `yyyy-MM-dd HH:mm:ss`.
-          schema: { type: string, pattern: '^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$' }
-          example: '2026-11-02 00:00:00'
-        - name: uris
-          in: query
-          description: Фильтр по URI; параметр можно повторять.
-          style: form
-          explode: true
-          schema:
-            type: array
-            items: { type: string }
-        - name: unique
-          in: query
-          description: Учитывать уникальные IP-адреса.
-          schema: { type: boolean, default: false }
-      responses:
-        '200':
-          description: Статистика по URI.
-          content:
-            application/json:
-              schema:
-                type: array
-                items: { $ref: '#/components/schemas/ViewStats' }
-        '400': { $ref: '#/components/responses/BadRequest' }
   /test/time:
     get:
       tags: [Тестирование]
@@ -1029,7 +972,7 @@ components:
         eventDate: { type: string, pattern: '^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$', example: '2026-12-10 18:30:00' }
         initiator: { $ref: '#/components/schemas/UserShort' }
         paid: { type: boolean, example: false }
-        views: { type: integer, format: int64, example: 240, description: Число просмотров }
+        views: { type: integer, format: int64, example: 240, description: Число уникальных зарегистрированных пользователей с просмотром }
         rating: { type: number, format: double, example: 4.7, description: Средний балл отзывов }
         totalInteractionWeight:
           type: number
@@ -1126,18 +1069,3 @@ components:
           items: { type: integer, format: int64, minimum: 1 }
         pinned: { type: boolean }
         title: { type: string, minLength: 1, maxLength: 50 }
-    EndpointHit:
-      type: object
-      properties:
-        app: { type: string, minLength: 1, example: ewm-main-service }
-        uri: { type: string, minLength: 1, example: /events/42 }
-        ip: { type: string, minLength: 1, example: 192.0.2.10 }
-        timestamp: { type: string, pattern: '^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$', example: '2026-11-01 18:30:00' }
-      required: [app, uri, ip, timestamp]
-    ViewStats:
-      type: object
-      properties:
-        app: { type: string, example: ewm-main-service }
-        uri: { type: string, example: /events/42 }
-        hits: { type: integer, format: int64, example: 240 }
-      required: [app, uri, hits]

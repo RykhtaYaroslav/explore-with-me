@@ -12,23 +12,15 @@ import ru.practicum.core.event.service.interservice.RecommendationInterservice;
 import ru.practicum.core.event.service.interservice.ReviewInterservice;
 import ru.practicum.core.event.service.interservice.UserInterservice;
 import ru.practicum.core.user.dto.UserShortDto;
-import ru.practicum.stats.client.StatsClient;
-import ru.practicum.stats.dto.EndpointHitDto;
-import ru.practicum.stats.dto.ViewStatsDto;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
-
-import static java.time.LocalDateTime.now;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class EventStatsCollectorImpl implements EventStatsCollector {
-    private final StatsClient statsRepository;
     private final RecommendationInterservice recommendations;
     private final ReviewInterservice reviewInterservice;
     private final UserInterservice userInterservice;
@@ -40,10 +32,11 @@ public class EventStatsCollectorImpl implements EventStatsCollector {
         if (events.isEmpty()) {
             return List.of();
         }
-        Map<Long, Long> viewsByEventMap = getViewsByEventMap(events);
+        List<Long> eventIds = events.stream().map(Event::getId).toList();
+        Map<Long, Long> viewsByEventMap = recommendations.getViewCounts(eventIds);
         Map<Long, Long> confirmedRequestsByEventMap = getConReqByEventMap(events);
-        Map<Long, Double> ratingByEventMap = getRatingMap(events);
-        Map<Long, Double> weights = getInteractionWeights(events.stream().map(Event::getId).toList());
+        Map<Long, Double> ratingByEventMap = getRatingMap(eventIds);
+        Map<Long, Double> weights = getInteractionWeights(eventIds);
         Map<Long, UserShortDto> initiatorsById = getInitiatorsById(events);
 
         return events.stream()
@@ -64,11 +57,12 @@ public class EventStatsCollectorImpl implements EventStatsCollector {
         if (events.isEmpty()) {
             return List.of();
         }
-        Map<Long, Long> views = getViewsByEventMap(events);
+        List<Long> eventIds = events.stream().map(Event::getId).toList();
+        Map<Long, Long> views = recommendations.getViewCounts(eventIds);
         Map<Long, Long> confirmedRequests = getConReqByEventMap(events);
 
-        Map<Long, Double> ratings = getRatingMap(events);
-        Map<Long, Double> weights = getInteractionWeights(events.stream().map(Event::getId).toList());
+        Map<Long, Double> ratings = getRatingMap(eventIds);
+        Map<Long, Double> weights = getInteractionWeights(eventIds);
         Map<Long, UserShortDto> initiatorsById = getInitiatorsById(events);
 
         return events.stream()
@@ -88,72 +82,6 @@ public class EventStatsCollectorImpl implements EventStatsCollector {
         return recommendations.getInteractionWeights(eventIds);
     }
 
-    @Override
-    public void recordView(long eventId, String ip) {
-        statsRepository.hit(EndpointHitDto.builder()
-                .app("event-service")
-                .ip(ip)
-                .uri(String.format("/events/%d", eventId))
-                .timestamp(now())
-                .build());
-    }
-
-    /**
-     * Maps each eventId ID to its total number of views collected from the statistics service.
-     *
-     * @param events the list of {@link Event} entities to fetch statistics for
-     * @return a {@link Map} where the key is the eventId ID and the value is the total view count
-     */
-    @Override
-    public Map<Long, Long> getViewsByEventMap(List<Event> events) {
-        // This method fills Map with eventId - views amount
-
-        // Pull statistics about events from stat module
-        List<ViewStatsDto> viewStatsDto = getViewStatsDtoList(events);
-
-        return viewStatsDto.stream()
-                .collect(Collectors.toMap(
-                        dto -> extractIdFromUri(dto.getUri()),
-                        dto -> dto.getHits() != null ? dto.getHits() : 0L,
-                        Long::max
-                ));
-
-    }
-
-    /**
-     * Requests view statistics from the remote stats service for a collection of events.
-     *
-     * @param events the list of {@link Event} entities for which to query view statistics
-     * @return a list of {@link ViewStatsDto} containing hit counts for the provided eventId URIs
-     */
-    private List<ViewStatsDto> getViewStatsDtoList(List<Event> events) {
-        // This method pulls statistics about events from stat module
-
-        LocalDateTime now = now();
-
-        List<String> uris = events.stream()
-                .map(event -> String.format("/events/%d", event.getId()))
-                .toList();
-
-        LocalDateTime minDate = events.stream()
-                .map(Event::getCreatedOn)
-                .filter(Objects::nonNull)
-                .min(LocalDateTime::compareTo)
-                .orElse(now.minusYears(10));
-
-        return statsRepository.getStats(minDate, now, uris, true);
-    }
-
-    /**
-     * Extracts the eventId entity ID from an endpoint URI string (e.g., "/events/42" -> 42L).
-     *
-     * @param uri the URI path containing the eventId identifier at the end
-     * @return the extracted eventId ID as a {@link Long}
-     */
-    private Long extractIdFromUri(String uri) {
-        return Long.parseLong(uri.substring((uri.lastIndexOf('/') + 1)));
-    }
-
     /**
      * Maps each eventId ID to the total number of its confirmed participation requests.
      *
@@ -169,12 +97,10 @@ public class EventStatsCollectorImpl implements EventStatsCollector {
     /**
      * Retrieves a mapping of eventId IDs to their average ratings for the specified list of events.
      *
-     * @param events the list of events for which to calculate and fetch ratings
+     * @param eventIds the IDs of events for which to fetch ratings
      * @return a map where the key is the eventId ID and the value is its average rating
      */
-    private Map<Long, Double> getRatingMap(List<Event> events) {
-        List<Long> eventIds = events.stream().map(Event::getId).toList();
-
+    private Map<Long, Double> getRatingMap(List<Long> eventIds) {
         List<EventRatingCount> eventRatingCountList = reviewInterservice.getRatingByIds(eventIds);
 
         return eventRatingCountList.stream()
