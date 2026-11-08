@@ -1,11 +1,12 @@
 # Explore With Me
 
-Микросервисное приложение-афиша: пользователи публикуют события, подают заявки на участие, собирают события в подборки и оставляют оценки.
+Микросервисное приложение-афиша. Пользователи публикуют события, подают заявки на участие, собирают события в подборки, оставляют оценки и получают персональные рекомендации.
 
 ## Стек
 
 - Java 21, Maven, Spring Boot 3.3, Spring Cloud.
 - Spring Web, Spring Data JPA, Hibernate, OpenFeign, Spring Cloud Gateway, Eureka и Config Server.
+- gRPC и Protobuf для взаимодействия с системой рекомендаций, Kafka и Avro для обработки действий.
 - PostgreSQL для локального запуска; H2 для тестовых профилей.
 - Docker Compose для запуска сервисов и баз данных.
 - JUnit, Mockito и Postman для проверок; MapStruct и Lombok в коде.
@@ -24,9 +25,11 @@
 | `review-service` | Оценки событий и авторов | Случайный порт, регистрация в Eureka |
 | `participation-service` | Заявки на участие и проверка подтверждённого участия | Случайный порт, регистрация в Eureka |
 | `compilation-service` | Подборки событий | Случайный порт, регистрация в Eureka |
-| `stats-server` | Приём просмотров и выдача статистики | Случайный порт, регистрация в Eureka |
+| `collector` | Приём действий по gRPC и публикация в Kafka | Случайный порт gRPC, регистрация в Eureka |
+| `aggregator` | Расчёт сходства событий по действиям из Kafka | Регистрация в Eureka |
+| `analyzer` | Расчёт рекомендаций и выдача весов взаимодействий | Случайный порт gRPC, регистрация в Eureka |
 
-Для каждого бизнес-сервиса и `stats-server` в Compose настроена своя база данных. Сервис событий отправляет просмотры и запрашивает статистику через библиотеку `stats-client`. Сервисы событий и подборок собирают данные из других сервисов, а сервис оценок проверяет участников и авторов через внутренние API. Внешние маршруты Gateway и discovery-based адресация заданы в `infra/config-repo/gateway-server/gateway-server.yaml`.
+Для бизнес-сервисов, Aggregator и Analyzer в Compose настроены отдельные базы данных. `event-service`, `participation-service` и `review-service` обращаются к Collector через `stats-client`. `event-service` также запрашивает веса и рекомендации у Analyzer. Клиенты находят gRPC-порты через Eureka по адресам `discovery:///collector` и `discovery:///analyzer`. Настройки клиентов включают keepalive и plaintext.
 
 У экземпляров сервисов нет закреплённых имён контейнеров: можно поднять несколько копий сервиса, например `docker compose up --build --scale event-service=2`. Eureka регистрирует каждую копию с её фактическим портом, а Gateway и Feign выбирают доступные экземпляры по имени приложения.
 
@@ -38,17 +41,20 @@
 - `infra/config-repo/<service>/<service>.yaml` — настройки конкретного сервиса; `*-test.yaml` — тестовый профиль.
 - `*/src/main/resources/application.yaml` — имя приложения, начальные настройки подключения к Config Server/Eureka и профиль, если он задан локально.
 
-Параметры подключения к базам можно переопределить переменными окружения, например `EVENT_DB_URL`, `EVENT_DB_USERNAME`, `EVENT_DB_PASSWORD` (аналогично для `USER`, `REVIEW`, `PARTICIPATION`, `COMPILATION`, `STATS`). Значения по умолчанию для локального Compose указаны в `docker-compose.yml` и конфигурации сервисов. Compose включает профиль `docker`, чтобы контейнеры не использовали H2 профиля `test`. Порты бизнес-сервисов и Config Server случайные (`server.port: 0`); Compose ждёт регистрации каждого приложения в Eureka перед запуском Gateway. Gateway и Eureka имеют фиксированные порты как внешние точки входа, а вызовы к бизнес-сервисам идут через Eureka.
+Параметры подключения к базам можно переопределить переменными окружения, например `EVENT_DB_URL`, `EVENT_DB_USERNAME`, `EVENT_DB_PASSWORD` (аналогично для `USER`, `REVIEW`, `PARTICIPATION` и `COMPILATION`). Значения по умолчанию для локального Compose указаны в `docker-compose.yml` и конфигурации сервисов. Compose включает профиль `docker` для работы с PostgreSQL. Порты бизнес-сервисов и Config Server случайные (`server.port: 0`). Compose ждёт регистрации приложений в Eureka перед запуском Gateway.
 
 ## API
 
 ### Внешний API
 
-Локальная OpenAPI-спецификация проекта: [`openapi/explore-with-me.yaml`](openapi/explore-with-me.yaml). Она описывает API через Gateway на `http://localhost:8080`, включая маршруты событий, пользователей, заявок, оценок, подборок и статистики.
+Спецификация [`openapi/explore-with-me.yaml`](openapi/explore-with-me.yaml) описывает внешние маршруты Gateway на `http://localhost:8080`, включая события, рекомендации, пользователей, заявки, оценки и подборки.
 
-Исходные спецификации задания: [основной API](https://github.com/yandex-praktikum/java-explore-with-me/blob/main/ewm-main-service-spec.json) и [API статистики](https://github.com/yandex-praktikum/java-explore-with-me/blob/main/ewm-stats-service-spec.json).
+- `GET /events/{id}` отправляет `VIEW`, если `X-EWM-USER-ID` содержит ID существующего пользователя. Analyzer учитывает один просмотр на пользователя для каждого события после обработки сообщения Kafka. Карточки получают значение `views` из Analyzer.
+- `POST /users/{userId}/requests?eventId=…` отправляет `REGISTER` после фиксации заявки. Это относится к заявкам со статусами `PENDING` и `CONFIRMED`. Ошибка Collector журналируется, а сохранённая заявка остаётся доступной.
+- Оценки события 4 и 5 отправляют `LIKE`. Поле `rating` отражает средний балл отзывов, а `totalInteractionWeight` — сумму максимальных весов действий пользователей с событием.
+- `GET /events/recommendations` принимает обязательный `X-EWM-USER-ID`. Рекомендации и веса обновляются по мере обработки сообщений Kafka.
 
-Коллекции Postman лежат в [`postman/`](postman/): отдельные сценарии для пользовательского API, событий, заявок, оценок, подборок и статистики.
+В каталоге [`postman/`](postman/) лежат сценарии для пользователей, событий, заявок, оценок и подборок.
 
 ### Внутренний API сервисов
 
@@ -61,9 +67,8 @@
 | `event-service` | `PUT /interservice/events/{eventId}/confirmed-requests?delta=...` или `?expectedCount=...&count=...` | Обновление счётчика подтверждённых заявок |
 | `participation-service` | `GET /interservice/requests/users/{userId}/events/{eventId}/confirmed` | Проверка, что пользователь — участник с подтверждённой заявкой |
 | `review-service` | `POST /interservice/reviews/events`, `POST /interservice/reviews/users` | Получение агрегированных оценок событий и авторов по списку ID в JSON body |
-| `stats-server` | `POST /hit`, `GET /stats?start=...&end=...&uris=...&unique=...` | Регистрация просмотра и получение статистики; клиентский контракт находится в модуле `stats/stats-client` |
 
-Внутренние маршруты не являются публичным контрактом для клиентских приложений. Схемы запросов и ответов описаны рядом с Feign-клиентами и контроллерами в исходном коде.
+Collector принимает `CollectUserAction`, Analyzer обслуживает `GetRecommendationsForUser`, `GetSimilarEvents`, `GetInteractionsCount` и `GetViewCounts`. Protobuf-схемы находятся в [`stats/recommendation-contracts/src/main/proto/`](stats/recommendation-contracts/src/main/proto/).
 
 ## Запуск
 
@@ -92,7 +97,7 @@ mvn -DskipTests package
 ## Структура репозитория
 
 - `core/` — бизнес-сервисы, общий код и контракты межсервисных вызовов.
-- `stats/` — сервер статистики и клиентская библиотека.
+- `stats/` — Collector, Aggregator, Analyzer, gRPC-клиенты и общие контракты рекомендаций.
 - `infra/` — Gateway, Config Server, Eureka и файлы конфигурации.
 - `api-contracts/` — общие DTO/контракты.
 - `openapi/` — OpenAPI-спецификация внешнего API.
