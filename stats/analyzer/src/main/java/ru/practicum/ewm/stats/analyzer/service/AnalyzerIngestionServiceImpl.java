@@ -13,6 +13,7 @@ import ru.practicum.ewm.stats.avro.EventSimilarityAvro;
 import ru.practicum.ewm.stats.avro.UserActionAvro;
 import ru.practicum.ewm.stats.mapper.RecommendationMapper;
 import ru.practicum.ewm.stats.mapper.UserActionMapper;
+import ru.practicum.ewm.stats.model.action.ActionType;
 import ru.practicum.ewm.stats.model.action.UserAction;
 import ru.practicum.ewm.stats.model.similarity.EventSimilarity;
 
@@ -26,7 +27,7 @@ public class AnalyzerIngestionServiceImpl implements AnalyzerIngestionService {
     private final EventSimilarityRepository similarityRepository;
 
     /**
-     * Stores the maximum action weight for each user-event pair and the latest interaction time.
+     * Stores the maximum action weight, latest interaction time and whether the user viewed the event.
      *
      * @param message action received from Collector's Kafka topic
      */
@@ -36,8 +37,9 @@ public class AnalyzerIngestionServiceImpl implements AnalyzerIngestionService {
         UserAction action = UserActionMapper.toModel(message);
         UserEventInteractionId id = new UserEventInteractionId(action.userId(), action.eventId());
         UserEventInteractionEntity interaction = interactionRepository.findById(id)
-                .orElseGet(() -> new UserEventInteractionEntity(id, 0.0, action.timestamp()));
+                .orElseGet(() -> new UserEventInteractionEntity(id, 0.0, action.timestamp(), false));
         interaction.setWeight(Math.max(interaction.getWeight(), action.actionType().getWeight()));
+        interaction.setViewed(interaction.isViewed() || action.actionType() == ActionType.VIEW);
         if (action.timestamp().isAfter(interaction.getLastInteractionTime())) {
             interaction.setLastInteractionTime(action.timestamp());
         }

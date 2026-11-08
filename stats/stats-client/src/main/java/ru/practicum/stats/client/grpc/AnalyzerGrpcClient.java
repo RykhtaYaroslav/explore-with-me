@@ -16,6 +16,7 @@ import ru.practicum.ewm.stats.proto.dashboard.RecommendationsControllerGrpc.Reco
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
@@ -60,6 +61,17 @@ public class AnalyzerGrpcClient {
     public List<RecommendedEvent> getInteractionsCount(InteractionsCountRequest request) {
         return read("GetInteractionsCount", () -> stub.withDeadlineAfter(deadlineMillis, TimeUnit.MILLISECONDS)
                 .getInteractionsCount(RecommendationMapper.toProto(request)));
+    }
+
+    /** Returns unique viewer counts keyed by event ID. Missing IDs have zero views. */
+    public Map<Long, Long> getViewCounts(InteractionsCountRequest request) {
+        try {
+            return stub.withDeadlineAfter(deadlineMillis, TimeUnit.MILLISECONDS)
+                    .getViewCounts(RecommendationMapper.toProto(request))
+                    .getViewsByEventMap();
+        } catch (StatusRuntimeException exception) {
+            throw new StatsGrpcException("GetViewCounts", exception);
+        }
     }
 
     private List<RecommendedEvent> read(String operation, Supplier<Iterator<RecommendedEventProto>> call) {
